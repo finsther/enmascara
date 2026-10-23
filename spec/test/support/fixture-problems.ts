@@ -4,6 +4,14 @@ import { readYamlDocument } from './spec-files.js';
 
 interface IdentifierDefinition {
   readonly pattern: string;
+  readonly allowlist?: readonly string[];
+}
+
+export type LookalikeReason = InvalidValue['reason'] | 'pattern' | 'allowlist';
+
+export interface Lookalike {
+  readonly text: string;
+  readonly reason: LookalikeReason;
 }
 
 interface BankCatalog {
@@ -15,12 +23,16 @@ export function readBankCodes(): ReadonlySet<string> {
   return new Set(catalog.banks.map((bank) => bank.code));
 }
 
-export function readPattern(type: IdentifierType): string {
+function readDefinition(type: IdentifierType): IdentifierDefinition {
   const identifiers = readYamlDocument('identifiers.yaml') as Record<
     string,
     IdentifierDefinition
   >;
-  return identifiers[type]?.pattern ?? '';
+  return identifiers[type] ?? { pattern: '' };
+}
+
+export function readPattern(type: IdentifierType): string {
+  return readDefinition(type).pattern;
 }
 
 function matchesWholeValue(pattern: string, value: string): boolean {
@@ -56,4 +68,41 @@ export function valueProblems(
       ),
     ...duplicatesIn(allValues).map((value) => `${value} is repeated`),
   ];
+}
+
+function matchesIn(pattern: string, text: string): readonly string[] {
+  return [...text.matchAll(new RegExp(pattern, 'gu'))].map((match) => match[0]);
+}
+
+function isExplainedBy(
+  type: IdentifierType,
+  lookalike: Lookalike,
+  candidates: readonly string[],
+): boolean {
+  if (lookalike.reason === 'pattern') {
+    return candidates.length === 0;
+  }
+  const allowlist = readDefinition(type).allowlist ?? [];
+  const bankCodes = readBankCodes();
+  const isExplained = (candidate: string): boolean =>
+    lookalike.reason === 'allowlist'
+      ? allowlist.includes(candidate)
+      : rejectionFor(type, candidate, bankCodes) === lookalike.reason;
+  return candidates.length > 0 && candidates.every(isExplained);
+}
+
+export function lookalikeProblems(
+  type: IdentifierType,
+  lookalikes: readonly Lookalike[],
+): readonly string[] {
+  const pattern = readPattern(type);
+  return lookalikes
+    .filter(
+      (lookalike) =>
+        !isExplainedBy(type, lookalike, matchesIn(pattern, lookalike.text)),
+    )
+    .map(
+      (lookalike) =>
+        `"${lookalike.text}" is not explained by ${lookalike.reason}`,
+    );
 }
