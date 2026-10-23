@@ -1,12 +1,11 @@
 import { clabeCheckDigit } from '../check-digits/clabe.ts';
+import type { ReferenceCatalogs } from '../rules/index.ts';
 import {
-  FIXTURES_PER_REJECTION,
   type GeneratedValues,
-  type InvalidValue,
-  MINIMUM_FIXTURES_PER_GROUP,
+  invalidValuesFrom,
+  validValuesFrom,
 } from './fixture-values.ts';
 import type { Random } from './random.ts';
-import { uniqueValues } from './unique.ts';
 
 const DIGITS = '0123456789';
 const BANK_CODE_LENGTH = 3;
@@ -39,33 +38,22 @@ function withWrongCheckDigit(clabe: string, random: Random): string {
 
 export function generateClabeValues(
   random: Random,
-  bankCodes: ReadonlySet<string>,
+  catalogs: ReferenceCatalogs,
 ): GeneratedValues {
-  const knownCodes = [...bankCodes].sort();
+  const knownCodes = [...catalogs.bankCodes].sort();
   const validClabe = (): string =>
     withCheckDigit(`${random.pick(knownCodes)}${bodyAfterBankCode(random)}`);
-  const byValue = (fixture: InvalidValue): string => fixture.value;
   return {
-    valid: uniqueValues(MINIMUM_FIXTURES_PER_GROUP, validClabe, String),
-    invalid: [
-      ...uniqueValues(
-        FIXTURES_PER_REJECTION,
-        () => ({
-          value: withWrongCheckDigit(validClabe(), random),
-          reason: 'check_digit' as const,
-        }),
-        byValue,
-      ),
-      ...uniqueValues(
-        FIXTURES_PER_REJECTION,
-        () => ({
-          value: withCheckDigit(
-            `${unknownBankCode(random, bankCodes)}${bodyAfterBankCode(random)}`,
+    valid: validValuesFrom(validClabe),
+    invalid: invalidValuesFrom([
+      ['check_digit', () => withWrongCheckDigit(validClabe(), random)],
+      [
+        'bank_code',
+        () =>
+          withCheckDigit(
+            `${unknownBankCode(random, catalogs.bankCodes)}${bodyAfterBankCode(random)}`,
           ),
-          reason: 'bank_code' as const,
-        }),
-        byValue,
-      ),
-    ],
+      ],
+    ]),
   };
 }

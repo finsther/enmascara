@@ -1,6 +1,7 @@
-import type { IdentifierType } from '../rules/index.ts';
+import type { IdentifierType, ReferenceCatalogs } from '../rules/index.ts';
 import { generateCardValues } from './card.ts';
 import { generateClabeValues } from './clabe.ts';
+import { generateCurpValues } from './curp.ts';
 import type { GeneratedValues } from './fixture-values.ts';
 import { createRandom, type Random } from './random.ts';
 import { generateRfcValues } from './rfc.ts';
@@ -13,17 +14,18 @@ export {
 
 export interface GeneratorOptions {
   readonly seed: number;
-  readonly bankCodes: ReadonlySet<string>;
+  readonly catalogs: ReferenceCatalogs;
 }
 
 type ValueGenerator = (
   random: Random,
-  bankCodes: ReadonlySet<string>,
+  catalogs: ReferenceCatalogs,
 ) => GeneratedValues;
 
 const VALUE_GENERATORS: Readonly<Record<IdentifierType, ValueGenerator>> = {
   card: generateCardValues,
   clabe: generateClabeValues,
+  curp: generateCurpValues,
   rfc: generateRfcValues,
 };
 
@@ -31,5 +33,5 @@ export function generateFixtureValues(
   type: IdentifierType,
   options: GeneratorOptions,
 ): GeneratedValues {
-  return VALUE_GENERATORS[type](createRandom(options.seed), options.bankCodes);
+  return VALUE_GENERATORS[type](createRandom(options.seed), options.catalogs);
 }

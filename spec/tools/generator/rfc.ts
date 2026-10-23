@@ -1,12 +1,10 @@
 import { rfcCheckDigit } from '../check-digits/rfc.ts';
 import {
-  FIXTURES_PER_REJECTION,
   type GeneratedValues,
-  type InvalidValue,
-  MINIMUM_FIXTURES_PER_GROUP,
+  invalidValuesFrom,
+  validValuesFrom,
 } from './fixture-values.ts';
 import type { Random } from './random.ts';
-import { uniqueValues } from './unique.ts';
 
 const PERSONA_FISICA_LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 const PERSONA_MORAL_LETTERS = `${PERSONA_FISICA_LETTERS}&Ñ`;
@@ -64,26 +62,11 @@ function withWrongCheckDigit(rfc: string, random: Random): string {
 
 export function generateRfcValues(random: Random): GeneratedValues {
   const validRfc = (): string => rfcWithDate(random, possibleDate(random));
-  const byValue = (fixture: InvalidValue): string => fixture.value;
   return {
-    valid: uniqueValues(MINIMUM_FIXTURES_PER_GROUP, validRfc, String),
-    invalid: [
-      ...uniqueValues(
-        FIXTURES_PER_REJECTION,
-        () => ({
-          value: withWrongCheckDigit(validRfc(), random),
-          reason: 'check_digit' as const,
-        }),
-        byValue,
-      ),
-      ...uniqueValues(
-        FIXTURES_PER_REJECTION,
-        () => ({
-          value: rfcWithDate(random, impossibleDate(random)),
-          reason: 'date' as const,
-        }),
-        byValue,
-      ),
-    ],
+    valid: validValuesFrom(validRfc),
+    invalid: invalidValuesFrom([
+      ['check_digit', () => withWrongCheckDigit(validRfc(), random)],
+      ['date', () => rfcWithDate(random, impossibleDate(random))],
+    ]),
   };
 }

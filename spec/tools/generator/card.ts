@@ -1,12 +1,10 @@
 import { luhnCheckDigit } from '../check-digits/luhn.ts';
 import {
-  FIXTURES_PER_REJECTION,
   type GeneratedValues,
-  type InvalidValue,
-  MINIMUM_FIXTURES_PER_GROUP,
+  invalidValuesFrom,
+  validValuesFrom,
 } from './fixture-values.ts';
 import type { Random } from './random.ts';
-import { uniqueValues } from './unique.ts';
 
 const DIGITS = '0123456789';
 const DECIMAL_BASE = 10;
@@ -97,29 +95,21 @@ export function generateCardValues(random: Random): GeneratedValues {
       random.pick(SEPARATORS),
     );
   };
-  const byValue = (fixture: InvalidValue): string => fixture.value;
   return {
-    valid: uniqueValues(MINIMUM_FIXTURES_PER_GROUP, validCard, String),
-    invalid: [
-      ...uniqueValues(
-        FIXTURES_PER_REJECTION,
-        () => ({
-          value: withWrongCheckDigit(
+    valid: validValuesFrom(validCard),
+    invalid: invalidValuesFrom([
+      [
+        'check_digit',
+        () =>
+          withWrongCheckDigit(
             withCheckDigit(random, knownNetworkShape(random)),
             random,
           ),
-          reason: 'check_digit' as const,
-        }),
-        byValue,
-      ),
-      ...uniqueValues(
-        FIXTURES_PER_REJECTION,
-        () => ({
-          value: withCheckDigit(random, unknownNetworkShape(random)),
-          reason: 'network_prefix' as const,
-        }),
-        byValue,
-      ),
-    ],
+      ],
+      [
+        'network_prefix',
+        () => withCheckDigit(random, unknownNetworkShape(random)),
+      ],
+    ]),
   };
 }
