@@ -8,6 +8,7 @@ import { readCatalogs, readPattern } from '../support/fixture-problems.ts';
 const VALID_CURP = 'GODE561231HDFRRN00';
 const WRONG_CHECK_DIGIT = 'GODE561231HDFRRN01';
 const UNKNOWN_STATE = 'GODE561231HZZRRN03';
+const IMPOSSIBLE_DATE = 'GODE561331HDFRRN09';
 
 function report(lines: readonly string[]) {
   return reportCurpCheck(lines, {
@@ -51,12 +52,18 @@ describe('reportCurpCheck', () => {
 
 describe('formatCurpReport', () => {
   const formatted = formatCurpReport(
-    report([VALID_CURP, WRONG_CHECK_DIGIT, 'not a curp', UNKNOWN_STATE]),
+    report([
+      VALID_CURP,
+      WRONG_CHECK_DIGIT,
+      'not a curp',
+      UNKNOWN_STATE,
+      IMPOSSIBLE_DATE,
+    ]),
   );
 
   it('summarizes how many check digits matched', () => {
     expect(formatted).toContain(
-      'Checked 3 CURPs: 2 with a matching check digit, 1 without.',
+      'Checked 4 CURPs: 3 with a matching check digit, 1 without.',
     );
   });
 
@@ -64,11 +71,13 @@ describe('formatCurpReport', () => {
     expect(formatted).toContain('Line 2: the check digit does not match');
     expect(formatted).toContain('Line 3: not shaped like a CURP');
     expect(formatted).toContain('Line 4: the state code is not in the catalog');
+    expect(formatted).toContain('Line 5: the birth date is not possible');
   });
 
   it('never prints a CURP', () => {
     expect(formatted).not.toContain(VALID_CURP);
     expect(formatted).not.toContain(WRONG_CHECK_DIGIT);
     expect(formatted).not.toContain(UNKNOWN_STATE);
+    expect(formatted).not.toContain(IMPOSSIBLE_DATE);
   });
 });
