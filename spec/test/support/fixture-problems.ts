@@ -1,5 +1,9 @@
 import type { InvalidValue } from '../../tools/generator/index.ts';
-import { type IdentifierType, rejectionFor } from '../../tools/rules/index.ts';
+import {
+  type IdentifierType,
+  type ReferenceCatalogs,
+  rejectionFor,
+} from '../../tools/rules/index.ts';
 import { readYamlDocument } from './spec-files.ts';
 
 interface IdentifierDefinition {
@@ -21,6 +25,10 @@ interface BankCatalog {
 export function readBankCodes(): ReadonlySet<string> {
   const catalog = readYamlDocument('banks.yaml') as BankCatalog;
   return new Set(catalog.banks.map((bank) => bank.code));
+}
+
+export function readCatalogs(): ReferenceCatalogs {
+  return { bankCodes: readBankCodes() };
 }
 
 function readDefinition(type: IdentifierType): IdentifierDefinition {
@@ -49,19 +57,19 @@ export function valueProblems(
   invalid: readonly InvalidValue[],
 ): readonly string[] {
   const pattern = readPattern(type);
-  const bankCodes = readBankCodes();
+  const catalogs = readCatalogs();
   const allValues = [...valid, ...invalid.map((fixture) => fixture.value)];
   return [
     ...allValues
       .filter((value) => !matchesWholeValue(pattern, value))
       .map((value) => `${value} does not match the ${type} pattern`),
     ...valid
-      .filter((value) => rejectionFor(type, value, bankCodes) !== undefined)
+      .filter((value) => rejectionFor(type, value, catalogs) !== undefined)
       .map((value) => `${value} is listed as valid but is rejected`),
     ...invalid
       .filter(
         (fixture) =>
-          rejectionFor(type, fixture.value, bankCodes) !== fixture.reason,
+          rejectionFor(type, fixture.value, catalogs) !== fixture.reason,
       )
       .map(
         (fixture) => `${fixture.value} is not rejected for ${fixture.reason}`,
@@ -83,11 +91,11 @@ function isExplainedBy(
     return candidates.length === 0;
   }
   const allowlist = readDefinition(type).allowlist ?? [];
-  const bankCodes = readBankCodes();
+  const catalogs = readCatalogs();
   const isExplained = (candidate: string): boolean =>
     lookalike.reason === 'allowlist'
       ? allowlist.includes(candidate)
-      : rejectionFor(type, candidate, bankCodes) === lookalike.reason;
+      : rejectionFor(type, candidate, catalogs) === lookalike.reason;
   return candidates.length > 0 && candidates.every(isExplained);
 }
 

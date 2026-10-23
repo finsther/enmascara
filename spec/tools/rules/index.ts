@@ -5,21 +5,25 @@ import { rfcRejection } from './rfc.ts';
 
 export type IdentifierType = 'card' | 'clabe' | 'rfc';
 
+export interface ReferenceCatalogs {
+  readonly bankCodes: ReadonlySet<string>;
+}
+
 type RejectionRule = (
   value: string,
-  bankCodes: ReadonlySet<string>,
+  catalogs: ReferenceCatalogs,
 ) => Rejection | undefined;
 
 const REJECTION_RULES: Readonly<Record<IdentifierType, RejectionRule>> = {
   card: cardRejection,
-  clabe: clabeRejection,
+  clabe: (value, catalogs) => clabeRejection(value, catalogs.bankCodes),
   rfc: rfcRejection,
 };
 
 export function rejectionFor(
   type: IdentifierType,
   value: string,
-  bankCodes: ReadonlySet<string>,
+  catalogs: ReferenceCatalogs,
 ): Rejection | undefined {
-  return REJECTION_RULES[type](value, bankCodes);
+  return REJECTION_RULES[type](value, catalogs);
 }
