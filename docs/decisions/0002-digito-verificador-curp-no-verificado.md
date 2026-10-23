@@ -1,6 +1,6 @@
 # ADR 0002: El dígito verificador de CURP no está verificado
 
-- **Estado:** aceptado, pendiente de verificación
+- **Estado:** aceptado, verificado con datos reales (muestra pequeña)
 - **Fecha:** 2026-10-23
 - **Historia:** Sprint 1, historia 2
 
@@ -32,6 +32,14 @@ pbpaste | pnpm --silent --filter enmascara-spec verify-curps
 - Nunca guardes CURP reales en el repositorio, en issues ni en mensajes de commit.
 - **Si todas coinciden:** registra aquí cuántas se probaron y en qué fecha, sin las CURP, y cambia el estado a "verificado con datos reales". `verified` sigue en `false` mientras no haya una fuente oficial.
 - **Si alguna no coincide:** el algoritmo está mal o incompleto. Reabre esta decisión antes de la historia 4.
+
+## Verificaciones con datos reales
+
+| Fecha | CURP probadas | Dígito coincide | Notas |
+| --- | --- | --- | --- |
+| 2026-10-23 | 3 | 3 | Probadas fuera del repositorio con `verify-curps` |
+
+Tres coincidencias de tres son evidencia a favor del algoritmo, pero la muestra es pequeña. Una prueba con más CURP, de personas nacidas antes y después de 2000 y en entidades distintas, la haría más sólida. `verified` sigue en `false` porque no hay una fuente oficial.
 
 ## Consecuencias
 
