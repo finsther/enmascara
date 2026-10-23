@@ -1,11 +1,7 @@
 const DECIMAL_BASE = 10;
-const DOUBLED_DIGIT_REDUCTION = 9;
 
-function doubled(digit: number): number {
-  const product = digit * 2;
-  return product > DOUBLED_DIGIT_REDUCTION
-    ? product - DOUBLED_DIGIT_REDUCTION
-    : product;
+function sumOfDigits(value: number): number {
+  return Math.floor(value / DECIMAL_BASE) + (value % DECIMAL_BASE);
 }
 
 export function luhnCheckDigit(digitsWithoutCheckDigit: string): string {
@@ -13,7 +9,9 @@ export function luhnCheckDigit(digitsWithoutCheckDigit: string): string {
     .reverse()
     .reduce((total, character, offsetFromRight) => {
       const digit = Number(character);
-      return total + (offsetFromRight % 2 === 0 ? doubled(digit) : digit);
+      return (
+        total + (offsetFromRight % 2 === 0 ? sumOfDigits(digit * 2) : digit)
+      );
     }, 0);
   return String((DECIMAL_BASE - (sum % DECIMAL_BASE)) % DECIMAL_BASE);
 }
