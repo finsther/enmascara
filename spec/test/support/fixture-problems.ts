@@ -1,11 +1,6 @@
+import type { InvalidValue } from '../../tools/generator/index.js';
 import { type IdentifierType, rejectionFor } from '../../tools/rules/index.js';
-import type { Rejection } from '../../tools/rules/rejection.js';
 import { readYamlDocument } from './spec-files.js';
-
-export interface InvalidValue {
-  readonly value: string;
-  readonly reason: Rejection;
-}
 
 interface IdentifierDefinition {
   readonly pattern: string;
