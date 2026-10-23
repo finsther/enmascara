@@ -1,0 +1,96 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Enmascara identifiers",
+  "description": "Detection and masking rules for each identifier type.",
+  "type": "object",
+  "minProperties": 1,
+  "propertyNames": {
+    "pattern": "^[a-z]+$"
+  },
+  "properties": {
+    "curp": {
+      "$ref": "#/$defs/birthDateIdentifier"
+    },
+    "rfc": {
+      "$ref": "#/$defs/birthDateIdentifier"
+    }
+  },
+  "additionalProperties": {
+    "$ref": "#/$defs/identifier"
+  },
+  "$defs": {
+    "identifier": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["pattern", "validator", "confidence", "mask"],
+      "properties": {
+        "pattern": {
+          "description": "Regular expression in the subset shared by JavaScript, Ruby and Python.",
+          "type": "string",
+          "minLength": 1
+        },
+        "validator": {
+          "description": "Name of the function every implementation provides for this type.",
+          "enum": [
+            "card_checksum",
+            "clabe_checksum",
+            "curp_checksum",
+            "rfc_checksum"
+          ]
+        },
+        "confidence": {
+          "enum": ["high", "medium", "low"]
+        },
+        "allowlist": {
+          "description": "Values that match and validate but must never be masked.",
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "mask": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["partial"],
+          "properties": {
+            "partial": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["last"],
+              "properties": {
+                "last": {
+                  "description": "Characters the partial strategy leaves visible at the end.",
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 4
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "birthDateIdentifier": {
+      "$ref": "#/$defs/identifier",
+      "type": "object",
+      "properties": {
+        "mask": {
+          "type": "object",
+          "properties": {
+            "partial": {
+              "type": "object",
+              "properties": {
+                "last": {
+                  "type": "integer",
+                  "maximum": 2
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
