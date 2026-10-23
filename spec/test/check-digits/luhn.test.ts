@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { luhnCheckDigit } from '../../tools/check-digits/luhn.js';
+import { singleDigitChangesKeepingCheckDigit } from '../support/single-digit-changes.js';
 
 const STRIPE_TEST_CARD_NUMBERS = [
   '4242424242424242',
@@ -16,16 +17,6 @@ const STRIPE_TEST_CARD_NUMBERS = [
   '5062210000000009',
 ];
 
-const DECIMAL_DIGITS = '0123456789';
-
-function withDigitReplaced(
-  digits: string,
-  position: number,
-  replacement: string,
-): string {
-  return `${digits.slice(0, position)}${replacement}${digits.slice(position + 1)}`;
-}
-
 describe('luhnCheckDigit', () => {
   it.each(STRIPE_TEST_CARD_NUMBERS)(
     'reproduces the check digit of the Stripe test card %s',
@@ -40,16 +31,10 @@ describe('luhnCheckDigit', () => {
     'changes when any single digit of the body of %s changes',
     (cardNumber) => {
       const body = cardNumber.slice(0, -1);
-      const checkDigit = cardNumber.slice(-1);
 
-      const undetectedChanges = [...body].flatMap((original, position) =>
-        [...DECIMAL_DIGITS]
-          .filter((replacement) => replacement !== original)
-          .map((replacement) => withDigitReplaced(body, position, replacement))
-          .filter((altered) => luhnCheckDigit(altered) === checkDigit),
+      expect(singleDigitChangesKeepingCheckDigit(body, luhnCheckDigit)).toEqual(
+        [],
       );
-
-      expect(undetectedChanges).toEqual([]);
     },
   );
 });
