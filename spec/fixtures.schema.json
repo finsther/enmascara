@@ -4,10 +4,14 @@
   "description": "Valid values, invalid values and lookalikes that every implementation must classify the same way.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["type", "valid", "invalid", "lookalikes"],
+  "required": ["type", "verified", "valid", "invalid", "lookalikes"],
   "properties": {
     "type": {
       "enum": ["card", "clabe", "curp", "rfc"]
+    },
+    "verified": {
+      "description": "Whether the check digit algorithm is confirmed by an official source.",
+      "type": "boolean"
     },
     "valid": {
       "description": "Values that must be detected and masked.",

@@ -1,4 +1,5 @@
 type: clabe
+verified: true
 valid:
   - value: "002180032240946700"
     source: official

@@ -1,0 +1,185 @@
+type: curp
+verified: false
+valid:
+  - value: "BNQF380215XSRHNDD6"
+    source: generated
+  - value: "TRFR690616HMCYYCI4"
+    source: generated
+  - value: "KGRO311103MOCXNQF4"
+    source: generated
+  - value: "ZNAZ901102HBSJQL69"
+    source: generated
+  - value: "BZMY790706MJCDSZB5"
+    source: generated
+  - value: "QIAT340328MGTDKLA3"
+    source: generated
+  - value: "ROEF220808MPLVQFD5"
+    source: generated
+  - value: "HRRZ620326XTCWRH85"
+    source: generated
+  - value: "WEYZ420306MCMRNY34"
+    source: generated
+  - value: "TWWB760116XASTFVH9"
+    source: generated
+  - value: "CUCR871218HVZQYL94"
+    source: generated
+  - value: "RWDB121023MCLMWY84"
+    source: generated
+  - value: "BCPS980704XHGMTSH6"
+    source: generated
+  - value: "YQDS380828HPLTTH15"
+    source: generated
+  - value: "FOZA261126HTCQFPF5"
+    source: generated
+  - value: "FGIJ500424MJCVXP76"
+    source: generated
+  - value: "DMWQ670504MHGXTCF6"
+    source: generated
+  - value: "WNSI120603MTLRCW59"
+    source: generated
+  - value: "KROS430701MQRFNLD9"
+    source: generated
+  - value: "OLNZ100125MMCWHB07"
+    source: generated
+  - value: "PJCN190909MDGPBN39"
+    source: generated
+  - value: "HGBQ460122MHGRYPE1"
+    source: generated
+  - value: "TNWU901001HSPSDQ14"
+    source: generated
+  - value: "JFGH090118MYNWKDH5"
+    source: generated
+  - value: "XKLT960105XBSFXQC3"
+    source: generated
+  - value: "NGBP600618XCHKMT50"
+    source: generated
+  - value: "NMWY801207HMNTYLH5"
+    source: generated
+  - value: "QXYZ970805MSLQFBJ5"
+    source: generated
+  - value: "YQPH901213MCCHBQ51"
+    source: generated
+  - value: "ESPP750625HTLMVN56"
+    source: generated
+invalid:
+  - value: "XNKN390718MSPDZH20"
+    reason: check_digit
+  - value: "XHJS841002MDGSFL14"
+    reason: check_digit
+  - value: "XQVL390701XMSBSVI9"
+    reason: check_digit
+  - value: "PWOK650311MOCQFVJ2"
+    reason: check_digit
+  - value: "CDWQ611225HCSBRK83"
+    reason: check_digit
+  - value: "BOVF960716XMNMSD70"
+    reason: check_digit
+  - value: "SKEU680123XVZHBCB8"
+    reason: check_digit
+  - value: "MPSI100313XMCTVB31"
+    reason: check_digit
+  - value: "KVNM100616HDFZJF61"
+    reason: check_digit
+  - value: "KCZS980122MCSNNS86"
+    reason: check_digit
+  - value: "HKZE321422XTLZRS17"
+    reason: date
+  - value: "QSWQ171928HCSLHNC0"
+    reason: date
+  - value: "BPCY741506MCMWNN70"
+    reason: date
+  - value: "CZBK061723MASNFMG9"
+    reason: date
+  - value: "RZVV471418MYNVSHH7"
+    reason: date
+  - value: "MSTL631509MNEBVKB9"
+    reason: date
+  - value: "MYYA791322XJCDFT33"
+    reason: date
+  - value: "KEEE321407MGRCVPD3"
+    reason: date
+  - value: "YEWB781804MGTWMVI8"
+    reason: date
+  - value: "TVSU011603MYNZNYA3"
+    reason: date
+  - value: "NFFV280716MRAWXH12"
+    reason: state
+  - value: "VZDS311121MBZCKT87"
+    reason: state
+  - value: "VUSY330428XKMYNQ67"
+    reason: state
+  - value: "DJPS900808MRYFJGG3"
+    reason: state
+  - value: "DTAP250824MCPNYT58"
+    reason: state
+  - value: "FNDI080827XTJYBNG0"
+    reason: state
+  - value: "RXBQ060915MHYWYSD2"
+    reason: state
+  - value: "EQHW701228MAEQQG65"
+    reason: state
+  - value: "LXGT050116MWXSBBB3"
+    reason: state
+  - value: "XLUN250826HPKMFG41"
+    reason: state
+lookalikes:
+  - text: "user=GODE561231 login=ok"
+    reason: pattern
+    description: "Login name with the CURP letters and birth date only"
+  - text: 'form field curp="" status=empty'
+    reason: pattern
+    description: "Empty form field"
+  - text: "document=GODE561231HDF type=partial"
+    reason: pattern
+    description: "Partial document with state but no consonants"
+  - text: "ref=GODE561231HDFRRN0 source=import"
+    reason: pattern
+    description: "Reference one character short"
+  - text: "reference=GODE561231HDFRRN000 source=legacy"
+    reason: pattern
+    description: "Reference one character too long"
+  - text: "sku=ABCD123456HXYZW1 qty=2"
+    reason: pattern
+    description: "Stock keeping unit with a CURP-like start"
+  - text: "token=ZXCV991231QABCDE12 scope=read"
+    reason: pattern
+    description: "Token with Q where the sex goes"
+  - text: "plate=ABC1234 state=JAL"
+    reason: pattern
+    description: "Vehicle plate"
+  - text: "rfc=GODE561231GR8 regimen=605"
+    reason: pattern
+    description: "RFC of the same person"
+  - text: "hash=3F9AB2C4D5E6F708A1 algorithm=xxh64"
+    reason: pattern
+    description: "Hexadecimal hash"
+  - text: "voucher=PROM240230HDFRRN06 campaign=buen-fin"
+    reason: date
+    description: "Voucher dated February 30"
+  - text: "batch=ABCD000000HDFXXX01 status=queued"
+    reason: date
+    description: "Batch code with an all-zero date"
+  - text: "code=TEST991399MDFABC02 env=staging"
+    reason: date
+    description: "Test code with month 13"
+  - text: "serial=QWER201301XNEPPPA8 fw=2.1"
+    reason: date
+    description: "Serial number with month 13"
+  - text: "coupon=HOLA561231HZZRRN07 store=online"
+    reason: state
+    description: "Coupon with state code ZZ"
+  - text: "promo=ABCD561231MQQXYZ00 channel=email"
+    reason: state
+    description: "Promotion code with state code QQ"
+  - text: "lot=WXYZ100101HXXABC06 plant=MTY"
+    reason: state
+    description: "Lot code with state code XX"
+  - text: "sample=AAAA000101MAAAAAA1 env=test"
+    reason: check_digit
+    description: "Sample of repeated letters"
+  - text: "tag=PROD561231HDFRRNZ0 priority=low"
+    reason: date
+    description: "Tag with Z in the century position"
+  - text: "model=MODL800101HJCXYZ19 region=mx"
+    reason: check_digit
+    description: "Model code with a CURP shape"

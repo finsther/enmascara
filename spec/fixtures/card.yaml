@@ -1,4 +1,5 @@
 type: card
+verified: true
 valid:
   - value: "4242424242424242"
     source: official
