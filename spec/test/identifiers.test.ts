@@ -72,7 +72,7 @@ describe('schema.json', () => {
     ['clabe', 'clabe_checksum', 5],
     ['card', 'card_checksum', 5],
   ])(
-    'rejects a %s partial mask showing %s characters',
+    'rejects a %s partial mask checked by %s showing %i characters',
     (type, validator, visible) => {
       const definition = definitionShowingLast(validator, visible);
 
