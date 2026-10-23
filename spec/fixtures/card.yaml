@@ -1,0 +1,226 @@
+type: card
+valid:
+  - value: "4242424242424242"
+    source: official
+    reference: "https://docs.stripe.com/testing"
+  - value: "4000056655665556"
+    source: official
+    reference: "https://docs.stripe.com/testing"
+  - value: "4000000760000002"
+    source: official
+    reference: "https://docs.stripe.com/testing"
+  - value: "4000004840008001"
+    source: official
+    reference: "https://docs.stripe.com/testing"
+  - value: "4000000320000021"
+    source: official
+    reference: "https://docs.stripe.com/testing"
+  - value: "5555555555554444"
+    source: official
+    reference: "https://docs.stripe.com/testing"
+  - value: "2223003122003222"
+    source: official
+    reference: "https://docs.stripe.com/testing"
+  - value: "5200828282828210"
+    source: official
+    reference: "https://docs.stripe.com/testing"
+  - value: "5105105105105100"
+    source: official
+    reference: "https://docs.stripe.com/testing"
+  - value: "378282246310005"
+    source: official
+    reference: "https://docs.stripe.com/testing"
+  - value: "371449635398431"
+    source: official
+    reference: "https://docs.stripe.com/testing"
+  - value: "4562-3582-5134-4879"
+    source: generated
+  - value: "2557 2990 8865 4265"
+    source: generated
+  - value: "344658009509902"
+    source: generated
+  - value: "2526-5460-9497-1416"
+    source: generated
+  - value: "5596 3073 9413 4066"
+    source: generated
+  - value: "4222-6861-3282-2669"
+    source: generated
+  - value: "3762 821081 99423"
+    source: generated
+  - value: "5400-6788-0758-7173"
+    source: generated
+  - value: "4706-8625-9497-1360"
+    source: generated
+  - value: "3434-898538-00564"
+    source: generated
+  - value: "2592676619617399"
+    source: generated
+  - value: "4886259029161554"
+    source: generated
+  - value: "4335-8588-5733-7140"
+    source: generated
+  - value: "2559870548385738"
+    source: generated
+  - value: "4855 6946 5740 4156"
+    source: generated
+  - value: "5254591838200723"
+    source: generated
+  - value: "2406125505303926"
+    source: generated
+  - value: "3456-954773-75878"
+    source: generated
+  - value: "4610993122065832"
+    source: generated
+  - value: "2243 9347 9191 8520"
+    source: generated
+  - value: "5105 6663 4759 4757"
+    source: generated
+  - value: "4079 4767 5689 9910"
+    source: generated
+  - value: "3491 296529 43207"
+    source: generated
+  - value: "5317 5578 0474 5574"
+    source: generated
+  - value: "2474-3641-9220-7234"
+    source: generated
+  - value: "3706-614145-45963"
+    source: generated
+  - value: "2419 0678 9165 5854"
+    source: generated
+  - value: "2412 1893 9231 1865"
+    source: generated
+  - value: "2329 3845 4105 8291"
+    source: generated
+  - value: "4700987317689209"
+    source: generated
+invalid:
+  - value: "5104673148780318"
+    reason: check_digit
+  - value: "345415192161023"
+    reason: check_digit
+  - value: "2271974546862803"
+    reason: check_digit
+  - value: "5279966192567862"
+    reason: check_digit
+  - value: "5542420060971685"
+    reason: check_digit
+  - value: "4909030835146299"
+    reason: check_digit
+  - value: "374667627357479"
+    reason: check_digit
+  - value: "5307311424990776"
+    reason: check_digit
+  - value: "5123641113240754"
+    reason: check_digit
+  - value: "371807158478591"
+    reason: check_digit
+  - value: "370059490560257"
+    reason: check_digit
+  - value: "2636488219091896"
+    reason: check_digit
+  - value: "5403783344876935"
+    reason: check_digit
+  - value: "2677666951367929"
+    reason: check_digit
+  - value: "2370615017052844"
+    reason: check_digit
+  - value: "3767372513099903"
+    reason: network_prefix
+  - value: "429868060558965"
+    reason: network_prefix
+  - value: "3710121628793555"
+    reason: network_prefix
+  - value: "1895482705560015"
+    reason: network_prefix
+  - value: "3738475292412472"
+    reason: network_prefix
+  - value: "8950204841492755"
+    reason: network_prefix
+  - value: "8607387780691235"
+    reason: network_prefix
+  - value: "9787204051327961"
+    reason: network_prefix
+  - value: "3798304147867333"
+    reason: network_prefix
+  - value: "3771069696514286"
+    reason: network_prefix
+  - value: "495437318562598"
+    reason: network_prefix
+  - value: "1763822843010986"
+    reason: network_prefix
+  - value: "3764388699340492"
+    reason: network_prefix
+  - value: "450162226342114"
+    reason: network_prefix
+  - value: "3705265977612549"
+    reason: network_prefix
+lookalikes:
+  - text: "event=checkout ts=1729700000123 level=info"
+    reason: pattern
+    description: "Unix timestamp in milliseconds"
+  - text: "contact phone=5512345678 channel=sms"
+    reason: pattern
+    description: "Ten-digit phone number"
+  - text: "order=12345678 status=shipped"
+    reason: pattern
+    description: "Short order number"
+  - text: 'isbn=9780306406157 title="Guía rápida"'
+    reason: pattern
+    description: "ISBN-13"
+  - text: "request_id=550e8400-e29b-41d4-a716-446655440000"
+    reason: pattern
+    description: "UUID with dashes"
+  - text: "amount=1,234,567.89 currency=MXN"
+    reason: pattern
+    description: "Formatted amount"
+  - text: "created_at=2026-10-23 12:00:00 timezone=UTC"
+    reason: pattern
+    description: "Date and time"
+  - text: "client_ip=192.168.100.200 port=443"
+    reason: pattern
+    description: "IPv4 address"
+  - text: "clabe=002180032240946700 banco=BANAMEX"
+    reason: pattern
+    description: "CLABE, which is 18 digits"
+  - text: "device imei=490154203237518 os=android"
+    reason: network_prefix
+    description: "IMEI, which passes Luhn with 15 digits"
+  - text: "device imei=356938035643809 os=ios"
+    reason: network_prefix
+    description: "IMEI that starts like a JCB card"
+  - text: "modem imei=860012345678902 vendor=quectel"
+    reason: network_prefix
+    description: "IMEI of a cellular modem"
+  - text: "sim imei=990000123456784 carrier=telcel"
+    reason: network_prefix
+    description: "IMEI of a SIM device"
+  - text: "internal_id=1000000000000008 shard=3"
+    reason: network_prefix
+    description: "Internal identifier that passes Luhn"
+  - text: "loyalty_number=7000123456789010 tier=gold"
+    reason: network_prefix
+    description: "Loyalty program number that passes Luhn"
+  - text: "voucher=8000000000000011 balance=200.00"
+    reason: network_prefix
+    description: "Voucher number that passes Luhn"
+  - text: "gift_code=9900000000000002 store=online"
+    reason: network_prefix
+    description: "Gift code that passes Luhn"
+  - text: "order_number=4000123412341230 items=2"
+    reason: check_digit
+    description: "Order number with a Visa prefix"
+  - text: "typo card_last=4242 4242 4242 4241 retry=true"
+    reason: check_digit
+    description: "Visa test number with a typo in the last digit"
+  - text: "invoice=5100000000000000 due=2026-11-01"
+    reason: check_digit
+    description: "Invoice number with a Mastercard prefix"
+  - text: "reference=3700 000000 00000 note=amex-like"
+    reason: check_digit
+    description: "Reference grouped like American Express"
+  - text: "batch=2222222222222222 status=open"
+    reason: check_digit
+    description: "Batch number of repeated twos"
+  - text: "pos_terminal=5412 7534 1234 5670 lane=4"
+    reason: check_digit
+    description: "Terminal identifier grouped like a card"
