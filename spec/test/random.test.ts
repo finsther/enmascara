@@ -2,6 +2,10 @@ import { describe, expect, it } from 'vitest';
 import { createRandom } from '../tools/generator/random.js';
 
 const SEED = 42;
+const LARGEST_UNSIGNED_32_BIT_INTEGER = 2 ** 32 - 1;
+const MULBERRY32_OUTPUTS_FOR_SEED_42 = [
+  2581720956, 1925393290, 3661312704, 2876485805, 750819978,
+];
 const DRAWS = 1000;
 
 function drawIntegers(minimum: number, maximum: number): readonly number[] {
@@ -17,6 +21,16 @@ describe('createRandom', () => {
     expect(Array.from({ length: 5 }, () => first.integer(0, 9))).toEqual(
       Array.from({ length: 5 }, () => second.integer(0, 9)),
     );
+  });
+
+  it('matches a reference mulberry32 implementation', () => {
+    const random = createRandom(SEED);
+
+    const outputs = MULBERRY32_OUTPUTS_FOR_SEED_42.map(() =>
+      random.integer(0, LARGEST_UNSIGNED_32_BIT_INTEGER),
+    );
+
+    expect(outputs).toEqual(MULBERRY32_OUTPUTS_FOR_SEED_42);
   });
 
   it('draws integers between both bounds, reaching each bound', () => {
@@ -46,6 +60,8 @@ describe('createRandom', () => {
   });
 
   it('refuses to pick from an empty list', () => {
-    expect(() => createRandom(SEED).pick([])).toThrow(RangeError);
+    expect(() => createRandom(SEED).pick([])).toThrow(
+      new RangeError('Cannot pick from an empty list'),
+    );
   });
 });

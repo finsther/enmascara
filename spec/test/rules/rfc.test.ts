@@ -12,6 +12,9 @@ describe('rfcRejection', () => {
 
   it.each([
     ['GODE561331GR2', 'month 13'],
+    ['GODE560031GR5', 'month 00'],
+    ['GODE561200GR5', 'day 00'],
+    ['COR390015F47', 'month 00 in a persona moral'],
     ['GODE560431GR3', 'April 31'],
     ['GODE560230GR8', 'February 30'],
     ['GODE010229GR7', 'February 29 of a year that is never leap'],
