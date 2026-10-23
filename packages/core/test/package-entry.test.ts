@@ -9,7 +9,13 @@ interface ConditionalEntry {
   readonly default: string;
 }
 
-interface PackageManifest {
+type DependencyField =
+  | 'dependencies'
+  | 'peerDependencies'
+  | 'optionalDependencies';
+
+interface PackageManifest
+  extends Partial<Record<DependencyField, Readonly<Record<string, string>>>> {
   readonly exports: {
     readonly '.': {
       readonly import: ConditionalEntry;
@@ -65,4 +71,14 @@ describe('enmascara package entry', () => {
       expect(existsSync(join(packageDirectory, entry.types))).toBe(true);
     },
   );
+});
+
+describe('enmascara package manifest', () => {
+  it.each([
+    'dependencies',
+    'peerDependencies',
+    'optionalDependencies',
+  ] as const)('declares no %s', (field) => {
+    expect(readPackageManifest()[field]).toBeUndefined();
+  });
 });
