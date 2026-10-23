@@ -2,9 +2,12 @@ import { describe, expect, it } from 'vitest';
 import { rfcRejection } from '../../tools/rules/rfc.js';
 
 describe('rfcRejection', () => {
-  it.each(['GODE561231GR8', 'COR391215F4A'])('accepts %s', (rfc) => {
-    expect(rfcRejection(rfc)).toBe(undefined);
-  });
+  it.each(['GODE561231GR8', 'COR391215F4A', 'GODE560101GR3'])(
+    'accepts %s',
+    (rfc) => {
+      expect(rfcRejection(rfc)).toBe(undefined);
+    },
+  );
 
   it('rejects a wrong check digit', () => {
     expect(rfcRejection('GODE561231GR9')).toBe('check_digit');
