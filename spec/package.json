@@ -3,7 +3,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "verify-curps": "node scripts/verify-curps.ts"
   },
   "devDependencies": {
     "ajv": "8.20.0",
