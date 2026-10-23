@@ -2,6 +2,11 @@ import { curpCheckDigit } from '../check-digits/curp.ts';
 import { isValidCompactDateInCentury } from './calendar.ts';
 import type { Rejection } from './rejection.ts';
 
+export type CurpRejection = Extract<
+  Rejection,
+  'check_digit' | 'date' | 'state'
+>;
+
 const DATE_START = 4;
 const DATE_END = 10;
 const STATE_START = 11;
@@ -32,7 +37,7 @@ function hasValidBirthDate(curp: string): boolean {
 export function curpRejection(
   curp: string,
   stateCodes: ReadonlySet<string>,
-): Rejection | undefined {
+): CurpRejection | undefined {
   if (curpCheckDigit(curp.slice(0, -1)) !== curp.slice(-1)) {
     return 'check_digit';
   }
