@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { rfcRejection } from '../../tools/rules/rfc.js';
+import { rfcRejection } from '../../tools/rules/rfc.ts';
 
 describe('rfcRejection', () => {
   it.each(['GODE561231GR8', 'COR391215F4A', 'GODE560101GR3'])(

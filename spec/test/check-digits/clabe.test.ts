@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { clabeCheckDigit } from '../../tools/check-digits/clabe.js';
-import { singleDigitChangesKeepingCheckDigit } from '../support/single-digit-changes.js';
+import { clabeCheckDigit } from '../../tools/check-digits/clabe.ts';
+import { singleDigitChangesKeepingCheckDigit } from '../support/single-digit-changes.ts';
 
 const BANXICO_CIRCULAR_12_2018_EXAMPLE = '002180032240946700';
 

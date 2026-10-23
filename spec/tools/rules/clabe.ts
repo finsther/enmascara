@@ -1,5 +1,5 @@
-import { clabeCheckDigit } from '../check-digits/clabe.js';
-import type { Rejection } from './rejection.js';
+import { clabeCheckDigit } from '../check-digits/clabe.ts';
+import type { Rejection } from './rejection.ts';
 
 const BANK_CODE_LENGTH = 3;
 

@@ -3,9 +3,9 @@ import {
   type GeneratedValues,
   generateFixtureValues,
   MINIMUM_FIXTURES_PER_GROUP,
-} from '../tools/generator/index.js';
-import type { IdentifierType } from '../tools/rules/index.js';
-import { readBankCodes, valueProblems } from './support/fixture-problems.js';
+} from '../tools/generator/index.ts';
+import type { IdentifierType } from '../tools/rules/index.ts';
+import { readBankCodes, valueProblems } from './support/fixture-problems.ts';
 
 const GENERATED_TYPES: readonly IdentifierType[] = ['card', 'clabe', 'rfc'];
 const REJECTIONS_BY_TYPE: Readonly<Record<string, readonly string[]>> = {

@@ -1,7 +1,7 @@
-import { cardRejection } from './card.js';
-import { clabeRejection } from './clabe.js';
-import type { Rejection } from './rejection.js';
-import { rfcRejection } from './rfc.js';
+import { cardRejection } from './card.ts';
+import { clabeRejection } from './clabe.ts';
+import type { Rejection } from './rejection.ts';
+import { rfcRejection } from './rfc.ts';
 
 export type IdentifierType = 'card' | 'clabe' | 'rfc';
 

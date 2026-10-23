@@ -1,12 +1,12 @@
-import { clabeCheckDigit } from '../check-digits/clabe.js';
+import { clabeCheckDigit } from '../check-digits/clabe.ts';
 import {
   FIXTURES_PER_REJECTION,
   type GeneratedValues,
   type InvalidValue,
   MINIMUM_FIXTURES_PER_GROUP,
-} from './fixture-values.js';
-import type { Random } from './random.js';
-import { uniqueValues } from './unique.js';
+} from './fixture-values.ts';
+import type { Random } from './random.ts';
+import { uniqueValues } from './unique.ts';
 
 const DIGITS = '0123456789';
 const BANK_CODE_LENGTH = 3;

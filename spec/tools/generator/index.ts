@@ -1,15 +1,15 @@
-import type { IdentifierType } from '../rules/index.js';
-import { generateCardValues } from './card.js';
-import { generateClabeValues } from './clabe.js';
-import type { GeneratedValues } from './fixture-values.js';
-import { createRandom, type Random } from './random.js';
-import { generateRfcValues } from './rfc.js';
+import type { IdentifierType } from '../rules/index.ts';
+import { generateCardValues } from './card.ts';
+import { generateClabeValues } from './clabe.ts';
+import type { GeneratedValues } from './fixture-values.ts';
+import { createRandom, type Random } from './random.ts';
+import { generateRfcValues } from './rfc.ts';
 
 export {
   type GeneratedValues,
   type InvalidValue,
   MINIMUM_FIXTURES_PER_GROUP,
-} from './fixture-values.js';
+} from './fixture-values.ts';
 
 export interface GeneratorOptions {
   readonly seed: number;

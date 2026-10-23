@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { rfcCheckDigit } from '../../tools/check-digits/rfc.js';
+import { rfcCheckDigit } from '../../tools/check-digits/rfc.ts';
 
 const SAT_ALGORITHM_EXAMPLE = 'GODE561231GR8';
 const ANEXO_20_EXAMPLES = ['COR391215F4A', 'PAL7202161U0', 'XEXX010101000'];

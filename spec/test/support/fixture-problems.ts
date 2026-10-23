@@ -1,6 +1,6 @@
-import type { InvalidValue } from '../../tools/generator/index.js';
-import { type IdentifierType, rejectionFor } from '../../tools/rules/index.js';
-import { readYamlDocument } from './spec-files.js';
+import type { InvalidValue } from '../../tools/generator/index.ts';
+import { type IdentifierType, rejectionFor } from '../../tools/rules/index.ts';
+import { readYamlDocument } from './spec-files.ts';
 
 interface IdentifierDefinition {
   readonly pattern: string;

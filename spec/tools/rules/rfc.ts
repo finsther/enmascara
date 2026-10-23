@@ -1,6 +1,6 @@
-import { rfcCheckDigit } from '../check-digits/rfc.js';
-import { isValidCompactDateInAnyCentury } from './calendar.js';
-import type { Rejection } from './rejection.js';
+import { rfcCheckDigit } from '../check-digits/rfc.ts';
+import { isValidCompactDateInAnyCentury } from './calendar.ts';
+import type { Rejection } from './rejection.ts';
 
 const DATE_START_FROM_END = -9;
 const DATE_END_FROM_END = -3;

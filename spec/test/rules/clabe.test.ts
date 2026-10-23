@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { clabeRejection } from '../../tools/rules/clabe.js';
+import { clabeRejection } from '../../tools/rules/clabe.ts';
 
 const KNOWN_BANK_CODES: ReadonlySet<string> = new Set(['002']);
 

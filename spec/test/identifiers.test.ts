@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { parse } from 'yaml';
-import { compileSchema, readYamlDocument } from './support/spec-files.js';
+import { compileSchema, readYamlDocument } from './support/spec-files.ts';
 
 const MVP_IDENTIFIER_TYPES = ['card', 'clabe', 'curp', 'rfc'] as const;
 

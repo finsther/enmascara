@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { luhnCheckDigit } from '../../tools/check-digits/luhn.js';
-import { singleDigitChangesKeepingCheckDigit } from '../support/single-digit-changes.js';
+import { luhnCheckDigit } from '../../tools/check-digits/luhn.ts';
+import { singleDigitChangesKeepingCheckDigit } from '../support/single-digit-changes.ts';
 
 const STRIPE_TEST_CARD_NUMBERS = [
   '4242424242424242',

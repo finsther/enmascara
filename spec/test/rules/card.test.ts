@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cardRejection } from '../../tools/rules/card.js';
+import { cardRejection } from '../../tools/rules/card.ts';
 
 describe('cardRejection', () => {
   it.each([

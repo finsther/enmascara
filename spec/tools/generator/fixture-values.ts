@@ -1,4 +1,4 @@
-import type { Rejection } from '../rules/rejection.js';
+import type { Rejection } from '../rules/rejection.ts';
 
 export interface InvalidValue {
   readonly value: string;

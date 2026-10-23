@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createRandom } from '../tools/generator/random.js';
+import { createRandom } from '../tools/generator/random.ts';
 
 const SEED = 42;
 const LARGEST_UNSIGNED_32_BIT_INTEGER = 2 ** 32 - 1;

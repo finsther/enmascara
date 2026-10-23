@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { compileSchema, readYamlDocument } from './support/spec-files.js';
+import { compileSchema, readYamlDocument } from './support/spec-files.ts';
 
 const MEXICAN_STATE_COUNT = 32;
 const BORN_ABROAD_CODE = 'NE';

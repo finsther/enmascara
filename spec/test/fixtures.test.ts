@@ -2,14 +2,14 @@ import { describe, expect, it } from 'vitest';
 import {
   type InvalidValue,
   MINIMUM_FIXTURES_PER_GROUP,
-} from '../tools/generator/index.js';
-import type { IdentifierType } from '../tools/rules/index.js';
+} from '../tools/generator/index.ts';
+import type { IdentifierType } from '../tools/rules/index.ts';
 import {
   type Lookalike,
   lookalikeProblems,
   valueProblems,
-} from './support/fixture-problems.js';
-import { compileSchema, readYamlDocument } from './support/spec-files.js';
+} from './support/fixture-problems.ts';
+import { compileSchema, readYamlDocument } from './support/spec-files.ts';
 
 const FIXTURE_TYPES: readonly IdentifierType[] = ['card', 'clabe', 'rfc'];
 

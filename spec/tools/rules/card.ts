@@ -1,5 +1,5 @@
-import { luhnCheckDigit } from '../check-digits/luhn.js';
-import type { Rejection } from './rejection.js';
+import { luhnCheckDigit } from '../check-digits/luhn.ts';
+import type { Rejection } from './rejection.ts';
 
 const CARD_NUMBER_SEPARATORS = /[ -]/g;
 
