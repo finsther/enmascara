@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import type { InvalidValue } from '../tools/generator/index.js';
+import {
+  type InvalidValue,
+  MINIMUM_FIXTURES_PER_GROUP,
+} from '../tools/generator/index.js';
 import type { IdentifierType } from '../tools/rules/index.js';
 import {
   type Lookalike,
@@ -63,7 +66,10 @@ describe.each(FIXTURE_TYPES)('fixtures/%s.yaml', (type) => {
 describe('fixtures.schema.json', () => {
   it('rejects a file with fewer than the minimum fixtures', () => {
     const fixtures = readFixtures('clabe');
-    const shortened = { ...fixtures, valid: fixtures.valid.slice(1) };
+    const shortened = {
+      ...fixtures,
+      valid: fixtures.valid.slice(0, MINIMUM_FIXTURES_PER_GROUP - 1),
+    };
 
     expect(validateFixtures(shortened)).toBe(false);
   });
