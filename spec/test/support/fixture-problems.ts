@@ -22,13 +22,22 @@ interface BankCatalog {
   readonly banks: readonly { readonly code: string }[];
 }
 
+interface StateCatalog {
+  readonly states: readonly { readonly code: string }[];
+}
+
 export function readBankCodes(): ReadonlySet<string> {
   const catalog = readYamlDocument('banks.yaml') as BankCatalog;
   return new Set(catalog.banks.map((bank) => bank.code));
 }
 
+function readStateCodes(): ReadonlySet<string> {
+  const catalog = readYamlDocument('states.yaml') as StateCatalog;
+  return new Set(catalog.states.map((state) => state.code));
+}
+
 export function readCatalogs(): ReferenceCatalogs {
-  return { bankCodes: readBankCodes() };
+  return { bankCodes: readBankCodes(), stateCodes: readStateCodes() };
 }
 
 function readDefinition(type: IdentifierType): IdentifierDefinition {

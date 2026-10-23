@@ -4,13 +4,22 @@ import {
   generateFixtureValues,
   MINIMUM_FIXTURES_PER_GROUP,
 } from '../tools/generator/index.ts';
-import type { IdentifierType } from '../tools/rules/index.ts';
-import { readBankCodes, valueProblems } from './support/fixture-problems.ts';
+import type {
+  IdentifierType,
+  ReferenceCatalogs,
+} from '../tools/rules/index.ts';
+import { readCatalogs, valueProblems } from './support/fixture-problems.ts';
 
-const GENERATED_TYPES: readonly IdentifierType[] = ['card', 'clabe', 'rfc'];
+const GENERATED_TYPES: readonly IdentifierType[] = [
+  'card',
+  'clabe',
+  'curp',
+  'rfc',
+];
 const REJECTIONS_BY_TYPE: Readonly<Record<string, readonly string[]>> = {
   card: ['check_digit', 'network_prefix'],
   clabe: ['bank_code', 'check_digit'],
+  curp: ['check_digit', 'date', 'state'],
   rfc: ['check_digit', 'date'],
 };
 const SEED = 20261023;
@@ -19,13 +28,21 @@ const OTHER_SEED = 7;
 function generate(
   type: IdentifierType,
   seed: number,
-  bankCodes: ReadonlySet<string> = readBankCodes(),
+  catalogs: ReferenceCatalogs = readCatalogs(),
 ): GeneratedValues {
-  return generateFixtureValues(type, { seed, bankCodes });
+  return generateFixtureValues(type, { seed, catalogs });
 }
 
 function reversed(values: ReadonlySet<string>): ReadonlySet<string> {
   return new Set([...values].reverse());
+}
+
+function reversedCatalogs(): ReferenceCatalogs {
+  const catalogs = readCatalogs();
+  return {
+    bankCodes: reversed(catalogs.bankCodes),
+    stateCodes: reversed(catalogs.stateCodes),
+  };
 }
 
 describe.each(GENERATED_TYPES)('generateFixtureValues for %s', (type) => {
@@ -56,8 +73,8 @@ describe.each(GENERATED_TYPES)('generateFixtureValues for %s', (type) => {
     expect(generate(type, SEED)).toEqual(generate(type, SEED));
   });
 
-  it('produces the same values whatever the order of the bank codes', () => {
-    expect(generate(type, SEED, reversed(readBankCodes()))).toEqual(
+  it('produces the same values whatever the order of the catalogs', () => {
+    expect(generate(type, SEED, reversedCatalogs())).toEqual(
       generate(type, SEED),
     );
   });
