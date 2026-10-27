@@ -1,0 +1,200 @@
+type: rfc
+verified: true
+valid:
+  - value: "GODE561231GR8"
+    source: official
+    reference: "https://www.mariovaldez.net/files/IFAI%200610100135506%20065%20Algoritmo%20para%20generar%20el%20RFC%20con%20homoclave%20para%20personas%20fisicas%20y%20morales.pdf"
+  - value: "COR391215F4A"
+    source: official
+    reference: "http://omawww.sat.gob.mx/tramitesyservicios/Paginas/documentos/Anexo_20_Guia_de_llenado_CFDI.pdf"
+  - value: "PAL7202161U0"
+    source: official
+    reference: "http://omawww.sat.gob.mx/tramitesyservicios/Paginas/documentos/Anexo_20_Guia_de_llenado_CFDI.pdf"
+  - value: "BNQF111027I59"
+    source: generated
+  - value: "XTRF320613YW2"
+    source: generated
+  - value: "PPKG061125EV5"
+    source: generated
+  - value: "OAÑ48081527A"
+    source: generated
+  - value: "BÑN300811T73"
+    source: generated
+  - value: "ZEEI440220RC9"
+    source: generated
+  - value: "SYS990604686"
+    source: generated
+  - value: "VPDK220419PN4"
+    source: generated
+  - value: "YVQG970826V73"
+    source: generated
+  - value: "FRQM931212LR5"
+    source: generated
+  - value: "EWV871102XD8"
+    source: generated
+  - value: "Q&L081003S62"
+    source: generated
+  - value: "KNX310825VKA"
+    source: generated
+  - value: "DUN361002NR7"
+    source: generated
+  - value: "KÑI650805QA2"
+    source: generated
+  - value: "QFOZ151123L66"
+    source: generated
+  - value: "JJO530708IT5"
+    source: generated
+  - value: "NYS8607225M1"
+    source: generated
+  - value: "PLWI870902547"
+    source: generated
+  - value: "&LS440802QF4"
+    source: generated
+  - value: "NKHA000605JZ1"
+    source: generated
+  - value: "UHA101110D47"
+    source: generated
+  - value: "JCK520309A96"
+    source: generated
+  - value: "PNV050814BQ0"
+    source: generated
+  - value: "XAFS511122YW4"
+    source: generated
+  - value: "XKD36030823A"
+    source: generated
+  - value: "&EY5012127H3"
+    source: generated
+  - value: "GBPP130415QK0"
+    source: generated
+  - value: "WGB950621XEA"
+    source: generated
+  - value: "NQXY770821L63"
+    source: generated
+invalid:
+  - value: "CGYQ031227EA0"
+    reason: check_digit
+  - value: "QQV5707131F8"
+    reason: check_digit
+  - value: "KOK490715H4A"
+    reason: check_digit
+  - value: "IKT2703033M7"
+    reason: check_digit
+  - value: "KNMN160505E16"
+    reason: check_digit
+  - value: "QQY010922EN3"
+    reason: check_digit
+  - value: "UZIZ590805VM6"
+    reason: check_digit
+  - value: "RJVK870301JT2"
+    reason: check_digit
+  - value: "CAZ960726QE1"
+    reason: check_digit
+  - value: "YGAC7809231H7"
+    reason: check_digit
+  - value: "LVTU710504AB4"
+    reason: check_digit
+  - value: "CNEZ840714284"
+    reason: check_digit
+  - value: "ONT380228L99"
+    reason: check_digit
+  - value: "&ÑR0104114X2"
+    reason: check_digit
+  - value: "WQEZ5208208E2"
+    reason: check_digit
+  - value: "CYTE041318SP8"
+    reason: date
+  - value: "ZBKB001903GM5"
+    reason: date
+  - value: "NRS251921P90"
+    reason: date
+  - value: "UMST7715162S5"
+    reason: date
+  - value: "&AW341404S49"
+    reason: date
+  - value: "GIRK1618119F1"
+    reason: date
+  - value: "JVJP071816S55"
+    reason: date
+  - value: "WUW551813S1A"
+    reason: date
+  - value: "SAH081727870"
+    reason: date
+  - value: "CZB8314166U8"
+    reason: date
+  - value: "ISIB971421EH7"
+    reason: date
+  - value: "VZO411823ML9"
+    reason: date
+  - value: "DJPS671916B8A"
+    reason: date
+  - value: "AQH611704GI8"
+    reason: date
+  - value: "RTJT9318173Y2"
+    reason: date
+lookalikes:
+  - text: "user=GODE login=ok attempts=1"
+    reason: pattern
+    description: "Login name that is only the four RFC letters"
+  - text: "sku=ABC12345 qty=3 warehouse=GDL"
+    reason: pattern
+    description: "Stock keeping unit"
+  - text: "part_number=ABCD1234567 revision=B"
+    reason: pattern
+    description: "Part number with seven digits"
+  - text: "plate=ABC1234 state=JAL"
+    reason: pattern
+    description: "Vehicle plate"
+  - text: "flight=AM0400 gate=12 boarding=07:30"
+    reason: pattern
+    description: "Flight number"
+  - text: "token=ABCD991231 scope=read"
+    reason: pattern
+    description: "Token with letters and a date but no homoclave"
+  - text: "ref=GODE5612310 source=import"
+    reason: pattern
+    description: "Reference with one extra digit"
+  - text: "hash=3F9AB2C4D5E6F708 algorithm=xxh64"
+    reason: pattern
+    description: "Hexadecimal hash"
+  - text: "color=FF00AA00 theme=dark"
+    reason: pattern
+    description: "Hexadecimal color"
+  - text: "locale=ES-MX currency=MXN"
+    reason: pattern
+    description: "Locale code"
+  - text: "CFDI receptor_rfc=XAXX010101000 uso=S01 publico_general=true"
+    reason: allowlist
+    description: "Generic RFC for the general public"
+  - text: "CFDI receptor_rfc=XEXX010101000 residencia_fiscal=USA"
+    reason: allowlist
+    description: "Generic RFC for foreign residents"
+  - text: "lote=PROD991399AA9 planta=MTY"
+    reason: date
+    description: "Lot code with month 13"
+  - text: "serial=ZXCV201345QW4 fw=2.1"
+    reason: date
+    description: "Serial number with month 13"
+  - text: "code=ABCD991231XY9 kind=promo"
+    reason: check_digit
+    description: "Promotion code with an RFC shape"
+  - text: "voucher=PROM240230AB0 campaign=buen-fin"
+    reason: date
+    description: "Voucher dated February 30"
+  - text: "container=MSCU1234567 vessel=atlantic"
+    reason: pattern
+    description: "Shipping container number"
+  - text: "promo=HOLA251301AA1 expires=never"
+    reason: date
+    description: "Promotion code with month 13"
+  - text: "batch=WXYZ000000ZZ0 status=queued"
+    reason: check_digit
+    description: "Batch code of zeros"
+  - text: "model=ABC010101AAA region=mx"
+    reason: check_digit
+    description: "Model code with an RFC shape"
+  - text: "tag=QWER123456ZZZ priority=low"
+    reason: pattern
+    description: "Tag with a non-numeric check character"
+  - text: "sample=TEST000000000 env=staging"
+    reason: date
+    description: "Test value with an all-zero date"

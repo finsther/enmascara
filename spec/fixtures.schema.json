@@ -1,0 +1,120 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Enmascara fixtures",
+  "description": "Valid values, invalid values and lookalikes that every implementation must classify the same way.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["type", "verified", "valid", "invalid", "lookalikes"],
+  "properties": {
+    "type": {
+      "enum": ["card", "clabe", "curp", "rfc"]
+    },
+    "verified": {
+      "description": "Whether the check digit algorithm is confirmed by an official source.",
+      "type": "boolean"
+    },
+    "valid": {
+      "description": "Values that must be detected and masked.",
+      "type": "array",
+      "minItems": 30,
+      "items": {
+        "$ref": "#/$defs/validValue"
+      }
+    },
+    "invalid": {
+      "description": "Values that match the pattern but fail validation for one stated reason.",
+      "type": "array",
+      "minItems": 30,
+      "items": {
+        "$ref": "#/$defs/invalidValue"
+      }
+    },
+    "lookalikes": {
+      "description": "Realistic log lines that contain no identifier of this type.",
+      "type": "array",
+      "minItems": 20,
+      "items": {
+        "$ref": "#/$defs/lookalike"
+      }
+    }
+  },
+  "$defs": {
+    "rejection": {
+      "enum": ["check_digit", "bank_code", "state", "date", "network_prefix"]
+    },
+    "validValue": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["value", "source"],
+      "properties": {
+        "value": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source": {
+          "enum": ["generated", "official"]
+        },
+        "reference": {
+          "type": "string",
+          "format": "uri"
+        }
+      },
+      "if": {
+        "type": "object",
+        "properties": {
+          "source": {
+            "const": "official"
+          }
+        }
+      },
+      "then": {
+        "type": "object",
+        "properties": {
+          "reference": {
+            "type": "string"
+          }
+        },
+        "required": ["reference"]
+      }
+    },
+    "invalidValue": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["value", "reason"],
+      "properties": {
+        "value": {
+          "type": "string",
+          "minLength": 1
+        },
+        "reason": {
+          "$ref": "#/$defs/rejection"
+        }
+      }
+    },
+    "lookalike": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["text", "reason", "description"],
+      "properties": {
+        "text": {
+          "type": "string",
+          "minLength": 1
+        },
+        "reason": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/rejection"
+            },
+            {
+              "enum": ["pattern", "allowlist"]
+            }
+          ]
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,200 @@
+type: clabe
+verified: true
+valid:
+  - value: "002180032240946700"
+    source: official
+    reference: "https://www.banxico.org.mx/marco-normativo/normativa-emitida-por-el-banco-de-mexico/circular-12-2018/%7BA6023AE0-8135-44ED-04DA-2068117ED5FD%7D.pdf"
+  - value: "044890562358251341"
+    source: generated
+  - value: "156876266529908864"
+    source: generated
+  - value: "620426530384658000"
+    source: generated
+  - value: "901509901363654601"
+    source: generated
+  - value: "903497141791139639"
+    source: generated
+  - value: "001739413406686516"
+    source: generated
+  - value: "113226861328226696"
+    source: generated
+  - value: "634998628210819941"
+    source: generated
+  - value: "112664930067880751"
+    source: generated
+  - value: "706717799307068627"
+    source: generated
+  - value: "616949713681018347"
+    source: generated
+  - value: "720985380056917479"
+    source: generated
+  - value: "653766196173937728"
+    source: generated
+  - value: "062886259029161551"
+    source: generated
+  - value: "132332233585885739"
+    source: generated
+  - value: "147714866168705481"
+    source: generated
+  - value: "136857310460855699"
+    source: generated
+  - value: "151657404154304259"
+    source: generated
+  - value: "157591838200720536"
+    source: generated
+  - value: "036512550530392203"
+    source: generated
+  - value: "646475695477375872"
+    source: generated
+  - value: "727017061099312205"
+    source: generated
+  - value: "638583170059347915"
+    source: generated
+  - value: "732185241252056663"
+    source: generated
+  - value: "140475947548982076"
+    source: generated
+  - value: "729476756899913512"
+    source: generated
+  - value: "009991296529432057"
+    source: generated
+  - value: "616482175578047458"
+    source: generated
+  - value: "170748535364192201"
+    source: generated
+  - value: "685239236806614142"
+    source: generated
+invalid:
+  - value: "166459684306067896"
+    reason: check_digit
+  - value: "634558536356189399"
+    reason: check_digit
+  - value: "136118668206384542"
+    reason: check_digit
+  - value: "009582959461700985"
+    reason: check_digit
+  - value: "150176892001824040"
+    reason: check_digit
+  - value: "670314878031423488"
+    reason: check_digit
+  - value: "158151921610243192"
+    reason: check_digit
+  - value: "902745468628033910"
+    reason: check_digit
+  - value: "688996619256786193"
+    reason: check_digit
+  - value: "151242420060971681"
+    reason: check_digit
+  - value: "160760909030835140"
+    reason: check_digit
+  - value: "128976988466762730"
+    reason: check_digit
+  - value: "688477463407311426"
+    reason: check_digit
+  - value: "732907771173236416"
+    reason: check_digit
+  - value: "106324075383691804"
+    reason: check_digit
+  - value: "478598786700594902"
+    reason: bank_code
+  - value: "560252182548821902"
+    reason: bank_code
+  - value: "918917373037833440"
+    reason: bank_code
+  - value: "876939795666695139"
+    reason: bank_code
+  - value: "679231226615017051"
+    reason: bank_code
+  - value: "284597567372513097"
+    reason: bank_code
+  - value: "990466298680605585"
+    reason: bank_code
+  - value: "963951012162879353"
+    reason: bank_code
+  - value: "526089548270556008"
+    reason: bank_code
+  - value: "165338475292412473"
+    reason: bank_code
+  - value: "752950204841492754"
+    reason: bank_code
+  - value: "607387780691239325"
+    reason: bank_code
+  - value: "787204051327961631"
+    reason: bank_code
+  - value: "983041478673349576"
+    reason: bank_code
+  - value: "969651428009954371"
+    reason: bank_code
+lookalikes:
+  - text: "order_id=48213 status=paid amount=1500.00"
+    reason: pattern
+    description: "Short order number"
+  - text: "event=login ts=1729700000123 level=info"
+    reason: pattern
+    description: "Unix timestamp in milliseconds"
+  - text: "contact phone=+525512345678 channel=whatsapp"
+    reason: pattern
+    description: "Mexican phone number with country code"
+  - text: "shipment tracking=794612345678 carrier=fedex"
+    reason: pattern
+    description: "FedEx tracking number"
+  - text: 'isbn=9780306406157 title="Manual de usuario"'
+    reason: pattern
+    description: "ISBN-13"
+  - text: "request_id=550e8400-e29b-41d4-a716-446655440000"
+    reason: pattern
+    description: "UUID with dashes"
+  - text: "account=1234567890 bank=002 type=debito"
+    reason: pattern
+    description: "Ten-digit bank account next to a bank code"
+  - text: "snowflake_id=1234567890123456789 channel=general"
+    reason: pattern
+    description: "Nineteen-digit Snowflake ID, longer than a CLABE"
+  - text: "folio_fiscal=12345678901234567890 serie=A"
+    reason: pattern
+    description: "Twenty-digit fiscal folio, longer than a CLABE"
+  - text: "amount_cents=000000000000150000 currency=MXN"
+    reason: check_digit
+    description: "Amount in cents padded to 18 digits"
+  - text: "message_id=118423949102342144 author=bot"
+    reason: bank_code
+    description: "Eighteen-digit Snowflake message ID"
+  - text: "trace_id=731824469120577536 span=12"
+    reason: check_digit
+    description: "Eighteen-digit trace ID"
+  - text: "invoice_number=202610230000004521 status=issued"
+    reason: check_digit
+    description: "Invoice number built from a date and a sequence"
+  - text: "batch=100000000000000001 records=500"
+    reason: check_digit
+    description: "Batch sequence number"
+  - text: "reference=999999999999999999 type=test"
+    reason: check_digit
+    description: "Placeholder reference of repeated nines"
+  - text: "nonce=555555555555555555 attempt=2"
+    reason: bank_code
+    description: "Nonce of repeated fives"
+  - text: "cart_id=987654321098765432 items=3"
+    reason: check_digit
+    description: "Cart identifier"
+  - text: "device_serial=640123987456102938 model=pos"
+    reason: bank_code
+    description: "Device serial number"
+  - text: "session=123123123123123123 ttl=3600"
+    reason: bank_code
+    description: "Session identifier of a repeated block"
+  - text: "record_id=700000000000000000 table=ledger"
+    reason: check_digit
+    description: "Ledger record identifier"
+  - text: "spei_tracking=002000000000000003 note=cut-off"
+    reason: check_digit
+    description: "SPEI tracking key that starts with a bank code"
+  - text: "legacy_id=118000000000000004 migrated=true"
+    reason: check_digit
+    description: "Legacy identifier"
+  - text: "external_ref=999180032240946703 provider=sandbox"
+    reason: bank_code
+    description: "Sandbox reference with an unknown bank code"
+  - text: "id_payment=135000000000000008 retry=1"
+    reason: check_digit
+    description: "Payment identifier that starts with a development bank code"

@@ -11,8 +11,8 @@
     "related": false
   },
   "checkers": ["typescript"],
-  "tsconfigFile": "packages/core/tsconfig.json",
-  "mutate": ["packages/core/src/**/*.ts"],
+  "tsconfigFile": "tsconfig.json",
+  "mutate": ["packages/core/src/**/*.ts", "spec/tools/**/*.ts"],
   "incremental": true,
   "incrementalFile": "reports/stryker-incremental.json",
   "reporters": ["clear-text", "progress", "html"],
