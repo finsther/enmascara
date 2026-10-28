@@ -5,6 +5,17 @@ interface BankCatalog {
   readonly banks: readonly { readonly code: string }[];
 }
 
+interface CardNetworkCatalog {
+  readonly networks: readonly {
+    readonly name: string;
+    readonly lengths: readonly number[];
+    readonly prefixes: readonly {
+      readonly from: string;
+      readonly to: string;
+    }[];
+  }[];
+}
+
 const SPEC_DIRECTORY = new URL('../', import.meta.url);
 const CORE_CATALOGS_DIRECTORY = new URL(
   '../packages/core/src/catalogs/',
@@ -27,4 +38,14 @@ const banks = readSpecYaml('banks.yaml') as BankCatalog;
 writeCoreCatalog(
   'bank-codes.json',
   banks.banks.map((bank) => bank.code).sort(),
+);
+
+const cardNetworks = readSpecYaml('card-networks.yaml') as CardNetworkCatalog;
+writeCoreCatalog(
+  'card-networks.json',
+  cardNetworks.networks.map((network) => ({
+    name: network.name,
+    lengths: network.lengths,
+    prefixes: network.prefixes,
+  })),
 );
