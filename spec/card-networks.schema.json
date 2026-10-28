@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Card networks",
+  "description": "Prefix ranges and lengths of the card networks whose numbers are masked.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["networks"],
+  "properties": {
+    "networks": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/network"
+      }
+    }
+  },
+  "$defs": {
+    "network": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "verified",
+        "sources",
+        "retrieved",
+        "lengths",
+        "prefixes"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "verified": {
+          "description": "Whether official card network publications state these ranges and lengths.",
+          "type": "boolean"
+        },
+        "sources": {
+          "description": "Publications the ranges and lengths were copied from.",
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "format": "uri"
+          }
+        },
+        "retrieved": {
+          "description": "Date the source was consulted.",
+          "type": "string",
+          "format": "date"
+        },
+        "lengths": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "integer",
+            "minimum": 12,
+            "maximum": 19
+          }
+        },
+        "prefixes": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/prefixRange"
+          }
+        }
+      }
+    },
+    "prefixRange": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["from", "to"],
+      "properties": {
+        "from": {
+          "type": "string",
+          "pattern": "^[0-9]{1,8}$"
+        },
+        "to": {
+          "type": "string",
+          "pattern": "^[0-9]{1,8}$"
+        }
+      }
+    }
+  }
+}
