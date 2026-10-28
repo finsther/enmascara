@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { cardRejection } from '../../tools/rules/card.ts';
+import { readCatalogs } from '../support/fixture-problems.ts';
+
+const { cardNetworks } = readCatalogs();
 
 describe('cardRejection', () => {
   it.each([
@@ -11,12 +14,16 @@ describe('cardRejection', () => {
     ['2720999999999996', 'Mastercard 2-series upper bound'],
     ['378282246310005', 'American Express'],
     ['3782 822463 10005', 'American Express in 4-6-5 groups'],
+    ['6011111111111117', 'Discover'],
+    ['3056930009020004', 'Diners Club International'],
+    ['3566002020360505', 'JCB'],
+    ['6200000000000005', 'UnionPay'],
   ])('accepts %s (%s)', (cardNumber) => {
-    expect(cardRejection(cardNumber)).toBe(undefined);
+    expect(cardRejection(cardNumber, cardNetworks)).toBe(undefined);
   });
 
   it('rejects a wrong check digit', () => {
-    expect(cardRejection('4242424242424241')).toBe('check_digit');
+    expect(cardRejection('4242424242424241', cardNetworks)).toBe('check_digit');
   });
 
   it.each([
@@ -28,6 +35,6 @@ describe('cardRejection', () => {
     ['3400000000000000', 'American Express prefix with 16 digits'],
     ['400000000000006', 'Visa prefix with 15 digits'],
   ])('rejects %s for its network prefix, %s', (cardNumber) => {
-    expect(cardRejection(cardNumber)).toBe('network_prefix');
+    expect(cardRejection(cardNumber, cardNetworks)).toBe('network_prefix');
   });
 });

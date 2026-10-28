@@ -1,4 +1,5 @@
 import type { InvalidValue } from '../../tools/generator/index.ts';
+import type { CardNetwork } from '../../tools/rules/card.ts';
 import {
   type IdentifierType,
   type ReferenceCatalogs,
@@ -26,6 +27,10 @@ interface StateCatalog {
   readonly states: readonly { readonly code: string }[];
 }
 
+interface CardNetworkCatalog {
+  readonly networks: readonly CardNetwork[];
+}
+
 export function readBankCodes(): ReadonlySet<string> {
   const catalog = readYamlDocument('banks.yaml') as BankCatalog;
   return new Set(catalog.banks.map((bank) => bank.code));
@@ -36,8 +41,17 @@ function readStateCodes(): ReadonlySet<string> {
   return new Set(catalog.states.map((state) => state.code));
 }
 
+function readCardNetworks(): readonly CardNetwork[] {
+  const catalog = readYamlDocument('card-networks.yaml') as CardNetworkCatalog;
+  return catalog.networks;
+}
+
 export function readCatalogs(): ReferenceCatalogs {
-  return { bankCodes: readBankCodes(), stateCodes: readStateCodes() };
+  return {
+    bankCodes: readBankCodes(),
+    stateCodes: readStateCodes(),
+    cardNetworks: readCardNetworks(),
+  };
 }
 
 function readDefinition(type: IdentifierType): IdentifierDefinition {
