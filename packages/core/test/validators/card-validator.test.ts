@@ -55,6 +55,7 @@ describe('createCardValidator', () => {
     ['abcd efgh ijkl mnop', 'letters'],
     ['４２４２424242424242', 'full-width digits'],
     ['4242.4242.4242.4242', 'dots as separators'],
+    ['4\t00056655665556', 'a tab where a zero goes, which Number reads as 0'],
   ])('rejects %j (%s)', (candidate) => {
     expect(validator.isValid(candidate)).toBe(false);
   });
