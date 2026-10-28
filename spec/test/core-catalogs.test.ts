@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { readBankCodes } from './support/fixture-problems.ts';
+import { readBankCodes, readCatalogs } from './support/fixture-problems.ts';
 
 const CORE_CATALOGS_DIRECTORY = new URL(
   '../../packages/core/src/catalogs/',
@@ -18,5 +18,15 @@ describe('core catalogs', () => {
     expect(readCoreCatalog('bank-codes.json')).toEqual(
       [...readBankCodes()].sort(),
     );
+  });
+
+  it('lists the card networks of spec/card-networks.yaml without their sources', () => {
+    const networks = readCatalogs().cardNetworks.map((network) => ({
+      name: network.name,
+      lengths: network.lengths,
+      prefixes: network.prefixes,
+    }));
+
+    expect(readCoreCatalog('card-networks.json')).toEqual(networks);
   });
 });
