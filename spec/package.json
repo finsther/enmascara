@@ -4,7 +4,8 @@
   "type": "module",
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "verify-curps": "node scripts/verify-curps.ts"
+    "verify-curps": "node scripts/verify-curps.ts",
+    "generate-core-catalogs": "node scripts/generate-core-catalogs.ts"
   },
   "devDependencies": {
     "ajv": "8.20.0",
