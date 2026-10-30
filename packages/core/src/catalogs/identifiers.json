@@ -1,6 +1,6 @@
 {
   "clabe": {
-    "pattern": "(?<![0-9])[0-9]{18}(?![0-9])",
+    "pattern": "(?<![0-9])[0-9](?:[ -]?[0-9]){17}(?![0-9])",
     "validator": "clabe_checksum",
     "confidence": "high",
     "mask": {
