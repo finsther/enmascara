@@ -1,8 +1,14 @@
 import bankCodes from '../catalogs/bank-codes.json' with { type: 'json' };
 import cardNetworks from '../catalogs/card-networks.json' with { type: 'json' };
+import identifiers from '../catalogs/identifiers.json' with { type: 'json' };
+import stateCodes from '../catalogs/state-codes.json' with { type: 'json' };
+import { createAllowlistedValidator } from './allowlisted-validator.js';
+import { type AllowlistDefinition, allowlistFor } from './allowlists.js';
 import { createCardValidator } from './card-validator.js';
 import { createClabeValidator } from './clabe-validator.js';
+import { createCurpValidator } from './curp-validator.js';
 import type { IdentifierValidator } from './identifier-validator.js';
+import { createRfcValidator } from './rfc-validator.js';
 
 export class UnknownValidatorError extends Error {
   override readonly name = 'UnknownValidatorError';
@@ -16,6 +22,9 @@ export interface ValidatorRegistry {
   names(): readonly string[];
   validatorFor(validatorName: string): IdentifierValidator;
 }
+
+const IDENTIFIER_DEFINITIONS: readonly AllowlistDefinition[] =
+  Object.values(identifiers);
 
 function createValidatorRegistry(
   validators: ReadonlyMap<string, IdentifierValidator>,
@@ -33,10 +42,21 @@ function createValidatorRegistry(
 }
 
 export function createDefaultValidatorRegistry(): ValidatorRegistry {
+  const validators: ReadonlyMap<string, IdentifierValidator> = new Map([
+    ['clabe_checksum', createClabeValidator(new Set(bankCodes))],
+    ['card_checksum', createCardValidator(cardNetworks)],
+    ['curp_checksum', createCurpValidator(new Set(stateCodes))],
+    ['rfc_checksum', createRfcValidator()],
+  ]);
   return createValidatorRegistry(
-    new Map([
-      ['clabe_checksum', createClabeValidator(new Set(bankCodes))],
-      ['card_checksum', createCardValidator(cardNetworks)],
-    ]),
+    new Map(
+      [...validators].map(([validatorName, validator]) => [
+        validatorName,
+        createAllowlistedValidator(
+          validator,
+          allowlistFor(validatorName, IDENTIFIER_DEFINITIONS),
+        ),
+      ]),
+    ),
   );
 }

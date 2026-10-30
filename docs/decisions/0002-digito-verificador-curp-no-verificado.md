@@ -31,7 +31,7 @@ pbpaste | pnpm --silent --filter enmascara-spec verify-curps
 - El script lee de la entrada estándar, así que las CURP no pasan por ningún archivo del repositorio. Solo imprime números de línea y resultados.
 - Nunca guardes CURP reales en el repositorio, en issues ni en mensajes de commit.
 - **Si todas coinciden:** registra aquí cuántas se probaron y en qué fecha, sin las CURP, y cambia el estado a "verificado con datos reales". `verified` sigue en `false` mientras no haya una fuente oficial.
-- **Si alguna no coincide:** el algoritmo está mal o incompleto. Reabre esta decisión antes de la historia 4.
+- **Si alguna no coincide:** el algoritmo está mal o incompleto. Reabre esta decisión y la regla de rechazo de la historia 4.
 
 ## Verificaciones con datos reales
 
@@ -44,4 +44,4 @@ Tres coincidencias de tres son evidencia a favor del algoritmo, pero la muestra 
 ## Consecuencias
 
 - Si el algoritmo estuviera mal, una CURP real con un dígito verificador distinto al calculado no se enmascararía. Mientras no se verifique, el riesgo es un falso negativo, que es justo lo que Enmascara debe evitar.
-- La historia 4 (validadores de CURP y RFC) debe decidir qué hacer cuando una CURP cumple el patrón, la fecha y la entidad pero falla el dígito. Una opción es tratarla con confianza media en lugar de descartarla.
+- **Decisión de la historia 4 (2026-10-30):** una CURP que cumple el patrón, la fecha y la entidad pero falla el dígito verificador se rechaza, igual que en los demás tipos. Tratarla como confianza media daría el mismo resultado en este sprint, porque el motor solo enmascara confianza alta, y le quitaría a la mayoría de los lookalikes de `curp.yaml` la regla que los descarta. Se puede revisar en el Sprint 3, cuando exista la puntuación por contexto.

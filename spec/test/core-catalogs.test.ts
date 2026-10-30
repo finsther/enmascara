@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { readBankCodes, readCatalogs } from './support/fixture-problems.ts';
+import { readYamlDocument } from './support/spec-files.ts';
 
 const CORE_CATALOGS_DIRECTORY = new URL(
   '../../packages/core/src/catalogs/',
@@ -17,6 +18,18 @@ describe('core catalogs', () => {
   it('lists exactly the bank codes of spec/banks.yaml, sorted', () => {
     expect(readCoreCatalog('bank-codes.json')).toEqual(
       [...readBankCodes()].sort(),
+    );
+  });
+
+  it('lists exactly the state codes of spec/states.yaml, sorted', () => {
+    expect(readCoreCatalog('state-codes.json')).toEqual(
+      [...readCatalogs().stateCodes].sort(),
+    );
+  });
+
+  it('copies spec/identifiers.yaml as it is', () => {
+    expect(readCoreCatalog('identifiers.json')).toEqual(
+      readYamlDocument('identifiers.yaml'),
     );
   });
 
