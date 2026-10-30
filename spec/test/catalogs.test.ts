@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { compileSchema, readYamlDocument } from './support/spec-files.ts';
 
 const MEXICAN_STATE_COUNT = 32;
+const CARD_LENGTHS_THE_PATTERN_DETECTS = [15, 16];
 const BORN_ABROAD_CODE = 'NE';
 
 interface CatalogEntry {
@@ -17,6 +18,21 @@ interface StateCatalog {
   readonly states: readonly CatalogEntry[];
 }
 
+interface PrefixRange {
+  readonly from: string;
+  readonly to: string;
+}
+
+interface CardNetwork {
+  readonly name: string;
+  readonly lengths: readonly number[];
+  readonly prefixes: readonly PrefixRange[];
+}
+
+interface CardNetworkCatalog {
+  readonly networks: readonly CardNetwork[];
+}
+
 function codesOf(entries: readonly CatalogEntry[]): readonly string[] {
   return entries.map((entry) => entry.code);
 }
@@ -28,6 +44,7 @@ function duplicatesIn(values: readonly string[]): readonly string[] {
 describe.each([
   ['banks.yaml', 'banks.schema.json'],
   ['states.yaml', 'states.schema.json'],
+  ['card-networks.yaml', 'card-networks.schema.json'],
 ])('%s', (catalogFile, schemaFile) => {
   it(`conforms to ${schemaFile}`, () => {
     const validateCatalog = compileSchema(schemaFile);
@@ -58,6 +75,41 @@ describe('states.yaml', () => {
 
     expect(codes).toContain(BORN_ABROAD_CODE);
     expect(codes).toHaveLength(MEXICAN_STATE_COUNT + 1);
+  });
+});
+
+describe('card-networks.yaml', () => {
+  const catalog = readYamlDocument('card-networks.yaml') as CardNetworkCatalog;
+  const ranges = catalog.networks.flatMap((network) => network.prefixes);
+
+  it('names every network once', () => {
+    expect(
+      duplicatesIn(catalog.networks.map((network) => network.name)),
+    ).toEqual([]);
+  });
+
+  it('writes both ends of every prefix range with the same number of digits', () => {
+    expect(
+      ranges.filter((range) => range.from.length !== range.to.length),
+    ).toEqual([]);
+  });
+
+  it('starts no prefix range after its end', () => {
+    expect(
+      ranges.filter((range) => Number(range.from) > Number(range.to)),
+    ).toEqual([]);
+  });
+
+  it('declares only card lengths the card pattern detects', () => {
+    const lengths = new Set(
+      catalog.networks.flatMap((network) => network.lengths),
+    );
+
+    expect(
+      [...lengths].filter(
+        (length) => !CARD_LENGTHS_THE_PATTERN_DETECTS.includes(length),
+      ),
+    ).toEqual([]);
   });
 });
 

@@ -1,0 +1,64 @@
+networks:
+  - name: "Visa"
+    verified: true
+    sources:
+      - "https://usa.visa.com/content/dam/VCOM/global/partner-with-us/documents/na-enca-visa-numerics-faq-merchants.pdf"
+    retrieved: "2026-10-28"
+    lengths: [16]
+    prefixes:
+      - { from: "4", to: "4" }
+  - name: "Mastercard"
+    verified: true
+    sources:
+      - "https://www.mastercard.com/content/dam/mccom/shared/business/support/rules-pdfs/mastercard-rules.pdf"
+    retrieved: "2026-10-23"
+    lengths: [16]
+    prefixes:
+      - { from: "22210000", to: "27209999" }
+      - { from: "51000000", to: "55999999" }
+  - name: "American Express"
+    verified: true
+    sources:
+      - "https://americanexpress.com/content/dam/amex/uk/staticassets/merchant/pdf/support-and-services/American_Express_Getting_Started_Guide.pdf"
+    retrieved: "2026-10-23"
+    lengths: [15]
+    prefixes:
+      - { from: "34", to: "34" }
+      - { from: "37", to: "37" }
+  - name: "Discover, Diners Club International and PULSE"
+    verified: true
+    sources:
+      - "https://www.discoverglobalnetwork.com/content/dam/discover/en_us/dgn/docs/IPP-VAR-Enabler-Compliance.pdf"
+    retrieved: "2026-10-28"
+    lengths: [16]
+    prefixes:
+      - { from: "30000000", to: "30599999" }
+      - { from: "30950000", to: "30959999" }
+      - { from: "36000000", to: "36999999" }
+      - { from: "38000000", to: "39999999" }
+      - { from: "60110000", to: "60119999" }
+      - { from: "64400000", to: "65899999" }
+  - name: "JCB"
+    verified: true
+    sources:
+      - "https://www.discoverglobalnetwork.com/content/dam/discover/en_us/dgn/docs/IPP-VAR-Enabler-Compliance.pdf"
+      - "https://www.jcb.co.jp/ordercard/special/number.html"
+    retrieved: "2026-10-28"
+    lengths: [16]
+    prefixes:
+      - { from: "30880000", to: "30949999" }
+      - { from: "30960000", to: "31029999" }
+      - { from: "31120000", to: "31209999" }
+      - { from: "31580000", to: "31599999" }
+      - { from: "33370000", to: "33499999" }
+      - { from: "35280000", to: "35899999" }
+  - name: "UnionPay"
+    verified: true
+    sources:
+      - "https://m.unionpayintl.com/cardholderServ/globalCard/en/global_3/10040352?type=3"
+      - "https://www.discoverglobalnetwork.com/content/dam/discover/en_us/dgn/docs/IPP-VAR-Enabler-Compliance.pdf"
+    retrieved: "2026-10-28"
+    lengths: [16]
+    prefixes:
+      - { from: "62", to: "62" }
+      - { from: "81000000", to: "81719999" }

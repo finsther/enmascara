@@ -42,6 +42,7 @@ function reversedCatalogs(): ReferenceCatalogs {
   return {
     bankCodes: reversed(catalogs.bankCodes),
     stateCodes: reversed(catalogs.stateCodes),
+    cardNetworks: [...catalogs.cardNetworks].reverse(),
   };
 }
 

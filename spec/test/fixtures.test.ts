@@ -3,10 +3,12 @@ import {
   type InvalidValue,
   MINIMUM_FIXTURES_PER_GROUP,
 } from '../tools/generator/index.ts';
+import { cardRejection } from '../tools/rules/card.ts';
 import type { IdentifierType } from '../tools/rules/index.ts';
 import {
   type Lookalike,
   lookalikeProblems,
+  readCatalogs,
   valueProblems,
 } from './support/fixture-problems.ts';
 import { compileSchema, readYamlDocument } from './support/spec-files.ts';
@@ -67,6 +69,24 @@ describe.each(FIXTURE_TYPES)('fixtures/%s.yaml', (type) => {
 
   it('explains why every lookalike is not the identifier', () => {
     expect(lookalikeProblems(type, fixtures.lookalikes)).toEqual([]);
+  });
+});
+
+describe('fixtures/card.yaml', () => {
+  it('includes an official value for every card network', () => {
+    const officialValues = readFixtures('card')
+      .valid.filter((fixture) => fixture.source === 'official')
+      .map((fixture) => fixture.value);
+    const networksWithoutOfficialValue = readCatalogs()
+      .cardNetworks.filter(
+        (network) =>
+          !officialValues.some(
+            (value) => cardRejection(value, [network]) === undefined,
+          ),
+      )
+      .map((network) => network.name);
+
+    expect(networksWithoutOfficialValue).toEqual([]);
   });
 });
 

@@ -10,9 +10,11 @@
 | `schema.json` | JSON Schema de `identifiers.yaml` |
 | `banks.yaml`, `banks.schema.json` | Catálogo de códigos de banco para CLABE |
 | `states.yaml`, `states.schema.json` | Catálogo de entidades para CURP |
+| `card-networks.yaml`, `card-networks.schema.json` | Redes de tarjeta con sus prefijos, longitudes y fuentes |
 | `fixtures/*.yaml`, `fixtures.schema.json` | Valores válidos, inválidos y lookalikes por tipo |
 | `tools/` | Implementación de referencia que verifica los fixtures; no se publica |
 | `scripts/verify-curps.ts` | Prueba local del algoritmo de CURP con CURP reales |
+| `scripts/generate-core-catalogs.ts` | Genera los catálogos JSON que empaqueta el núcleo |
 
 ## `identifiers.yaml`
 
@@ -45,7 +47,7 @@ Cada validador revisa en este orden y se detiene en el primer fallo:
 | CLABE | `check_digit` (pesos 3, 7, 1 módulo 10), `bank_code` (los 3 primeros dígitos en `banks.yaml`) |
 | CURP | `check_digit` (pesos 18 a 2 módulo 10), `date` (la posición 17 fija el siglo: dígito hasta 1999, A a J desde 2000), `state` (posiciones 12 y 13 en `states.yaml`) |
 | RFC | `check_digit` (pesos 13 a 2 módulo 11; las morales se rellenan con un espacio al inicio), `date` (la fecha debe existir en el siglo XX o en el XXI) |
-| Tarjeta | `check_digit` (Luhn, ignorando espacios y guiones), `network_prefix` (Visa 4 con 16 dígitos, Mastercard 51 a 55 y 2221 a 2720 con 16, American Express 34 y 37 con 15) |
+| Tarjeta | `check_digit` (Luhn, ignorando espacios y guiones), `network_prefix` (prefijo y longitud de alguna red de `card-networks.yaml`) |
 
 ## Fixtures
 
@@ -76,3 +78,13 @@ pbpaste | pnpm --silent --filter enmascara-spec verify-curps
 ```
 
 Termina con código 1 si algún dígito verificador no coincide.
+
+## Catálogos del núcleo
+
+El paquete `enmascara` no puede leer YAML en tiempo de ejecución. Después de cambiar `banks.yaml` o `card-networks.yaml`, regenera las copias JSON del núcleo:
+
+```bash
+pnpm --filter enmascara-spec generate-core-catalogs
+```
+
+Si alguna copia deja de coincidir con la spec, `test/core-catalogs.test.ts` falla.

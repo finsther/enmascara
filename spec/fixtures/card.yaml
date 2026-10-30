@@ -34,126 +34,147 @@ valid:
   - value: "371449635398431"
     source: official
     reference: "https://docs.stripe.com/testing"
-  - value: "4562-3582-5134-4879"
+  - value: "6011111111111117"
+    source: official
+    reference: "https://docs.stripe.com/testing"
+  - value: "6011000990139424"
+    source: official
+    reference: "https://docs.stripe.com/testing"
+  - value: "6011981111111113"
+    source: official
+    reference: "https://docs.stripe.com/testing"
+  - value: "3056930009020004"
+    source: official
+    reference: "https://docs.stripe.com/testing"
+  - value: "3566002020360505"
+    source: official
+    reference: "https://docs.stripe.com/testing"
+  - value: "6200000000000005"
+    source: official
+    reference: "https://docs.stripe.com/testing"
+  - value: "6200000000000047"
+    source: official
+    reference: "https://docs.stripe.com/testing"
+  - value: "3756-235825-13442"
     source: generated
-  - value: "2557 2990 8865 4265"
+  - value: "8114-4123-6529-9083"
     source: generated
-  - value: "344658009509902"
+  - value: "5303 7934 6530 3843"
     source: generated
-  - value: "2526-5460-9497-1416"
+  - value: "5141119295099011"
     source: generated
-  - value: "5596 3073 9413 4066"
+  - value: "2533907846094975"
     source: generated
-  - value: "4222-6861-3282-2669"
+  - value: "3092-9047-1139-6305"
     source: generated
-  - value: "3762 821081 99423"
+  - value: "3557 4638 3406 6863"
     source: generated
-  - value: "5400-6788-0758-7173"
+  - value: "3095226468613287"
     source: generated
-  - value: "4706-8625-9497-1360"
+  - value: "6011662769986283"
     source: generated
-  - value: "3434-898538-00564"
+  - value: "3052-8658-9942-6644"
     source: generated
-  - value: "2592676619617399"
+  - value: "3000-6014-7880-7588"
     source: generated
-  - value: "4886259029161554"
+  - value: "3793-070686-25948"
     source: generated
-  - value: "4335-8588-5733-7140"
+  - value: "6281018348985382"
     source: generated
-  - value: "2559870548385738"
+  - value: "3717-476766-19619"
     source: generated
-  - value: "4855 6946 5740 4156"
+  - value: "3546 7439 7218 8627"
     source: generated
-  - value: "5254591838200723"
+  - value: "4161 5523 3223 3581"
     source: generated
-  - value: "2406125505303926"
+  - value: "8139-2466-3371-4866"
     source: generated
-  - value: "3456-954773-75878"
+  - value: "3705 483857 31047"
     source: generated
-  - value: "4610993122065832"
+  - value: "376946574041547"
     source: generated
-  - value: "2243 9347 9191 8520"
+  - value: "344591838200726"
     source: generated
-  - value: "5105 6663 4759 4757"
+  - value: "2271714312550530"
     source: generated
-  - value: "4079 4767 5689 9910"
+  - value: "3545 7283 0647 5692"
     source: generated
-  - value: "3491 296529 43207"
+  - value: "3346-9172-7587-9015"
     source: generated
-  - value: "5317 5578 0474 5574"
+  - value: "3799-312206-58313"
     source: generated
-  - value: "2474-3641-9220-7234"
+  - value: "343479191852419"
     source: generated
-  - value: "3706-614145-45963"
+  - value: "2242-2232-6663-4759"
     source: generated
-  - value: "2419 0678 9165 5854"
+  - value: "3343 8802 8982 0792"
     source: generated
-  - value: "2412 1893 9231 1865"
+  - value: "8153 0875 6899 9135"
     source: generated
-  - value: "2329 3845 4105 8291"
+  - value: "3412 965294 32058"
     source: generated
-  - value: "4700987317689209"
+  - value: "3544-0086-7557-8041"
     source: generated
 invalid:
-  - value: "5104673148780318"
+  - value: "3159069648535360"
     reason: check_digit
-  - value: "345415192161023"
+  - value: "370723923680665"
     reason: check_digit
-  - value: "2271974546862803"
+  - value: "3090889845968439"
     reason: check_digit
-  - value: "5279966192567862"
+  - value: "6289165585363569"
     reason: check_digit
-  - value: "5542420060971685"
+  - value: "8123522323118667"
     reason: check_digit
-  - value: "4909030835146299"
+  - value: "3039910884541050"
     reason: check_digit
-  - value: "374667627357479"
+  - value: "6520414946170099"
     reason: check_digit
-  - value: "5307311424990776"
+  - value: "6268920018240465"
     reason: check_digit
-  - value: "5123641113240754"
+  - value: "3091110178031427"
     reason: check_digit
-  - value: "371807158478591"
+  - value: "3560709415192164"
     reason: check_digit
-  - value: "370059490560257"
+  - value: "341979745468620"
     reason: check_digit
-  - value: "2636488219091896"
+  - value: "341379966192562"
     reason: check_digit
-  - value: "5403783344876935"
+  - value: "4042424200609717"
     reason: check_digit
-  - value: "2677666951367929"
+  - value: "8135382560909032"
     reason: check_digit
-  - value: "2370615017052844"
+  - value: "6246297698846672"
     reason: check_digit
-  - value: "3767372513099903"
+  - value: "1574774634073112"
     reason: network_prefix
-  - value: "429868060558965"
+  - value: "3499077711732362"
     reason: network_prefix
-  - value: "3710121628793555"
+  - value: "7132407538369185"
     reason: network_prefix
-  - value: "1895482705560015"
+  - value: "1584785987867007"
     reason: network_prefix
-  - value: "3738475292412472"
+  - value: "3790560252182549"
     reason: network_prefix
-  - value: "8950204841492755"
+  - value: "9190918917373031"
     reason: network_prefix
-  - value: "8607387780691235"
+  - value: "9344876939795661"
     reason: network_prefix
-  - value: "9787204051327961"
+  - value: "451367923122664"
     reason: network_prefix
-  - value: "3798304147867333"
+  - value: "1170528459756732"
     reason: network_prefix
-  - value: "3771069696514286"
+  - value: "3413099904662985"
     reason: network_prefix
-  - value: "495437318562598"
+  - value: "9605589639510124"
     reason: network_prefix
-  - value: "1763822843010986"
+  - value: "1879355260895481"
     reason: network_prefix
-  - value: "3764388699340492"
+  - value: "1556001653384754"
     reason: network_prefix
-  - value: "450162226342114"
+  - value: "1412477529502049"
     reason: network_prefix
-  - value: "3705265977612549"
+  - value: "9492756206073879"
     reason: network_prefix
 lookalikes:
   - text: "event=checkout ts=1729700000123 level=info"
