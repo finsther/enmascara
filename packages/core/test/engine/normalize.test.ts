@@ -67,4 +67,10 @@ describe('toOriginalSpan', () => {
 
     expect(toOriginalSpan(normalized, 0, 2)).toEqual({ start: 0, end: 3 });
   });
+
+  it('refuses a span outside the normalized text', () => {
+    const normalized = normalizeForDetection('ab');
+
+    expect(() => toOriginalSpan(normalized, 0, 9)).toThrow(RangeError);
+  });
 });
