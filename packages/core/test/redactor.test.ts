@@ -50,14 +50,20 @@ describe('createRedactor', () => {
   });
 
   it.each([
-    [{ detect: ['nss'] }, 'an unknown identifier type'],
-    [{ detect: [] }, 'no identifier types'],
-    [{ maxInputLength: 0 }, 'a maximum length of zero'],
-    [{ maxInputLength: 1.5 }, 'a fractional maximum length'],
-    [{ maxDepth: -1 }, 'a negative maximum depth'],
-  ])('refuses %j (%s)', (options: unknown, _reason: string) => {
+    [{ detect: ['nss'] }, 'detect lists an unknown identifier type'],
+    [{ detect: [] }, 'detect must list at least one identifier type'],
+    [{ maxInputLength: 0 }, 'maxInputLength must be a positive integer'],
+    [{ maxInputLength: 1.5 }, 'maxInputLength must be a positive integer'],
+    [{ maxDepth: -1 }, 'maxDepth must be a positive integer'],
+  ])('refuses %j with %j', (options: unknown, message: string) => {
     expect(() => createRedactor(options as RedactorOptions)).toThrow(
-      InvalidConfigurationError,
+      new InvalidConfigurationError(message),
+    );
+  });
+
+  it('names its configuration error', () => {
+    expect(new InvalidConfigurationError('any').name).toBe(
+      'InvalidConfigurationError',
     );
   });
 });

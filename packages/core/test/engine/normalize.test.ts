@@ -71,6 +71,8 @@ describe('toOriginalSpan', () => {
   it('refuses a span outside the normalized text', () => {
     const normalized = normalizeForDetection('ab');
 
-    expect(() => toOriginalSpan(normalized, 0, 9)).toThrow(RangeError);
+    expect(() => toOriginalSpan(normalized, 0, 9)).toThrow(
+      new RangeError('The span lies outside the normalized text'),
+    );
   });
 });

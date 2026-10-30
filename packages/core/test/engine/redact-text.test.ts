@@ -69,6 +69,25 @@ describe('redactText', () => {
     ).toBe('SPEI a [CLABE] [REDACTED]');
   });
 
+  it('leaves to the excess an identifier that starts right at the limit', () => {
+    const limited = createEngine(options({ maxInputLength: 7 }));
+
+    expect(redactText('SPEI a 002180032240946700', limited)).toBe(
+      'SPEI a [REDACTED]',
+    );
+  });
+
+  it('adds no excess mask when the last finding reaches the end of the text', () => {
+    const limited = createEngine(options({ maxInputLength: 40 }));
+
+    expect(
+      redactText(
+        '4242424242424242 4242424242424242 002180032240946700',
+        limited,
+      ),
+    ).toBe('[CARD] [CARD] [CLABE]');
+  });
+
   it('leaks no part of an identifier cut by the maximum length', () => {
     const limited = createEngine(options({ maxInputLength: 15 }));
 

@@ -83,4 +83,13 @@ describe('detect', () => {
 
     expect(findings.map(({ type }) => type)).toEqual(['long']);
   });
+
+  it('keeps two findings that touch without overlapping', () => {
+    const findings = detect(normalizeForDetection('12345678'), [FOUR_DIGITS]);
+
+    expect(findings.map(({ start, end }) => [start, end])).toEqual([
+      [0, 4],
+      [4, 8],
+    ]);
+  });
 });
