@@ -11,6 +11,13 @@ describe('createClabeValidator', () => {
     expect(validator.isValid(BANXICO_EXAMPLE)).toBe(true);
   });
 
+  it.each(['002-180-03224094670-0', '002 180 03224094670 0'])(
+    'accepts the Banxico example written as %s',
+    (candidate) => {
+      expect(validator.isValid(candidate)).toBe(true);
+    },
+  );
+
   it('rejects a wrong check digit', () => {
     expect(validator.isValid('002180032240946701')).toBe(false);
   });
