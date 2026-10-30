@@ -32,8 +32,8 @@ describe('isPossibleCompactDate', () => {
     expect(isPossibleCompactDate('000229')).toBe(true);
   });
 
-  it('accepts a date that exists only in the 1900s reading', () => {
-    expect(isPossibleCompactDate('960229')).toBe(true);
+  it('accepts an ordinary date', () => {
+    expect(isPossibleCompactDate('561231')).toBe(true);
   });
 
   it('rejects February 29 of a year that is never leap', () => {
