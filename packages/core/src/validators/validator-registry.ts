@@ -3,6 +3,7 @@ import cardNetworks from '../catalogs/card-networks.json' with { type: 'json' };
 import identifiers from '../catalogs/identifiers.json' with { type: 'json' };
 import stateCodes from '../catalogs/state-codes.json' with { type: 'json' };
 import { createAllowlistedValidator } from './allowlisted-validator.js';
+import { type AllowlistDefinition, allowlistFor } from './allowlists.js';
 import { createCardValidator } from './card-validator.js';
 import { createClabeValidator } from './clabe-validator.js';
 import { createCurpValidator } from './curp-validator.js';
@@ -22,21 +23,8 @@ export interface ValidatorRegistry {
   validatorFor(validatorName: string): IdentifierValidator;
 }
 
-interface IdentifierDefinition {
-  readonly validator: string;
-  readonly allowlist?: readonly string[];
-}
-
-const IDENTIFIER_DEFINITIONS: readonly IdentifierDefinition[] =
+const IDENTIFIER_DEFINITIONS: readonly AllowlistDefinition[] =
   Object.values(identifiers);
-
-function allowlistFor(validatorName: string): ReadonlySet<string> {
-  return new Set(
-    IDENTIFIER_DEFINITIONS.filter(
-      (definition) => definition.validator === validatorName,
-    ).flatMap((definition) => definition.allowlist ?? []),
-  );
-}
 
 function createValidatorRegistry(
   validators: ReadonlyMap<string, IdentifierValidator>,
@@ -64,7 +52,10 @@ export function createDefaultValidatorRegistry(): ValidatorRegistry {
     new Map(
       [...validators].map(([validatorName, validator]) => [
         validatorName,
-        createAllowlistedValidator(validator, allowlistFor(validatorName)),
+        createAllowlistedValidator(
+          validator,
+          allowlistFor(validatorName, IDENTIFIER_DEFINITIONS),
+        ),
       ]),
     ),
   );
