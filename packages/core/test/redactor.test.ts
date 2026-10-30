@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { createRedactor, InvalidConfigurationError } from '../src/index.js';
+import {
+  createRedactor,
+  InvalidConfigurationError,
+  type RedactorOptions,
+} from '../src/index.js';
 
 const LINE_WITH_EVERY_TYPE =
   'clabe=002180032240946700 curp=GODE561231HDFRRN00 rfc=GODE561231GR8 card=4242424242424242';
@@ -51,8 +55,8 @@ describe('createRedactor', () => {
     [{ maxInputLength: 0 }, 'a maximum length of zero'],
     [{ maxInputLength: 1.5 }, 'a fractional maximum length'],
     [{ maxDepth: -1 }, 'a negative maximum depth'],
-  ])('refuses %j (%s)', (options) => {
-    expect(() => createRedactor(options as never)).toThrow(
+  ])('refuses %j (%s)', (options: unknown, _reason: string) => {
+    expect(() => createRedactor(options as RedactorOptions)).toThrow(
       InvalidConfigurationError,
     );
   });
