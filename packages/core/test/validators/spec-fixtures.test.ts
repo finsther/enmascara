@@ -4,7 +4,7 @@ import { parse } from 'yaml';
 import { createDefaultValidatorRegistry } from '../../src/validators/validator-registry.js';
 
 const SPEC_DIRECTORY = new URL('../../../../spec/', import.meta.url);
-const TYPES_WITH_VALIDATORS = ['clabe', 'card'] as const;
+const TYPES_WITH_VALIDATORS = ['clabe', 'card', 'curp', 'rfc'] as const;
 
 interface IdentifierDefinition {
   readonly pattern: string;
