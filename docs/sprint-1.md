@@ -341,11 +341,13 @@ Nueve historias en 2 semanas: la semana 1 deja la spec y el núcleo validados; l
 | 4 | Validadores CURP y RFC | 1 | 3 | Pasan todos sus fixtures; fechas imposibles rechazadas; RFC genéricos ignorados |
 | 5 | Motor de detección | 1 | 3 | Regex combinada, validación por candidato, `redact.text()` y `redact.object()` con límite de profundidad y ciclos |
 | 6 | Estrategias de enmascarado | 2 | 2 | `redact`, `partial` con reglas por tipo y `hmac`; `hmac` sin llave falla al crear el redactor |
-| 7 | Integraciones pino, Express y Sentry | 2 | 3 | Un ejemplo ejecutable por integración en `examples/`; tests de extremo a extremo |
+| 7 | ~~Integraciones pino, Express y Sentry~~ | — | ~~3~~ | **Movida al Sprint 2** (decisión del 2026-10-30) |
 | 8 | Seguridad en CI | 2 | 2 | Chequeo ReDoS, fuzzing, test de cero imports de red, Scorecard y `SECURITY.md` |
 | 9 | Benchmarks, README y publicación 0.1.0 | 2 | 2 | MB/s en el README; paquetes publicados con provenance desde CI |
 
 Total: 22 puntos. Si el sprint se aprieta, la historia 7 se recorta a pino y Sentry, y Express pasa al Sprint 2.
+
+**Ajuste del 2026-10-30:** el sprint quedó en 19 puntos. La historia 7 pasa completa al Sprint 2, porque las historias 2 y 3 crecieron con la investigación de fuentes oficiales. La 0.1.0 se publica con el núcleo, las estrategias, la seguridad en CI y los benchmarks, sin paquetes de integración.
 
 ### Después del Sprint 1
 
