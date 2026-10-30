@@ -56,12 +56,8 @@ describe('redactText', () => {
       THROWING_REGISTRY,
     );
 
-    expect(redactText('HOLA mundo 12345', failingClosed)).toBe(
-      'HOLA mundo 12345',
-    );
-    expect(redactText('HOLA mundo 123456', failingClosed)).toBe(
-      '[WORD] mundo 123456',
-    );
+    expect(redactText('HOLA 12345', failingClosed)).toBe('HOLA 12345');
+    expect(redactText('HOLA 123456', failingClosed)).toBe('[WORD] 123456');
   });
 
   it('replaces whatever exceeds the maximum length', () => {
