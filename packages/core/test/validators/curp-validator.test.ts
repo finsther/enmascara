@@ -30,6 +30,10 @@ describe('createCurpValidator', () => {
     ['GODE561231HDFRRN0', '17 characters'],
     ['GODE561231QDFRRN00', 'Q where the sex goes'],
     ['GODE561231HDFRRN0 ', 'a trailing space'],
+    [
+      'GODE561231HDFRRN000',
+      'an extra digit that the check over 18 characters accepts',
+    ],
   ])('rejects %j (%s)', (candidate) => {
     expect(validator.isValid(candidate)).toBe(false);
   });

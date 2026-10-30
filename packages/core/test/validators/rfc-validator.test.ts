@@ -31,6 +31,11 @@ describe('createRfcValidator', () => {
     ['GO561231GR8', 'two letters'],
     ['GODE561231GRB', 'B as the check character'],
     [' GODE561231GR8', 'a leading space'],
+    ['AGODE561231GR8', 'an extra leading letter that keeps the check valid'],
+    [
+      'GODE0110111B70',
+      'an extra character that keeps the check and a shifted date valid',
+    ],
   ])('rejects %j (%s)', (candidate) => {
     expect(validator.isValid(candidate)).toBe(false);
   });
