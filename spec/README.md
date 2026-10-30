@@ -12,6 +12,7 @@
 | `states.yaml`, `states.schema.json` | Catálogo de entidades para CURP |
 | `card-networks.yaml`, `card-networks.schema.json` | Redes de tarjeta con sus prefijos, longitudes y fuentes |
 | `fixtures/*.yaml`, `fixtures.schema.json` | Valores válidos, inválidos y lookalikes por tipo |
+| `fixtures/texts.yaml`, `texts.schema.json` | Líneas de texto y su salida con la estrategia `redact` |
 | `tools/` | Implementación de referencia que verifica los fixtures; no se publica |
 | `scripts/verify-curps.ts` | Prueba local del algoritmo de CURP con CURP reales |
 | `scripts/generate-core-catalogs.ts` | Genera los catálogos JSON que empaqueta el núcleo |
@@ -88,3 +89,11 @@ pnpm --filter enmascara-spec generate-core-catalogs
 ```
 
 Si alguna copia deja de coincidir con la spec, `test/core-catalogs.test.ts` falla.
+
+## Fixtures de texto del motor
+
+`fixtures/texts.yaml` compara líneas completas con su salida esperada, no posiciones, para que cada lenguaje cuente caracteres a su manera. Cada identificador detectado se reemplaza por su tipo en mayúsculas entre corchetes: `[CLABE]`, `[CURP]`, `[RFC]` o `[CARD]`.
+
+Antes de detectar, el motor normaliza el texto. Aplica NFKC, pasa todo a mayúsculas y quita los caracteres `Default_Ignorable_Code_Point`. Lo que enmascara es el tramo original completo. Ver [ADR 0004](../docs/decisions/0004-motor-de-deteccion.md).
+
+Biome no formatea este archivo, porque reescribiría los escapes `\u200B` como caracteres invisibles. Un test falla si aparece alguno.
