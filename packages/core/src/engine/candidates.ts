@@ -18,7 +18,9 @@ export function compileCandidatePatterns(
   return types.map((type) => {
     const definition = definitions[type];
     if (definition === undefined) {
-      throw new InvalidConfigurationError(`Unknown identifier type: ${type}`);
+      throw new InvalidConfigurationError(
+        'detect lists an unknown identifier type',
+      );
     }
     return {
       type,
