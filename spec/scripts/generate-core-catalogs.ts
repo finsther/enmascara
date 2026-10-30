@@ -5,6 +5,10 @@ interface BankCatalog {
   readonly banks: readonly { readonly code: string }[];
 }
 
+interface StateCatalog {
+  readonly states: readonly { readonly code: string }[];
+}
+
 interface CardNetworkCatalog {
   readonly networks: readonly {
     readonly name: string;
@@ -49,3 +53,11 @@ writeCoreCatalog(
     prefixes: network.prefixes,
   })),
 );
+
+const states = readSpecYaml('states.yaml') as StateCatalog;
+writeCoreCatalog(
+  'state-codes.json',
+  states.states.map((state) => state.code).sort(),
+);
+
+writeCoreCatalog('identifiers.json', readSpecYaml('identifiers.yaml'));
