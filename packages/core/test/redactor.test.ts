@@ -95,6 +95,12 @@ describe('createRedactor', () => {
     expect(redact.text('GODE561231HDFRRN00')).toBe('[CURP:c14e61]');
   });
 
+  it('accepts an HMAC key of exactly 32 bytes', () => {
+    expect(() =>
+      createRedactor({ strategy: 'hmac', hmacKey: 'k'.repeat(32) }),
+    ).not.toThrow();
+  });
+
   it('never shows the birth date of a CURP or an RFC with partial', () => {
     const output = createRedactor({ strategy: 'partial' }).text(
       'GODE561231HDFRRN00 GODE561231GR8',

@@ -91,6 +91,18 @@ describe('hmacSha256', () => {
     expect(hex(hmacSha256(key, message))).toBe(digest);
   });
 
+  it.each([63, 64, 65])(
+    'agrees with node:crypto on a key of %i bytes, around the block size',
+    (length) => {
+      const key = repeated(0x2a, length);
+      const message = bytes('GODE561231HDFRRN00');
+
+      expect(hex(hmacSha256(key, message))).toBe(
+        createHmac('sha256', key).update(message).digest('hex'),
+      );
+    },
+  );
+
   it('agrees with node:crypto on arbitrary keys and messages', () => {
     fc.assert(
       fc.property(
