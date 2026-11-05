@@ -25,6 +25,17 @@ const PADDING_START_BYTE = 0x80;
 const BITS_PER_BYTE = 8;
 const TWO_TO_THE_32 = 2 ** 32;
 const INNER_PAD_BYTE = 0x36;
+const WORD_BITS = 32;
+const SCHEDULE_FIFTEEN_BACK = 15;
+const SCHEDULE_TWO_BACK = 2;
+const SCHEDULE_SIXTEEN_BACK = 16;
+const SCHEDULE_SEVEN_BACK = 7;
+const SIGMA_ZERO_ROTATIONS = [7, 18] as const;
+const SIGMA_ZERO_SHIFT = 3;
+const SIGMA_ONE_ROTATIONS = [17, 19] as const;
+const SIGMA_ONE_SHIFT = 10;
+const SUM_ZERO_ROTATIONS = [2, 13, 22] as const;
+const SUM_ONE_ROTATIONS = [6, 11, 25] as const;
 const OUTER_PAD_BYTE = 0x5c;
 
 function wordView(words: readonly number[]): DataView {
@@ -38,7 +49,14 @@ function wordView(words: readonly number[]): DataView {
 const ROUND_CONSTANT_VIEW = wordView(ROUND_CONSTANTS);
 
 function rotateRight(value: number, bits: number): number {
-  return (value >>> bits) | (value << (32 - bits));
+  return (value >>> bits) | (value << (WORD_BITS - bits));
+}
+
+function rotatedXor(value: number, rotations: readonly number[]): number {
+  return rotations.reduce(
+    (combined, bits) => combined ^ rotateRight(value, bits),
+    0,
+  );
 }
 
 function padded(message: Uint8Array): DataView {
@@ -74,19 +92,18 @@ function fillSchedule(
     );
   }
   for (let index = BLOCK_WORDS; index < SCHEDULE_WORDS; index += 1) {
-    const fifteenBack = word(schedule, index - 15);
-    const twoBack = word(schedule, index - 2);
+    const fifteenBack = word(schedule, index - SCHEDULE_FIFTEEN_BACK);
+    const twoBack = word(schedule, index - SCHEDULE_TWO_BACK);
     const sigmaZero =
-      rotateRight(fifteenBack, 7) ^
-      rotateRight(fifteenBack, 18) ^
-      (fifteenBack >>> 3);
+      rotatedXor(fifteenBack, SIGMA_ZERO_ROTATIONS) ^
+      (fifteenBack >>> SIGMA_ZERO_SHIFT);
     const sigmaOne =
-      rotateRight(twoBack, 17) ^ rotateRight(twoBack, 19) ^ (twoBack >>> 10);
+      rotatedXor(twoBack, SIGMA_ONE_ROTATIONS) ^ (twoBack >>> SIGMA_ONE_SHIFT);
     schedule.setUint32(
       index * WORD_BYTES,
-      (word(schedule, index - 16) +
+      (word(schedule, index - SCHEDULE_SIXTEEN_BACK) +
         sigmaZero +
-        word(schedule, index - 7) +
+        word(schedule, index - SCHEDULE_SEVEN_BACK) +
         sigmaOne) >>>
         0,
     );
@@ -103,7 +120,7 @@ function compress(hash: DataView, schedule: DataView): void {
   let g = word(hash, 6);
   let h = word(hash, 7);
   for (let index = 0; index < SCHEDULE_WORDS; index += 1) {
-    const sumOne = rotateRight(e, 6) ^ rotateRight(e, 11) ^ rotateRight(e, 25);
+    const sumOne = rotatedXor(e, SUM_ONE_ROTATIONS);
     const choice = (e & f) ^ (~e & g);
     const first =
       (h +
@@ -112,7 +129,7 @@ function compress(hash: DataView, schedule: DataView): void {
         word(ROUND_CONSTANT_VIEW, index) +
         word(schedule, index)) >>>
       0;
-    const sumZero = rotateRight(a, 2) ^ rotateRight(a, 13) ^ rotateRight(a, 22);
+    const sumZero = rotatedXor(a, SUM_ZERO_ROTATIONS);
     const majority = (a & b) ^ (a & c) ^ (b & c);
     const second = (sumZero + majority) >>> 0;
     h = g;
