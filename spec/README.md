@@ -13,6 +13,7 @@
 | `card-networks.yaml`, `card-networks.schema.json` | Redes de tarjeta con sus prefijos, longitudes y fuentes |
 | `fixtures/*.yaml`, `fixtures.schema.json` | Valores válidos, inválidos y lookalikes por tipo |
 | `fixtures/texts.yaml`, `texts.schema.json` | Líneas de texto y su salida con la estrategia `redact` |
+| `fixtures/strategies.yaml`, `strategies.schema.json` | Valores enmascarados con `redact`, `partial` y `hmac` bajo una llave de prueba |
 | `tools/` | Implementación de referencia que verifica los fixtures; no se publica |
 | `scripts/verify-curps.ts` | Prueba local del algoritmo de CURP con CURP reales |
 | `scripts/generate-core-catalogs.ts` | Genera los catálogos JSON que empaqueta el núcleo |
@@ -97,3 +98,12 @@ Si alguna copia deja de coincidir con la spec, `test/core-catalogs.test.ts` fall
 Antes de detectar, el motor normaliza el texto. Aplica NFKC, pasa todo a mayúsculas y quita los caracteres `Default_Ignorable_Code_Point`. Lo que enmascara es el tramo original completo. Ver [ADR 0004](../docs/decisions/0004-motor-de-deteccion.md).
 
 Biome no formatea este archivo, porque reescribiría los escapes `\u200B` como caracteres invisibles. Un test falla si aparece alguno.
+
+## Fixtures de estrategias
+
+`fixtures/strategies.yaml` fija la salida exacta de cada estrategia:
+
+- **`partial`:** deja los últimos `mask.partial.last` caracteres del valor canónico y reemplaza el resto por `*`.
+- **`hmac`:** escribe `[TIPO:hhhhhh]`, con los primeros 6 caracteres hex de HMAC-SHA256 sobre `tipo:valor canónico`, con la llave UTF-8 del archivo.
+
+El valor canónico se obtiene con NFKC por carácter, mayúsculas, sin caracteres `Default_Ignorable_Code_Point` y solo con `0-9`, `A-Z`, `Ñ` y `&`. La llave del archivo es solo de prueba. Ver [ADR 0005](../docs/decisions/0005-estrategias-de-enmascarado.md).
