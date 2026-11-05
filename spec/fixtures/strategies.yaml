@@ -1,0 +1,22 @@
+key: "enmascara-test-key-not-for-production-use"
+cases:
+  - { type: clabe, value: "002180032240946700", strategy: redact, output: "[CLABE]" }
+  - { type: curp, value: "GODE561231HDFRRN00", strategy: redact, output: "[CURP]" }
+  - { type: rfc, value: "GODE561231GR8", strategy: redact, output: "[RFC]" }
+  - { type: card, value: "4242424242424242", strategy: redact, output: "[CARD]" }
+  - { type: clabe, value: "002180032240946700", strategy: partial, output: "**************6700" }
+  - { type: clabe, value: "002-180-03224094670-0", strategy: partial, output: "**************6700" }
+  - { type: curp, value: "GODE561231HDFRRN00", strategy: partial, output: "****************00" }
+  - { type: rfc, value: "GODE561231GR8", strategy: partial, output: "***********R8" }
+  - { type: rfc, value: "COR391215F4A", strategy: partial, output: "**********4A" }
+  - { type: card, value: "4242 4242 4242 4242", strategy: partial, output: "************4242" }
+  - { type: card, value: "378282246310005", strategy: partial, output: "***********0005" }
+  - { type: clabe, value: "002180032240946700", strategy: hmac, output: "[CLABE:de55d5]" }
+  - { type: clabe, value: "002-180-03224094670-0", strategy: hmac, output: "[CLABE:de55d5]" }
+  - { type: curp, value: "GODE561231HDFRRN00", strategy: hmac, output: "[CURP:c14e61]" }
+  - { type: curp, value: "gode561231​hdfrrn00", strategy: hmac, output: "[CURP:c14e61]" }
+  - { type: rfc, value: "GODE561231GR8", strategy: hmac, output: "[RFC:79b4d3]" }
+  - { type: rfc, value: "COR391215F4A", strategy: hmac, output: "[RFC:825e6e]" }
+  - { type: card, value: "4242424242424242", strategy: hmac, output: "[CARD:34d61a]" }
+  - { type: card, value: "4242 4242 4242 4242", strategy: hmac, output: "[CARD:34d61a]" }
+  - { type: card, value: "378282246310005", strategy: hmac, output: "[CARD:028a1a]" }
