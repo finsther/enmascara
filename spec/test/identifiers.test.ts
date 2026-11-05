@@ -57,6 +57,29 @@ describe('identifiers.yaml', () => {
   );
 });
 
+describe('the CLABE pattern', () => {
+  const clabePattern = new RegExp(
+    `^(?:${readPatterns().get('clabe') ?? ''})$`,
+    'u',
+  );
+
+  it.each([
+    '002180032240946700',
+    '002-180-03224094670-0',
+    '002 180 03224094670 0',
+    '0 0 2 1 8 0 0 3 2 2 4 0 9 4 6 7 0 0',
+  ])('matches %s', (candidate) => {
+    expect(clabePattern.test(candidate)).toBe(true);
+  });
+
+  it.each(['002--180032240946700', '002180032240946700-', '00218003224094670'])(
+    'does not match %s',
+    (candidate) => {
+      expect(clabePattern.test(candidate)).toBe(false);
+    },
+  );
+});
+
 describe('schema.json', () => {
   it('accepts a complete identifier definition', () => {
     const definition = definitionShowingLast('clabe_checksum', 4);

@@ -48,19 +48,19 @@ describe('enmascara package entry', () => {
   it('loads through import', () => {
     const output = evaluateInFreshNodeProcess(
       'module',
-      "const entry = await import('enmascara'); console.log(typeof entry);",
+      "const entry = await import('enmascara'); console.log(typeof entry.createRedactor);",
     );
 
-    expect(output).toBe('object');
+    expect(output).toBe('function');
   });
 
   it('loads through require', () => {
     const output = evaluateInFreshNodeProcess(
       'commonjs',
-      "console.log(typeof require('enmascara'));",
+      "console.log(typeof require('enmascara').createRedactor);",
     );
 
-    expect(output).toBe('object');
+    expect(output).toBe('function');
   });
 
   it.each(['import', 'require'] as const)(

@@ -10,6 +10,15 @@ describe('clabeRejection', () => {
     );
   });
 
+  it('accepts the Banxico example with dashes or spaces between digits', () => {
+    expect(clabeRejection('002-180-03224094670-0', KNOWN_BANK_CODES)).toBe(
+      undefined,
+    );
+    expect(clabeRejection('002 180 03224094670 0', KNOWN_BANK_CODES)).toBe(
+      undefined,
+    );
+  });
+
   it('rejects a wrong check digit', () => {
     expect(clabeRejection('002180032240946701', KNOWN_BANK_CODES)).toBe(
       'check_digit',
