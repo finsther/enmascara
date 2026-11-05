@@ -349,6 +349,8 @@ Total: 22 puntos. Si el sprint se aprieta, la historia 7 se recorta a pino y Sen
 
 **Ajuste del 2026-10-30:** el sprint quedó en 19 puntos. La historia 7 pasa completa al Sprint 2, porque las historias 2 y 3 crecieron con la investigación de fuentes oficiales. La 0.1.0 se publica con el núcleo, las estrategias, la seguridad en CI y los benchmarks, sin paquetes de integración.
 
+**Extensión del 2026-11-05:** el sprint se extiende 3 días, hasta el 2026-11-07, para terminar las historias 6, 8 y 9 y publicar la 0.1.0.
+
 ### Después del Sprint 1
 
 - **Sprint 2:** gema de Ruby con integración Rails y Lograge; playground en el sitio de docs.
