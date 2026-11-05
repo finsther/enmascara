@@ -1,8 +1,11 @@
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { maskWith } from '../tools/strategies.ts';
 import { compileSchema, readYamlDocument } from './support/spec-files.ts';
 
 const STRATEGIES = ['redact', 'partial', 'hmac'] as const;
+const INVISIBLE_OR_SPACE_LIKE_CHARACTERS =
+  /[\u00A0\u00AD\u200B-\u200F\u2028-\u202F\u2060\uFEFF]/u;
 const TYPES = ['clabe', 'curp', 'rfc', 'card'] as const;
 
 interface StrategyCase {
@@ -57,6 +60,15 @@ describe('fixtures/strategies.yaml', () => {
       ).toBe(fixture.output);
     },
   );
+
+  it('writes invisible characters as escapes a reviewer can read', () => {
+    const rawFile = readFileSync(
+      new URL('../fixtures/strategies.yaml', import.meta.url),
+      'utf8',
+    );
+
+    expect(INVISIBLE_OR_SPACE_LIKE_CHARACTERS.test(rawFile)).toBe(false);
+  });
 
   it('uses every strategy on every type', () => {
     const combinations = new Set(
