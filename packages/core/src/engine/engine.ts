@@ -20,14 +20,14 @@ export interface EngineOptions {
   readonly types: readonly string[];
   readonly maxInputLength: number;
   readonly maxDepth: number;
-  readonly strategy: MaskingStrategy;
+  readonly strategyFor: (type: string) => MaskingStrategy;
 }
 
 export interface Engine {
   readonly detectors: readonly TypeDetector[];
   readonly maxInputLength: number;
   readonly maxDepth: number;
-  readonly strategy: MaskingStrategy;
+  readonly strategyFor: (type: string) => MaskingStrategy;
 }
 
 function isConfidence(value: string): value is Confidence {
@@ -63,6 +63,6 @@ export function createEngine(
     detectors,
     maxInputLength: options.maxInputLength,
     maxDepth: options.maxDepth,
-    strategy: options.strategy,
+    strategyFor: options.strategyFor,
   };
 }

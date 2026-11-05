@@ -3,9 +3,13 @@ import { createEngine } from './engine/engine.js';
 import { redactObject } from './engine/redact-object.js';
 import { findingsInText, redactText } from './engine/redact-text.js';
 import { InvalidConfigurationError } from './errors.js';
-import { redactStrategy } from './strategies/redact-strategy.js';
+import {
+  createStrategyResolver,
+  type StrategyName,
+  type StrategyOption,
+} from './strategies/strategy-configuration.js';
 
-export type { Confidence, Finding };
+export type { Confidence, Finding, StrategyName };
 
 /** An identifier type that Enmascara can detect. */
 export type IdentifierType = 'clabe' | 'curp' | 'rfc' | 'card';
@@ -33,6 +37,23 @@ export interface RedactorOptions {
    * replaced by `[MaxDepth]`. Defaults to 32.
    */
   readonly maxDepth?: number;
+  /**
+   * How detected values are masked: one strategy name for every type, or an
+   * object with a `default` and a name per type. Defaults to `'redact'`.
+   * `'redact'` writes `[CURP]`, `'partial'` keeps the last characters the
+   * type allows (2 for CURP and RFC, 4 for CLABE and cards), and `'hmac'`
+   * writes `[CURP:3f9a1c]`, the same tag for the same value under one key.
+   */
+  readonly strategy?:
+    | StrategyName
+    | ({ readonly default?: StrategyName } & {
+        readonly [Type in IdentifierType]?: StrategyName;
+      });
+  /**
+   * Key for the `'hmac'` strategy, as text (its UTF-8 bytes) or bytes. It
+   * must have at least 32 bytes and has no default.
+   */
+  readonly hmacKey?: string | Uint8Array;
 }
 
 /** Masks Mexican identifiers in text and objects. */
@@ -100,8 +121,10 @@ function typesToDetect(
  *
  * @param options - Types to detect and limits; every field is optional.
  * @returns A frozen {@link Redactor}.
- * @throws {@link InvalidConfigurationError} If a type is unknown, `detect` is
- * empty, or a limit is not a positive integer.
+ * @throws {@link InvalidConfigurationError} If a type or strategy is unknown,
+ * `detect` is empty, a limit is not a positive integer, or `'hmac'` is used
+ * without an `hmacKey` of at least 32 bytes. The message never repeats the
+ * key.
  * @example
  * ```ts
  * const redact = createRedactor({ detect: ['clabe', 'curp'] });
@@ -110,8 +133,9 @@ function typesToDetect(
  * ```
  */
 export function createRedactor(options: RedactorOptions = {}): Redactor {
+  const types = typesToDetect(options.detect ?? ALL_IDENTIFIER_TYPES);
   const engine = createEngine({
-    types: typesToDetect(options.detect ?? ALL_IDENTIFIER_TYPES),
+    types,
     maxInputLength: positiveIntegerOption(
       'maxInputLength',
       options.maxInputLength ?? DEFAULT_MAX_INPUT_LENGTH,
@@ -120,7 +144,11 @@ export function createRedactor(options: RedactorOptions = {}): Redactor {
       'maxDepth',
       options.maxDepth ?? DEFAULT_MAX_DEPTH,
     ),
-    strategy: redactStrategy,
+    strategyFor: createStrategyResolver(
+      (options.strategy ?? 'redact') as StrategyOption,
+      options.hmacKey,
+      types,
+    ),
   });
   return Object.freeze({
     text: (input: string) => redactText(input, engine),
