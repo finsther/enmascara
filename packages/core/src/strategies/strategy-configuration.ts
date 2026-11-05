@@ -7,7 +7,7 @@ import { redactStrategy } from './redact-strategy.js';
 
 export type StrategyName = 'redact' | 'partial' | 'hmac';
 
-export type StrategyByType = Readonly<Record<string, StrategyName>>;
+export type StrategyByType = Readonly<Partial<Record<string, StrategyName>>>;
 
 export type StrategyOption = StrategyName | StrategyByType;
 
@@ -27,13 +27,17 @@ const VISIBLE_CHARACTERS_BY_TYPE: ReadonlyMap<string, number> = new Map(
   ]),
 );
 
+function isStrategyName(name: string): name is StrategyName {
+  return STRATEGY_NAMES.has(name);
+}
+
 function checkedName(name: string): StrategyName {
-  if (!STRATEGY_NAMES.has(name)) {
+  if (!isStrategyName(name)) {
     throw new InvalidConfigurationError(
       'strategy names an unknown masking strategy',
     );
   }
-  return name as StrategyName;
+  return name;
 }
 
 function strategyNamesByType(
@@ -89,6 +93,8 @@ export function createStrategyResolver(
   if (usedNames.has('hmac')) {
     strategies.set('hmac', createHmacStrategy(hmacKeyBytes(hmacKey)));
   }
-  return (type) =>
-    strategies.get(namesByType.get(type) ?? DEFAULT_STRATEGY) ?? redactStrategy;
+  const strategyByType = new Map(
+    [...namesByType].map(([type, name]) => [type, strategies.get(name)]),
+  );
+  return (type) => strategyByType.get(type) ?? redactStrategy;
 }

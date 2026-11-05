@@ -6,7 +6,6 @@ import { InvalidConfigurationError } from './errors.js';
 import {
   createStrategyResolver,
   type StrategyName,
-  type StrategyOption,
 } from './strategies/strategy-configuration.js';
 
 export type { Confidence, Finding, StrategyName };
@@ -145,7 +144,7 @@ export function createRedactor(options: RedactorOptions = {}): Redactor {
       options.maxDepth ?? DEFAULT_MAX_DEPTH,
     ),
     strategyFor: createStrategyResolver(
-      (options.strategy ?? 'redact') as StrategyOption,
+      options.strategy ?? 'redact',
       options.hmacKey,
       types,
     ),
