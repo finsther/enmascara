@@ -11,7 +11,7 @@ function engineWith(overrides: Partial<EngineOptions> = {}) {
     types: ['clabe', 'curp', 'rfc', 'card'],
     maxInputLength: 1_000_000,
     maxDepth: 32,
-    strategy: redactStrategy,
+    strategyFor: () => redactStrategy,
     ...overrides,
   });
 }

@@ -6,4 +6,5 @@ export {
   type IdentifierType,
   type Redactor,
   type RedactorOptions,
+  type StrategyName,
 } from './redactor.js';

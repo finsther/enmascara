@@ -13,7 +13,7 @@ function options(overrides: Partial<EngineOptions> = {}): EngineOptions {
     types: ALL_TYPES,
     maxInputLength: MAX_INPUT_LENGTH,
     maxDepth: 32,
-    strategy: redactStrategy,
+    strategyFor: () => redactStrategy,
     ...overrides,
   };
 }

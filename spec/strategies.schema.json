@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Enmascara strategy fixtures",
+  "description": "Values masked with each strategy. partial and hmac work on the canonical value: NFKC per character, upper case, without default-ignorable characters, keeping only 0-9, A-Z, Ñ and &. hmac is HMAC-SHA256 of 'type:canonical' with the UTF-8 key, written as [TYPE:first 6 hex characters].",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["key", "cases"],
+  "properties": {
+    "key": {
+      "description": "Test key shared by the hmac cases; never use it in production.",
+      "type": "string",
+      "minLength": 32
+    },
+    "cases": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["type", "value", "strategy", "output"],
+        "properties": {
+          "type": { "enum": ["clabe", "curp", "rfc", "card"] },
+          "value": { "type": "string", "minLength": 1 },
+          "strategy": { "enum": ["redact", "partial", "hmac"] },
+          "output": { "type": "string", "minLength": 1 }
+        }
+      }
+    }
+  }
+}

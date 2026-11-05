@@ -11,7 +11,8 @@
       "**",
       "!**/*.md",
       "!pnpm-lock.yaml",
-      "!spec/fixtures/texts.yaml"
+      "!spec/fixtures/texts.yaml",
+      "!spec/fixtures/strategies.yaml"
     ]
   },
   "formatter": {

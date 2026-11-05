@@ -52,7 +52,9 @@ export function redactText(input: string, engine: Engine): string {
   for (const finding of findings) {
     pieces.push(
       input.slice(position, finding.start),
-      engine.strategy.mask(finding, input.slice(finding.start, finding.end)),
+      engine
+        .strategyFor(finding.type)
+        .mask(finding, input.slice(finding.start, finding.end)),
     );
     position = finding.end;
   }
