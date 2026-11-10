@@ -148,6 +148,14 @@ Para reportar una vulnerabilidad, sigue [SECURITY.md](SECURITY.md).
 ## Rendimiento
 
 <!-- benchmark:start -->
+| Escenario | MB/s |
+| --- | ---: |
+| Logs sin identificadores, `text()` por línea | 4.1 |
+| Logs con un identificador cada 20 líneas, `text()` por línea | 4.0 |
+| Logs con un identificador en cada línea, `text()` por línea | 4.1 |
+| Registros JSON, `object()` | 8.7 |
+
+Medido el 2026-11-10 con Node v24.22.1 en Apple M2, sobre 1 MiB por escenario.
 <!-- benchmark:end -->
 
 El corpus son logs sintéticos con timestamps, IDs, montos, teléfonos y números que parecen identificadores pero no validan. Para medir en tu máquina:
