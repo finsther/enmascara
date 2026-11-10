@@ -5,7 +5,10 @@
     "types": ["node"],
     "allowImportingTsExtensions": true,
     "erasableSyntaxOnly": true,
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "paths": {
+      "enmascara": ["../packages/core/src/index.ts"]
+    }
   },
   "include": ["src", "test", "scripts"]
 }
