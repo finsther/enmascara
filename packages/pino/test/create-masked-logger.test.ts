@@ -39,6 +39,14 @@ function failingRedactor(): Redactor {
   return { text: fail, object: fail, findings: () => [] };
 }
 
+function redactorReturningText(): Redactor {
+  return {
+    text: () => '[TEXT]',
+    object: () => '[TEXT]',
+    findings: () => [],
+  };
+}
+
 function expectNoRawIdentifier(output: CapturedOutput): void {
   for (const identifier of RAW_IDENTIFIERS) {
     expect(output.raw()).not.toContain(identifier);
@@ -176,6 +184,21 @@ describe.each(PINO_VERSIONS)('createMaskedLogger on %s', (_, pino) => {
     ]);
   });
 
+  it('keeps masking the message of a child with other serializers', () => {
+    const { logger, output } = maskedLogger();
+
+    logger
+      .child(
+        { curp: CURP },
+        { serializers: { amount: (amount: number) => amount / 100 } },
+      )
+      .info({ amount: 150_000 }, `SPEI a ${CLABE}`);
+
+    expect(output.lines()).toMatchObject([
+      { curp: '[CURP]', amount: 1500, msg: 'SPEI a [CLABE]' },
+    ]);
+  });
+
   it('keeps the level and redaction options of a child', () => {
     const { logger, output } = maskedLogger({ level: 'info' });
 
@@ -302,6 +325,17 @@ describe.each(PINO_VERSIONS)('createMaskedLogger on %s', (_, pino) => {
       level: 'debug',
       formatters: { log: logFormatter },
     });
+  });
+
+  it('writes [REDACTED] when the redactor returns no object', () => {
+    const { logger, output } = maskedLogger({}, redactorReturningText());
+
+    logger.child({ rfc: RFC }).info({ clabe: CLABE }, 'pago');
+
+    expectNoRawIdentifier(output);
+    expect(output.lines()).toMatchObject([
+      { enmascara: '[REDACTED]', msg: '[TEXT]' },
+    ]);
   });
 
   it('writes [REDACTED] when masking fails', () => {
