@@ -1,8 +1,43 @@
+import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
 import {
+  type NormalizedText,
   normalizeForDetection,
   toOriginalSpan,
 } from '../../src/engine/normalize.js';
+
+const ASCII_CHARACTER_COUNT = 128;
+const INVISIBLE_CHARACTER = /^\p{Default_Ignorable_Code_Point}$/u;
+const MIXED_TEXT_PIECES = 20;
+
+function normalizeCharacterByCharacter(input: string): NormalizedText {
+  const pieces: string[] = [];
+  const originalIndexes: number[] = [];
+  let originalIndex = 0;
+  for (const character of input) {
+    if (!INVISIBLE_CHARACTER.test(character)) {
+      const piece = character.normalize('NFKC').toUpperCase();
+      pieces.push(piece);
+      originalIndexes.push(
+        ...Array.from({ length: piece.length }, () => originalIndex),
+      );
+    }
+    originalIndex += character.length;
+  }
+  originalIndexes.push(input.length);
+  return { text: pieces.join(''), originalIndexes };
+}
+
+const mixedText = fc
+  .array(
+    fc.oneof(
+      fc.string({ unit: 'grapheme-ascii' }),
+      fc.string({ unit: 'binary' }),
+      fc.constantFrom('\u200B', '\u00AD', 'ﬁ', '０', '\u00A0', 'ñ', '😀'),
+    ),
+    { maxLength: MIXED_TEXT_PIECES },
+  )
+  .map((pieces) => pieces.join(''));
 
 describe('normalizeForDetection', () => {
   it('upper-cases text and keeps each position', () => {
@@ -52,6 +87,34 @@ describe('normalizeForDetection', () => {
       text: '',
       originalIndexes: [0],
     });
+  });
+});
+
+describe('normalizeForDetection on ASCII', () => {
+  const asciiCharacters = Array.from(
+    { length: ASCII_CHARACTER_COUNT },
+    (_, code) => String.fromCharCode(code),
+  );
+
+  it.each(
+    asciiCharacters.map((character) => [character.charCodeAt(0), character]),
+  )(
+    'keeps ASCII code %i as one visible character, stable under NFKC',
+    (_code, character) => {
+      expect(INVISIBLE_CHARACTER.test(character)).toBe(false);
+      expect(character.normalize('NFKC')).toBe(character);
+      expect(character.toUpperCase()).toHaveLength(1);
+    },
+  );
+
+  it('matches the character-by-character normalization on any text', () => {
+    fc.assert(
+      fc.property(mixedText, (input) => {
+        expect(normalizeForDetection(input)).toEqual(
+          normalizeCharacterByCharacter(input),
+        );
+      }),
+    );
   });
 });
 
