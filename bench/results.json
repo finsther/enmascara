@@ -1,0 +1,23 @@
+{
+  "measuredOn": "2026-11-10",
+  "node": "v24.22.1",
+  "cpu": "Apple M2",
+  "measurements": [
+    {
+      "scenario": "clean-lines",
+      "megabytesPerSecond": 4.060630176797529
+    },
+    {
+      "scenario": "mixed-lines",
+      "megabytesPerSecond": 4.040341463584287
+    },
+    {
+      "scenario": "dense-lines",
+      "megabytesPerSecond": 4.076830168542861
+    },
+    {
+      "scenario": "records",
+      "megabytesPerSecond": 8.746093238034202
+    }
+  ]
+}

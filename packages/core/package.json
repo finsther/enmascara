@@ -2,7 +2,27 @@
   "name": "enmascara",
   "version": "0.0.0",
   "description": "Finds and masks Mexican identifiers validated by their check digit.",
+  "keywords": [
+    "clabe",
+    "curp",
+    "rfc",
+    "credit-card",
+    "mexico",
+    "pii",
+    "redaction",
+    "masking",
+    "logging"
+  ],
   "license": "MIT",
+  "homepage": "https://github.com/finsther/enmascara#readme",
+  "bugs": {
+    "url": "https://github.com/finsther/enmascara/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/finsther/enmascara.git",
+    "directory": "packages/core"
+  },
   "type": "module",
   "sideEffects": false,
   "exports": {
@@ -26,6 +46,10 @@
   ],
   "engines": {
     "node": ">=22"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
   },
   "scripts": {
     "build": "tsup",

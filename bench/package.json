@@ -1,0 +1,15 @@
+{
+  "name": "enmascara-bench",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "bench": "node scripts/run-benchmark.ts",
+    "bench:check": "node scripts/check-benchmark.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "enmascara": "workspace:*",
+    "tinybench": "6.2.2",
+    "yaml": "2.9.1"
+  }
+}

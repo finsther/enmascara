@@ -1,0 +1,92 @@
+name: Release
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  check:
+    name: Check whether the version is published
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      published: ${{ steps.version.outputs.published }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - id: version
+        run: |
+          version="$(node -p "require('./packages/core/package.json').version")"
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+          if npm view "enmascara@${version}" version > /dev/null 2>&1; then
+            echo "published=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "published=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  publish:
+    name: Publish enmascara@${{ needs.check.outputs.version }}
+    needs: check
+    if: needs.check.outputs.published == 'false'
+    runs-on: ubuntu-latest
+    environment: npm
+    permissions:
+      contents: write
+      id-token: write
+    env:
+      VERSION: ${{ needs.check.outputs.version }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .tool-versions
+          cache: pnpm
+          registry-url: https://registry.npmjs.org
+      - name: Require npm 11.5.1 or later for trusted publishing
+        run: |
+          node -e '
+            const [major, minor, patch] = process.argv[1].split(".").map(Number);
+            const supported =
+              major > 11 || (major === 11 && (minor > 5 || (minor === 5 && patch >= 1)));
+            process.exit(supported ? 0 : 1);
+          ' "$(npm --version)"
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm coverage
+      - name: Publish with provenance
+        working-directory: packages/core
+        run: npm publish
+      - name: Require a provenance attestation
+        run: |
+          for attempt in 1 2 3 4 5 6; do
+            attestations="$(npm view "enmascara@${VERSION}" dist.attestations --json 2> /dev/null || true)"
+            if [ -n "${attestations}" ] && [ "${attestations}" != "{}" ]; then
+              echo "enmascara@${VERSION} has a provenance attestation"
+              exit 0
+            fi
+            echo "Attempt ${attempt}: no attestation yet"
+            sleep 10
+          done
+          echo "enmascara@${VERSION} was published without provenance" >&2
+          exit 1
+      - name: Tag the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api "repos/${GITHUB_REPOSITORY}/git/refs" \
+            -f "ref=refs/tags/enmascara@${VERSION}" \
+            -f "sha=${GITHUB_SHA}"
