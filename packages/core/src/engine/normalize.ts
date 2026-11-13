@@ -1,4 +1,4 @@
-const INVISIBLE_CHARACTER = /^\p{Default_Ignorable_Code_Point}$/u;
+const INVISIBLE_CHARACTER = /\p{Default_Ignorable_Code_Point}/u;
 
 export interface NormalizedText {
   readonly text: string;
