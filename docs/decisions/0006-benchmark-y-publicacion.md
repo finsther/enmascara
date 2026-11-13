@@ -47,5 +47,6 @@ La definición de terminado del sprint pide el paquete publicado con provenance 
 ## Consecuencias
 
 - La primera medición, en un Apple M2 con Node 24, dio cerca de 4 MB/s con `text()` y 9 MB/s con `object()`. Un perfil atribuyó cerca del 85 % del tiempo de `text()` a la normalización Unicode carácter por carácter. Con tramos ASCII normalizados de una vez, la normalización de 1 MiB de logs pasó de 231 ms a 4 ms, y el benchmark subió a cerca de 51 MB/s con `text()` y 33 MB/s con `object()`. Una prueba basada en propiedades garantiza que el resultado es idéntico al de la ruta carácter por carácter.
+- Cuatro mutantes de `normalize.ts` sobreviven y son equivalentes: que U+0080 cuente como ASCII (no cambia con NFKC ni con mayúsculas y no es invisible), que todo pase por la ruta no ASCII (mismo resultado, más lento) y quitar el límite de longitud en `runEnd` (`charCodeAt` fuera del texto da `NaN`, que ningún predicado acepta).
 - Los pisos del CI detectan regresiones grandes, no pequeñas: el ruido de los runners compartidos no permite más.
 - Publicar requiere pasos manuales una sola vez: 2FA en npm, la reserva 0.0.0, `npm trust github` y el environment `npm` en GitHub.
