@@ -19,7 +19,7 @@
     "bench:check": "pnpm build && pnpm --filter enmascara-bench bench:check"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.6.2",
+    "@biomejs/biome": "2.6.6",
     "@changesets/cli": "3.0.3",
     "@stryker-mutator/core": "10.0.0",
     "@stryker-mutator/typescript-checker": "10.0.0",
