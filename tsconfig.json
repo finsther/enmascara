@@ -10,6 +10,8 @@
   "include": [
     "packages/core/src",
     "packages/core/test",
+    "packages/pino/src",
+    "packages/pino/test",
     "spec/tools",
     "spec/test"
   ]

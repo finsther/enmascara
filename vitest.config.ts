@@ -7,7 +7,7 @@ export default defineConfig({
     projects: ['packages/*', 'spec', 'bench'],
     coverage: {
       provider: 'v8',
-      include: ['packages/core/src/**/*.ts', 'spec/tools/**/*.ts'],
+      include: ['packages/*/src/**/*.ts', 'spec/tools/**/*.ts'],
       reporter: ['text', 'lcov'],
       thresholds: {
         lines: MINIMUM_CORE_COVERAGE_PERCENT,

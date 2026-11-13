@@ -12,7 +12,11 @@
   },
   "checkers": ["typescript"],
   "tsconfigFile": "tsconfig.json",
-  "mutate": ["packages/core/src/**/*.ts", "spec/tools/**/*.ts"],
+  "mutate": [
+    "packages/core/src/**/*.ts",
+    "packages/pino/src/**/*.ts",
+    "spec/tools/**/*.ts"
+  ],
   "incremental": true,
   "incrementalFile": "reports/stryker-incremental.json",
   "reporters": ["clear-text", "progress", "html"],
