@@ -71,17 +71,19 @@ jobs:
         working-directory: packages/core
         run: npm publish
       - name: Require a provenance attestation
+        env:
+          SLSA_PROVENANCE: https://slsa.dev/provenance/v1
         run: |
-          for attempt in 1 2 3 4 5 6; do
-            attestations="$(npm view "enmascara@${VERSION}" dist.attestations --json 2> /dev/null || true)"
-            if [ -n "${attestations}" ] && [ "${attestations}" != "{}" ]; then
-              echo "enmascara@${VERSION} has a provenance attestation"
+          for attempt in $(seq 1 30); do
+            if predicate="$(npm view "enmascara@${VERSION}" dist.attestations.provenance.predicateType 2> /dev/null)" \
+              && [ "${predicate}" = "${SLSA_PROVENANCE}" ]; then
+              echo "enmascara@${VERSION} has an SLSA provenance attestation"
               exit 0
             fi
-            echo "Attempt ${attempt}: no attestation yet"
+            echo "Attempt ${attempt}: enmascara@${VERSION} has no visible provenance yet"
             sleep 10
           done
-          echo "enmascara@${VERSION} was published without provenance" >&2
+          echo "enmascara@${VERSION} is not visible with provenance after 5 minutes" >&2
           exit 1
       - name: Tag the release
         env:
