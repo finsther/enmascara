@@ -26,7 +26,7 @@ La definición de terminado del sprint pide el paquete publicado con provenance 
 - **Un test fuerte del corpus.** En cada escenario, a tamaño completo, Enmascara debe enmascarar exactamente los identificadores sembrados. Si el ruido del log produjera un falso positivo, el test fallaría.
 - **MB/s con MB = 10^6 bytes UTF-8**, sobre la latencia media de tinybench (2 s por escenario y 0,5 s de calentamiento).
 - **README sincronizado.** `pnpm bench` escribe `bench/results.json` y la tabla entre `<!-- benchmark:start -->` y `<!-- benchmark:end -->`. Un test falla si la tabla no coincide con `results.json`.
-- **Piso en CI.** El job `benchmark` corre `pnpm bench:check`, publica la tabla en el resumen del job y falla si un escenario queda bajo su piso en `bench/thresholds.json`. Los pisos son el 50 % de la primera medición en un runner de GitHub (Intel Xeon 6973P-C, 2026-11-11): 3,9 MB/s en los tres escenarios de líneas y 7,7 MB/s en registros. El margen es amplio porque los runners compartidos varían mucho.
+- **Piso en CI.** El job `benchmark` corre `pnpm bench:check`, publica la tabla en el resumen del job y falla si un escenario queda bajo su piso en `bench/thresholds.json`. Los pisos son el 50 % de la medición en un runner de GitHub, porque los runners compartidos varían mucho. Cada vez que el rendimiento cambia a propósito, los pisos quedan provisionales en un cuarto de la medición local hasta la siguiente corrida en el runner.
 
 ### README
 
@@ -46,6 +46,7 @@ La definición de terminado del sprint pide el paquete publicado con provenance 
 
 ## Consecuencias
 
-- La primera medición, en un Apple M2 con Node 24, da cerca de 4 MB/s con `text()` y 9 MB/s con `object()`. Un perfil rápido atribuye cerca del 85 % del tiempo de `text()` a la normalización Unicode carácter por carácter. Es el primer lugar para optimizar.
+- La primera medición, en un Apple M2 con Node 24, dio cerca de 4 MB/s con `text()` y 9 MB/s con `object()`. Un perfil atribuyó cerca del 85 % del tiempo de `text()` a la normalización Unicode carácter por carácter. Con tramos ASCII normalizados de una vez, la normalización de 1 MiB de logs pasó de 231 ms a 4 ms, y el benchmark subió a cerca de 51 MB/s con `text()` y 33 MB/s con `object()`. Una prueba basada en propiedades garantiza que el resultado es idéntico al de la ruta carácter por carácter.
+- Cuatro mutantes de `normalize.ts` sobreviven y son equivalentes: que U+0080 cuente como ASCII (no cambia con NFKC ni con mayúsculas y no es invisible), que todo pase por la ruta no ASCII (mismo resultado, más lento) y quitar el límite de longitud en `runEnd` (`charCodeAt` fuera del texto da `NaN`, que ningún predicado acepta).
 - Los pisos del CI detectan regresiones grandes, no pequeñas: el ruido de los runners compartidos no permite más.
 - Publicar requiere pasos manuales una sola vez: 2FA en npm, la reserva 0.0.0, `npm trust github` y el environment `npm` en GitHub.

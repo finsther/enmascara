@@ -1,4 +1,4 @@
-const INVISIBLE_CHARACTER = /^\p{Default_Ignorable_Code_Point}$/u;
+const INVISIBLE_CHARACTER = /\p{Default_Ignorable_Code_Point}/u;
 
 export interface NormalizedText {
   readonly text: string;
@@ -10,22 +10,70 @@ export interface TextSpan {
   readonly end: number;
 }
 
-export function normalizeForDetection(input: string): NormalizedText {
-  const pieces: string[] = [];
-  const originalIndexes: number[] = [];
-  let originalIndex = 0;
-  for (const character of input) {
+const ASCII_LIMIT = 0x80;
+
+type CodeUnitTest = (codeUnit: number) => boolean;
+
+const isAscii: CodeUnitTest = (codeUnit) => codeUnit < ASCII_LIMIT;
+const isOutsideAscii: CodeUnitTest = (codeUnit) => codeUnit >= ASCII_LIMIT;
+
+interface NormalizationTarget {
+  readonly pieces: string[];
+  readonly originalIndexes: number[];
+}
+
+function runEnd(input: string, start: number, belongs: CodeUnitTest): number {
+  let end = start;
+  while (end < input.length && belongs(input.charCodeAt(end))) {
+    end += 1;
+  }
+  return end;
+}
+
+function appendAsciiRun(
+  target: NormalizationTarget,
+  run: string,
+  start: number,
+): void {
+  target.pieces.push(run.toUpperCase());
+  for (let offset = 0; offset < run.length; offset += 1) {
+    target.originalIndexes.push(start + offset);
+  }
+}
+
+function appendCharacters(
+  target: NormalizationTarget,
+  run: string,
+  start: number,
+): void {
+  let originalIndex = start;
+  for (const character of run) {
     if (!INVISIBLE_CHARACTER.test(character)) {
       const piece = character.normalize('NFKC').toUpperCase();
-      pieces.push(piece);
-      originalIndexes.push(
-        ...Array.from({ length: piece.length }, () => originalIndex),
-      );
+      target.pieces.push(piece);
+      for (let unit = 0; unit < piece.length; unit += 1) {
+        target.originalIndexes.push(originalIndex);
+      }
     }
     originalIndex += character.length;
   }
-  originalIndexes.push(input.length);
-  return { text: pieces.join(''), originalIndexes };
+}
+
+export function normalizeForDetection(input: string): NormalizedText {
+  const target: NormalizationTarget = { pieces: [], originalIndexes: [] };
+  let index = 0;
+  while (index < input.length) {
+    const asciiEnd = runEnd(input, index, isAscii);
+    appendAsciiRun(target, input.slice(index, asciiEnd), index);
+    const otherEnd = runEnd(input, asciiEnd, isOutsideAscii);
+    appendCharacters(target, input.slice(asciiEnd, otherEnd), asciiEnd);
+    index = otherEnd;
+  }
+  target.originalIndexes.push(input.length);
+  return {
+    text: target.pieces.join(''),
+    originalIndexes: target.originalIndexes,
+  };
 }
 
 function originalIndexAt(normalized: NormalizedText, index: number): number {

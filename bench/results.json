@@ -1,23 +1,23 @@
 {
-  "measuredOn": "2026-11-10",
+  "measuredOn": "2026-11-13",
   "node": "v24.22.1",
   "cpu": "Apple M2",
   "measurements": [
     {
       "scenario": "clean-lines",
-      "megabytesPerSecond": 4.060630176797529
+      "megabytesPerSecond": 51.3558350619613
     },
     {
       "scenario": "mixed-lines",
-      "megabytesPerSecond": 4.040341463584287
+      "megabytesPerSecond": 50.85408778524528
     },
     {
       "scenario": "dense-lines",
-      "megabytesPerSecond": 4.076830168542861
+      "megabytesPerSecond": 39.142800520466636
     },
     {
       "scenario": "records",
-      "megabytesPerSecond": 8.746093238034202
+      "megabytesPerSecond": 33.49232370266874
     }
   ]
 }
