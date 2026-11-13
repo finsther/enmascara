@@ -12,56 +12,68 @@ export interface TextSpan {
 
 const ASCII_LIMIT = 0x80;
 
-function asciiRunEnd(input: string, start: number): number {
+type CodeUnitTest = (codeUnit: number) => boolean;
+
+const isAscii: CodeUnitTest = (codeUnit) => codeUnit < ASCII_LIMIT;
+const isOutsideAscii: CodeUnitTest = (codeUnit) => codeUnit >= ASCII_LIMIT;
+
+interface NormalizationTarget {
+  readonly pieces: string[];
+  readonly originalIndexes: number[];
+}
+
+function runEnd(input: string, start: number, belongs: CodeUnitTest): number {
   let end = start;
-  while (end < input.length && input.charCodeAt(end) < ASCII_LIMIT) {
+  while (end < input.length && belongs(input.charCodeAt(end))) {
     end += 1;
   }
   return end;
 }
 
-function characterAt(input: string, index: number): string {
-  return String.fromCodePoint(input.codePointAt(index) ?? 0);
-}
-
-function pushRepeated(
-  target: number[],
-  value: number,
-  repetitions: number,
+function appendAsciiRun(
+  target: NormalizationTarget,
+  run: string,
+  start: number,
 ): void {
-  for (let repetition = 0; repetition < repetitions; repetition += 1) {
-    target.push(value);
+  target.pieces.push(run.toUpperCase());
+  for (let offset = 0; offset < run.length; offset += 1) {
+    target.originalIndexes.push(start + offset);
   }
 }
 
-function pushRange(target: number[], start: number, end: number): void {
-  for (let index = start; index < end; index += 1) {
-    target.push(index);
+function appendCharacters(
+  target: NormalizationTarget,
+  run: string,
+  start: number,
+): void {
+  let originalIndex = start;
+  for (const character of run) {
+    if (!INVISIBLE_CHARACTER.test(character)) {
+      const piece = character.normalize('NFKC').toUpperCase();
+      target.pieces.push(piece);
+      for (let unit = 0; unit < piece.length; unit += 1) {
+        target.originalIndexes.push(originalIndex);
+      }
+    }
+    originalIndex += character.length;
   }
 }
 
 export function normalizeForDetection(input: string): NormalizedText {
-  const pieces: string[] = [];
-  const originalIndexes: number[] = [];
+  const target: NormalizationTarget = { pieces: [], originalIndexes: [] };
   let index = 0;
   while (index < input.length) {
-    const runEnd = asciiRunEnd(input, index);
-    if (runEnd > index) {
-      pieces.push(input.slice(index, runEnd).toUpperCase());
-      pushRange(originalIndexes, index, runEnd);
-      index = runEnd;
-    } else {
-      const character = characterAt(input, index);
-      if (!INVISIBLE_CHARACTER.test(character)) {
-        const piece = character.normalize('NFKC').toUpperCase();
-        pieces.push(piece);
-        pushRepeated(originalIndexes, index, piece.length);
-      }
-      index += character.length;
-    }
+    const asciiEnd = runEnd(input, index, isAscii);
+    appendAsciiRun(target, input.slice(index, asciiEnd), index);
+    const otherEnd = runEnd(input, asciiEnd, isOutsideAscii);
+    appendCharacters(target, input.slice(asciiEnd, otherEnd), asciiEnd);
+    index = otherEnd;
   }
-  originalIndexes.push(input.length);
-  return { text: pieces.join(''), originalIndexes };
+  target.originalIndexes.push(input.length);
+  return {
+    text: target.pieces.join(''),
+    originalIndexes: target.originalIndexes,
+  };
 }
 
 function originalIndexAt(normalized: NormalizedText, index: number): number {
