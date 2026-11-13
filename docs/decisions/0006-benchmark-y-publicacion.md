@@ -26,7 +26,7 @@ La definición de terminado del sprint pide el paquete publicado con provenance 
 - **Un test fuerte del corpus.** En cada escenario, a tamaño completo, Enmascara debe enmascarar exactamente los identificadores sembrados. Si el ruido del log produjera un falso positivo, el test fallaría.
 - **MB/s con MB = 10^6 bytes UTF-8**, sobre la latencia media de tinybench (2 s por escenario y 0,5 s de calentamiento).
 - **README sincronizado.** `pnpm bench` escribe `bench/results.json` y la tabla entre `<!-- benchmark:start -->` y `<!-- benchmark:end -->`. Un test falla si la tabla no coincide con `results.json`.
-- **Piso en CI.** El job `benchmark` corre `pnpm bench:check`, publica la tabla en el resumen del job y falla si un escenario queda bajo su piso en `bench/thresholds.json`. Los pisos actuales son provisionales, un cuarto de la medición local. Se fijan al 50 % de la primera medición en un runner de GitHub, porque los runners compartidos varían mucho.
+- **Piso en CI.** El job `benchmark` corre `pnpm bench:check`, publica la tabla en el resumen del job y falla si un escenario queda bajo su piso en `bench/thresholds.json`. Los pisos son el 50 % de la primera medición en un runner de GitHub (Intel Xeon 6973P-C, 2026-11-11): 3,9 MB/s en los tres escenarios de líneas y 7,7 MB/s en registros. El margen es amplio porque los runners compartidos varían mucho.
 
 ### README
 
