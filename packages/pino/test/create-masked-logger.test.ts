@@ -39,10 +39,10 @@ function failingRedactor(): Redactor {
   return { text: fail, object: fail, findings: () => [] };
 }
 
-function redactorReturningText(): Redactor {
+function redactorReturning(value: unknown): Redactor {
   return {
     text: () => '[TEXT]',
-    object: () => '[TEXT]',
+    object: () => value,
     findings: () => [],
   };
 }
@@ -327,16 +327,17 @@ describe.each(PINO_VERSIONS)('createMaskedLogger on %s', (_, pino) => {
     });
   });
 
-  it('writes [REDACTED] when the redactor returns no object', () => {
-    const { logger, output } = maskedLogger({}, redactorReturningText());
+  it.each(['[TEXT]', null])(
+    'writes [REDACTED] when the redactor returns %s for an object',
+    (returned) => {
+      const { logger, output } = maskedLogger({}, redactorReturning(returned));
 
-    logger.child({ rfc: RFC }).info({ clabe: CLABE }, 'pago');
+      logger.child({ rfc: RFC }).info({ clabe: CLABE }, 'pago');
 
-    expectNoRawIdentifier(output);
-    expect(output.lines()).toMatchObject([
-      { enmascara: '[REDACTED]', msg: '[TEXT]' },
-    ]);
-  });
+      expectNoRawIdentifier(output);
+      expect(output.lines()).toMatchObject([{ enmascara: '[REDACTED]' }]);
+    },
+  );
 
   it('writes [REDACTED] when masking fails', () => {
     const { logger, output } = maskedLogger(
