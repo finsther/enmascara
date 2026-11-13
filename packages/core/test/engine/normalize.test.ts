@@ -33,7 +33,17 @@ const mixedText = fc
     fc.oneof(
       fc.string({ unit: 'grapheme-ascii' }),
       fc.string({ unit: 'binary' }),
-      fc.constantFrom('\u200B', '\u00AD', 'ﬁ', '０', '\u00A0', 'ñ', '😀'),
+      fc.constantFrom(
+        '\u007F',
+        '\u0080',
+        '\u200B',
+        '\u00AD',
+        'ﬁ',
+        '０',
+        '\u00A0',
+        'ñ',
+        '😀',
+      ),
     ),
     { maxLength: MIXED_TEXT_PIECES },
   )
