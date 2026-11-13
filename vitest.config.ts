@@ -4,7 +4,7 @@ const MINIMUM_CORE_COVERAGE_PERCENT = 95;
 
 export default defineConfig({
   test: {
-    projects: ['packages/*', 'spec', 'bench'],
+    projects: ['packages/*', 'examples/*', 'spec', 'bench'],
     coverage: {
       provider: 'v8',
       include: ['packages/*/src/**/*.ts', 'spec/tools/**/*.ts'],
