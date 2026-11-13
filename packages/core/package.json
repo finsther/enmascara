@@ -1,6 +1,6 @@
 {
   "name": "enmascara",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Finds and masks Mexican identifiers validated by their check digit.",
   "keywords": [
     "clabe",
