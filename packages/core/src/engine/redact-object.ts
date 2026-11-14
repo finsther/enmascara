@@ -6,9 +6,18 @@ const MAXIMUM_DEPTH_MASK = '[MaxDepth]';
 const UNREADABLE_OBJECT_MASK = '[REDACTED]';
 const DEFAULT_ERROR_NAME = 'Error';
 const ERROR_NAME_KEY = 'name';
-const ERROR_TEXT_KEYS = ['message', 'stack'] as const;
+const ERROR_STACK_KEY = 'stack';
+const ERROR_TEXT_KEYS = ['message', ERROR_STACK_KEY] as const;
+const ENGINE_STACK_GETTER = Object.getOwnPropertyDescriptor(
+  new Error(),
+  ERROR_STACK_KEY,
+)?.get;
 
 type Store = (value: unknown) => void;
+
+type OwnValue = { readonly value: unknown } | undefined;
+
+type ReadOwnValue = (source: object, key: string) => OwnValue;
 
 interface CopyTask {
   readonly kind: 'copy';
@@ -46,10 +55,7 @@ function redactPrimitive(value: unknown, engine: Engine): unknown {
   return value;
 }
 
-function ownDataValue(
-  source: object,
-  key: string,
-): { readonly value: unknown } | undefined {
+function ownDataValue(source: object, key: string): OwnValue {
   const descriptor = Object.getOwnPropertyDescriptor(source, key);
   if (
     descriptor === undefined ||
@@ -59,6 +65,20 @@ function ownDataValue(
     return undefined;
   }
   return { value: descriptor.value };
+}
+
+function engineStackValue(source: object, key: string): OwnValue {
+  if (key !== ERROR_STACK_KEY || ENGINE_STACK_GETTER === undefined) {
+    return undefined;
+  }
+  const descriptor = Object.getOwnPropertyDescriptor(source, key);
+  return descriptor?.get === ENGINE_STACK_GETTER
+    ? { value: ENGINE_STACK_GETTER.call(source) }
+    : undefined;
+}
+
+function ownErrorValue(source: object, key: string): OwnValue {
+  return ownDataValue(source, key) ?? engineStackValue(source, key);
 }
 
 function errorName(error: Error): string {
@@ -98,9 +118,10 @@ function copyProperties(
   keys: readonly string[],
   container: Record<string, unknown>,
   engine: Engine,
+  readOwnValue: ReadOwnValue,
 ): readonly ChildValue[] {
   return keys.flatMap((key) => {
-    const data = ownDataValue(source, key);
+    const data = readOwnValue(source, key);
     if (data === undefined) {
       return [];
     }
@@ -126,12 +147,18 @@ function copyObject(source: object, engine: Engine): ShallowCopy {
     const keys = [...new Set([...ERROR_TEXT_KEYS, ...Object.keys(source)])];
     return {
       container,
-      children: copyProperties(source, keys, container, engine),
+      children: copyProperties(source, keys, container, engine, ownErrorValue),
     };
   }
   return {
     container,
-    children: copyProperties(source, Object.keys(source), container, engine),
+    children: copyProperties(
+      source,
+      Object.keys(source),
+      container,
+      engine,
+      ownDataValue,
+    ),
   };
 }
 
