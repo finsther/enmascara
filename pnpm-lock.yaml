@@ -63,6 +63,18 @@ importers:
         specifier: 10.4.0
         version: 10.4.0
 
+  examples/sentry:
+    dependencies:
+      '@sentry/node':
+        specifier: 11.12.0
+        version: 11.12.0(rollup@4.65.0)
+      enmascara:
+        specifier: workspace:*
+        version: link:../../packages/core
+      enmascara-sentry:
+        specifier: workspace:*
+        version: link:../../packages/sentry
+
   packages/core:
     devDependencies:
       fast-check:
