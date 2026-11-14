@@ -164,7 +164,59 @@ describe('redactObject', () => {
 
     expect(property(copy, 'name')).toBe('TypeError');
     expect(property(copy, 'message')).toBe('bad curp [CURP]');
+    expect(property(copy, 'stack')).toMatch(/^TypeError: bad curp \[CURP\]\n/);
     expect(String(property(copy, 'stack'))).not.toContain(CURP);
+  });
+
+  it('masks a stack the application reassigned', () => {
+    const error = new Error('fallo');
+    error.stack = `Error: curp ${CURP}\n    at pago`;
+
+    const copy = property(redactObject({ error }, engine), 'error');
+
+    expect(property(copy, 'stack')).toBe('Error: curp [CURP]\n    at pago');
+  });
+
+  it('skips a stack getter defined by the application without running it', () => {
+    const error = new Error('fallo');
+    Object.defineProperty(error, 'stack', {
+      get(): string {
+        throw new Error('the getter ran');
+      },
+    });
+
+    const copy = property(redactObject({ error }, engine), 'error');
+
+    expect(copy).toEqual({ name: 'Error', message: 'fallo' });
+  });
+
+  it('reads the stack getter of the engine only for the stack', () => {
+    const error = new Error('fallo');
+    const stackDescriptor = Object.getOwnPropertyDescriptor(error, 'stack');
+    Object.defineProperty(error, 'origen', {
+      ...stackDescriptor,
+      enumerable: true,
+    });
+
+    const copy = property(redactObject({ error }, engine), 'error');
+
+    expect(Object.keys(copy as object)).not.toContain('origen');
+  });
+
+  it('masks an error whose stack fails to format, failing closed', () => {
+    const originalPrepareStackTrace = Error.prepareStackTrace;
+    Error.prepareStackTrace = () => {
+      throw new Error(`format failed ${CURP}`);
+    };
+    try {
+      const error = new Error(`curp ${CURP}`);
+
+      const result = redactObject({ error }, engine);
+
+      expect(result).toEqual({ error: '[REDACTED]' });
+    } finally {
+      Error.prepareStackTrace = originalPrepareStackTrace;
+    }
   });
 
   it('drops functions', () => {
