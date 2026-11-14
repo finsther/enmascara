@@ -203,6 +203,22 @@ describe('redactObject', () => {
     expect(Object.keys(copy as object)).not.toContain('origen');
   });
 
+  it('masks an error whose stack fails to format, failing closed', () => {
+    const originalPrepareStackTrace = Error.prepareStackTrace;
+    Error.prepareStackTrace = () => {
+      throw new Error(`format failed ${CURP}`);
+    };
+    try {
+      const error = new Error(`curp ${CURP}`);
+
+      const result = redactObject({ error }, engine);
+
+      expect(result).toEqual({ error: '[REDACTED]' });
+    } finally {
+      Error.prepareStackTrace = originalPrepareStackTrace;
+    }
+  });
+
   it('drops functions', () => {
     const result = redactObject({ run: () => CURP, ok: true }, engine);
 
