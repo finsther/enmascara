@@ -1,0 +1,14 @@
+{
+  "name": "enmascara-example-sentry",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node index.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@sentry/node": "11.12.0",
+    "enmascara": "workspace:*",
+    "enmascara-sentry": "workspace:*"
+  }
+}

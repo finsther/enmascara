@@ -12,6 +12,8 @@
     "packages/core/test",
     "packages/pino/src",
     "packages/pino/test",
+    "packages/sentry/src",
+    "packages/sentry/test",
     "spec/tools",
     "spec/test"
   ]

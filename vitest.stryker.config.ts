@@ -5,6 +5,7 @@ export default defineConfig({
     include: [
       'packages/core/test/**/*.test.ts',
       'packages/pino/test/**/*.test.ts',
+      'packages/sentry/test/**/*.test.ts',
       'spec/test/**/*.test.ts',
     ],
     exclude: [
