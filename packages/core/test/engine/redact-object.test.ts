@@ -190,6 +190,19 @@ describe('redactObject', () => {
     expect(copy).toEqual({ name: 'Error', message: 'fallo' });
   });
 
+  it('reads the stack getter of the engine only for the stack', () => {
+    const error = new Error('fallo');
+    const stackDescriptor = Object.getOwnPropertyDescriptor(error, 'stack');
+    Object.defineProperty(error, 'origen', {
+      ...stackDescriptor,
+      enumerable: true,
+    });
+
+    const copy = property(redactObject({ error }, engine), 'error');
+
+    expect(Object.keys(copy as object)).not.toContain('origen');
+  });
+
   it('drops functions', () => {
     const result = redactObject({ run: () => CURP, ok: true }, engine);
 
