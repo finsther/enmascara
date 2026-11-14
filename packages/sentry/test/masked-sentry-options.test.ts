@@ -200,6 +200,33 @@ describe('maskedSentryOptions', () => {
     expect(await beforeSend(errorEvent(), {})).toBeNull();
   });
 
+  it('answers synchronously when the hooks of the application do', () => {
+    const { beforeSend } = maskedSentryOptions(redact, {
+      beforeSend: (event) => event,
+    });
+
+    const sent = beforeSend(errorEvent(), {});
+
+    expect(sent).not.toBeInstanceOf(Promise);
+    expect(asSent(sent)).toMatchObject({ message: 'SPEI a [CLABE]' });
+  });
+
+  it('sends an event whose trace context is not an object', async () => {
+    const { beforeSend } = maskedSentryOptions(redact, {});
+    const event = {
+      ...errorEvent(),
+      contexts: { trace: null },
+    } as unknown as ErrorEvent;
+
+    const sent = await beforeSend(event, {});
+
+    expect(asSent(sent)).toMatchObject({
+      [EVENT_ID_KEY]: EVENT_ID_WITH_CARD_DIGITS,
+      contexts: { trace: null },
+      message: 'SPEI a [CLABE]',
+    });
+  });
+
   it('masks identifiers in breadcrumbs', () => {
     const { beforeBreadcrumb } = maskedSentryOptions(redact, {});
     const breadcrumb: Breadcrumb = {
