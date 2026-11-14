@@ -15,6 +15,7 @@
   "mutate": [
     "packages/core/src/**/*.ts",
     "packages/pino/src/**/*.ts",
+    "packages/sentry/src/**/*.ts",
     "spec/tools/**/*.ts"
   ],
   "incremental": true,
