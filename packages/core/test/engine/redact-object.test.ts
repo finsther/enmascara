@@ -164,7 +164,30 @@ describe('redactObject', () => {
 
     expect(property(copy, 'name')).toBe('TypeError');
     expect(property(copy, 'message')).toBe('bad curp [CURP]');
+    expect(property(copy, 'stack')).toMatch(/^TypeError: bad curp \[CURP\]\n/);
     expect(String(property(copy, 'stack'))).not.toContain(CURP);
+  });
+
+  it('masks a stack the application reassigned', () => {
+    const error = new Error('fallo');
+    error.stack = `Error: curp ${CURP}\n    at pago`;
+
+    const copy = property(redactObject({ error }, engine), 'error');
+
+    expect(property(copy, 'stack')).toBe('Error: curp [CURP]\n    at pago');
+  });
+
+  it('skips a stack getter defined by the application without running it', () => {
+    const error = new Error('fallo');
+    Object.defineProperty(error, 'stack', {
+      get(): string {
+        throw new Error('the getter ran');
+      },
+    });
+
+    const copy = property(redactObject({ error }, engine), 'error');
+
+    expect(copy).toEqual({ name: 'Error', message: 'fallo' });
   });
 
   it('drops functions', () => {
