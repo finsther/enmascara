@@ -1,0 +1,14 @@
+{
+  "name": "enmascara-example-pino",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node index.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "enmascara": "workspace:*",
+    "enmascara-pino": "workspace:*",
+    "pino": "10.4.0"
+  }
+}
