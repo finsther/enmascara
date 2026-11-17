@@ -3,6 +3,7 @@ import * as sentry from '@sentry/node';
 import type { Redactor } from 'enmascara';
 import { maskOrDrop } from './masking.js';
 import { maskSpan, reduceSpan } from './spans.js';
+import { withTraceHeaderIntegration } from './trace-header.js';
 
 type BeforeSend = NonNullable<NodeOptions['beforeSend']>;
 type BeforeSendTransaction = NonNullable<NodeOptions['beforeSendTransaction']>;
@@ -29,6 +30,7 @@ const markStaticSpanCallback: typeof sentry.withStaticSpan | undefined =
  * `@sentry/node` 11.
  */
 export type MaskedSentryOptions = NodeOptions & {
+  readonly integrations: NonNullable<NodeOptions['integrations']>;
   readonly beforeSend: BeforeSend;
   readonly beforeSendSpan: BeforeSendSpan;
   readonly beforeBreadcrumb: BeforeBreadcrumb;
@@ -166,5 +168,6 @@ export function maskedSentryOptions(
       redactor,
       options.beforeBreadcrumb,
     ),
+    integrations: withTraceHeaderIntegration(redactor, options.integrations),
   };
 }
