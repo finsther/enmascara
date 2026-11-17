@@ -1,8 +1,10 @@
-import * as sentryEleven from '@sentry/node';
+import type * as sentryModule from '@sentry/node';
+import type { NodeOptions } from '@sentry/node';
 import { createRedactor, type Redactor } from 'enmascara';
-import * as sentryTen from 'sentry-node-10';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { maskedSentryOptions } from '../src/index.js';
+import { maskedSentryOptions } from '../../src/index.js';
+
+export type Sentry = typeof sentryModule;
 
 const CLABE = '002180032240946700';
 const CURP = 'GODE561231HDFRRN00';
@@ -10,13 +12,6 @@ const RFC = 'GODE561231GR8';
 const CARD = '4242424242424242';
 const RAW_IDENTIFIERS = [CLABE, CURP, RFC, CARD] as const;
 const UNREACHABLE_DSN = 'https://public@example.invalid/1';
-
-type Sentry = typeof sentryEleven;
-
-const SENTRY_VERSIONS = [
-  ['@sentry/node 11', sentryEleven],
-  ['@sentry/node 10', sentryTen as unknown as Sentry],
-] as const;
 
 const redact = createRedactor();
 
@@ -34,10 +29,15 @@ interface CapturedEnvelopes {
   readonly payloads: () => string;
 }
 
-type TracingOptions = Pick<
-  sentryEleven.NodeOptions,
+export type TracingOptions = Pick<
+  NodeOptions,
   'tracesSampleRate' | 'traceLifecycle'
 >;
+
+export interface TracingSetup {
+  readonly name: string;
+  readonly options: TracingOptions;
+}
 
 function startSentry(
   sentry: Sentry,
@@ -89,16 +89,6 @@ function startSentry(
   };
 }
 
-const TRACING_SETUPS = [
-  ['@sentry/node 11 with streamed spans', sentryEleven, {}],
-  [
-    '@sentry/node 11 with static spans',
-    sentryEleven,
-    { traceLifecycle: 'static' },
-  ],
-  ['@sentry/node 10', sentryTen as unknown as Sentry, {}],
-] as const satisfies readonly (readonly [string, Sentry, TracingOptions])[];
-
 function traceRequest(sentry: Sentry): void {
   sentry.startSpan(
     { name: `GET /cuentas/${CLABE}`, attributes: { curp: CURP } },
@@ -108,9 +98,14 @@ function traceRequest(sentry: Sentry): void {
   );
 }
 
-describe.each(TRACING_SETUPS)(
-  'maskedSentryOptions tracing with %s',
-  (_, sentry, lifecycle) => {
+export function describeSentryClient(
+  version: string,
+  sentry: Sentry,
+  tracingSetups: readonly TracingSetup[],
+): void {
+  describe.each(
+    tracingSetups.map((setup) => [setup.name, setup.options] as const),
+  )(`maskedSentryOptions tracing with ${version} and %s`, (_, lifecycle) => {
     afterEach(async () => {
       await sentry.close();
     });
@@ -156,60 +151,65 @@ describe.each(TRACING_SETUPS)(
         expect(envelopes.headers()).not.toContain(identifier);
       }
     });
-  },
-);
-
-describe.each(SENTRY_VERSIONS)('maskedSentryOptions with %s', (_, sentry) => {
-  afterEach(async () => {
-    await sentry.close();
-    sentry.getIsolationScope().clearBreadcrumbs();
-    sentry.getCurrentScope().clearBreadcrumbs();
   });
 
-  it('sends error events masked through the transport', async () => {
-    const envelopes = startSentry(sentry, redact);
+  describe(`maskedSentryOptions with ${version}`, () => {
+    afterEach(async () => {
+      await sentry.close();
+      sentry.getIsolationScope().clearBreadcrumbs();
+      sentry.getCurrentScope().clearBreadcrumbs();
+    });
 
-    sentry.setUser({ id: CURP });
-    sentry.setExtra('clabe', CLABE);
-    sentry.setContext('pago', { tarjeta: CARD });
-    sentry.addBreadcrumb({ message: `SPEI a ${CLABE}` });
-    sentry.captureException(new Error(`RFC ${RFC} inválido`));
-    sentry.captureMessage(`cargo a ${CARD}`);
-    await sentry.flush();
+    it('sends error events masked through the transport', async () => {
+      const envelopes = startSentry(sentry, redact);
 
-    expect(envelopes.items('event')).toMatchObject([
-      {
-        exception: { values: [{ value: 'RFC [RFC] inválido' }] },
-        user: { id: '[CURP]' },
-        extra: { clabe: '[CLABE]' },
-        contexts: { pago: { tarjeta: '[CARD]' } },
-        breadcrumbs: [{ message: 'SPEI a [CLABE]' }],
-      },
-      { message: 'cargo a [CARD]' },
-    ]);
-    for (const identifier of RAW_IDENTIFIERS) {
-      expect(envelopes.raw()).not.toContain(identifier);
-    }
+      sentry.setUser({ id: CURP });
+      sentry.setExtra('clabe', CLABE);
+      sentry.setContext('pago', { tarjeta: CARD });
+      sentry.addBreadcrumb({ message: `SPEI a ${CLABE}` });
+      sentry.captureException(new Error(`RFC ${RFC} inválido`));
+      sentry.captureMessage(`cargo a ${CARD}`);
+      await sentry.flush();
+
+      expect(envelopes.items('event')).toMatchObject([
+        {
+          exception: { values: [{ value: 'RFC [RFC] inválido' }] },
+          user: { id: '[CURP]' },
+          extra: { clabe: '[CLABE]' },
+          contexts: { pago: { tarjeta: '[CARD]' } },
+          breadcrumbs: [{ message: 'SPEI a [CLABE]' }],
+        },
+        { message: 'cargo a [CARD]' },
+      ]);
+      for (const identifier of RAW_IDENTIFIERS) {
+        expect(envelopes.raw()).not.toContain(identifier);
+      }
+    });
+
+    it('records breadcrumbs already masked', () => {
+      startSentry(sentry, redact);
+
+      sentry.addBreadcrumb({
+        message: `SPEI a ${CLABE}`,
+        data: { curp: CURP },
+      });
+
+      expect(
+        sentry.getIsolationScope().getScopeData().breadcrumbs,
+      ).toMatchObject([
+        { message: 'SPEI a [CLABE]', data: { curp: '[CURP]' } },
+      ]);
+    });
+
+    it('sends nothing when masking fails', async () => {
+      const envelopes = startSentry(sentry, failingRedactor());
+
+      sentry.addBreadcrumb({ message: `SPEI a ${CLABE}` });
+      sentry.captureException(new Error(`RFC ${RFC} inválido`));
+      await sentry.flush();
+
+      expect(envelopes.raw()).toBe('');
+      expect(sentry.getIsolationScope().getScopeData().breadcrumbs).toEqual([]);
+    });
   });
-
-  it('records breadcrumbs already masked', () => {
-    startSentry(sentry, redact);
-
-    sentry.addBreadcrumb({ message: `SPEI a ${CLABE}`, data: { curp: CURP } });
-
-    expect(sentry.getIsolationScope().getScopeData().breadcrumbs).toMatchObject(
-      [{ message: 'SPEI a [CLABE]', data: { curp: '[CURP]' } }],
-    );
-  });
-
-  it('sends nothing when masking fails', async () => {
-    const envelopes = startSentry(sentry, failingRedactor());
-
-    sentry.addBreadcrumb({ message: `SPEI a ${CLABE}` });
-    sentry.captureException(new Error(`RFC ${RFC} inválido`));
-    await sentry.flush();
-
-    expect(envelopes.raw()).toBe('');
-    expect(sentry.getIsolationScope().getScopeData().breadcrumbs).toEqual([]);
-  });
-});
+}
