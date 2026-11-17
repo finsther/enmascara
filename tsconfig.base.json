@@ -16,6 +16,10 @@
     "verbatimModuleSyntax": true,
     "isolatedModules": true,
     "forceConsistentCasingInFileNames": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "paths": {
+      "enmascara": ["./packages/core/src/index.ts"],
+      "enmascara-*": ["./packages/*/src/index.ts"]
+    }
   }
 }
