@@ -1,0 +1,66 @@
+{
+  "name": "enmascara-sentry",
+  "version": "0.0.0",
+  "description": "Masks Mexican identifiers in Sentry events and breadcrumbs with enmascara.",
+  "keywords": [
+    "sentry",
+    "error-tracking",
+    "clabe",
+    "curp",
+    "rfc",
+    "pii",
+    "redaction",
+    "masking"
+  ],
+  "license": "MIT",
+  "homepage": "https://github.com/finsther/enmascara/tree/main/packages/sentry#readme",
+  "bugs": {
+    "url": "https://github.com/finsther/enmascara/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/finsther/enmascara.git",
+    "directory": "packages/sentry"
+  },
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "@sentry/node": "^10.0.0 || ^11.0.0",
+    "enmascara": "^0.1.0"
+  },
+  "devDependencies": {
+    "@sentry/node": "11.12.0",
+    "enmascara": "workspace:*",
+    "sentry-node-10": "npm:@sentry/node@10.78.0"
+  }
+}

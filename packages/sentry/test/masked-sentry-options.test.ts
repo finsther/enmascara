@@ -1,0 +1,673 @@
+import type { Breadcrumb, ErrorEvent, NodeOptions } from '@sentry/node';
+import { createRedactor, type Redactor } from 'enmascara';
+import { describe, expect, it } from 'vitest';
+import { maskedSentryOptions } from '../src/index.js';
+
+type StreamedSpanJson = Parameters<
+  NonNullable<NodeOptions['beforeSendSpan']>
+>[0];
+type TransactionEvent = Parameters<
+  NonNullable<NodeOptions['beforeSendTransaction']>
+>[0];
+type SpanJson = NonNullable<TransactionEvent['spans']>[number];
+
+const CLABE = '002180032240946700';
+const CURP = 'GODE561231HDFRRN00';
+const RFC = 'GODE561231GR8';
+const CARD = '4242424242424242';
+const RAW_IDENTIFIERS = [CLABE, CURP, RFC, CARD] as const;
+
+const EVENT_ID_KEY = 'event_id';
+const TRACE_ID_KEY = 'trace_id';
+const SPAN_ID_KEY = 'span_id';
+const PARENT_SPAN_ID_KEY = 'parent_span_id';
+const QUERY_STRING_KEY = 'query_string';
+
+const EVENT_ID_WITH_CARD_DIGITS = '00fa0b031b4269506469985117bbaad2';
+const TRACE_ID_WITH_CLABE_DIGITS = 'fae6d49ad5c154010716903649688f8a';
+const SPAN_ID_WITH_CARD_DIGITS = '4111111111111111';
+const PARENT_SPAN_ID_WITH_CARD_DIGITS = '5555555555554444';
+
+const redact = createRedactor();
+
+function errorEvent(): ErrorEvent {
+  return {
+    type: undefined,
+    [EVENT_ID_KEY]: EVENT_ID_WITH_CARD_DIGITS,
+    message: `SPEI a ${CLABE}`,
+    exception: {
+      values: [
+        {
+          type: 'Error',
+          value: `RFC ${RFC} inválido`,
+          stacktrace: {
+            frames: [
+              { function: 'pagar', vars: { curp: CURP, tarjeta: CARD } },
+            ],
+          },
+        },
+      ],
+    },
+    request: {
+      url: `https://api.example.mx/cuentas/${CLABE}`,
+      [QUERY_STRING_KEY]: `curp=${CURP}`,
+      data: { tarjeta: CARD },
+      headers: { 'x-rfc': RFC },
+      cookies: { curp: CURP },
+    },
+    extra: { clabe: CLABE },
+    contexts: {
+      trace: {
+        [TRACE_ID_KEY]: TRACE_ID_WITH_CLABE_DIGITS,
+        [SPAN_ID_KEY]: SPAN_ID_WITH_CARD_DIGITS,
+        [PARENT_SPAN_ID_KEY]: PARENT_SPAN_ID_WITH_CARD_DIGITS,
+      },
+      pago: { tarjeta: CARD },
+    },
+    user: { id: CURP },
+    tags: { rfc: RFC },
+    breadcrumbs: [{ message: `cargo a ${CARD}`, data: { clabe: CLABE } }],
+    transaction: `/cuentas/${CLABE}`,
+  };
+}
+
+const IS_SEGMENT_KEY = 'is_segment';
+const START_TIMESTAMP_KEY = 'start_timestamp';
+const END_TIMESTAMP_KEY = 'end_timestamp';
+const TIMESTAMP_KEY = 'timestamp';
+const SPAN_START = 1_763_400_000.25;
+const SPAN_END = 1_763_400_001.5;
+
+type MaskSpan = (span: object) => unknown;
+
+function streamedSpan(): StreamedSpanJson {
+  return {
+    [TRACE_ID_KEY]: TRACE_ID_WITH_CLABE_DIGITS,
+    [SPAN_ID_KEY]: SPAN_ID_WITH_CARD_DIGITS,
+    [PARENT_SPAN_ID_KEY]: PARENT_SPAN_ID_WITH_CARD_DIGITS,
+    name: `GET /cuentas/${CLABE}`,
+    status: 'ok',
+    [IS_SEGMENT_KEY]: true,
+    [START_TIMESTAMP_KEY]: SPAN_START,
+    [END_TIMESTAMP_KEY]: SPAN_END,
+    attributes: { curp: { type: 'string', value: CURP } },
+  };
+}
+
+function staticSpan(): Record<string, unknown> {
+  return {
+    [TRACE_ID_KEY]: TRACE_ID_WITH_CLABE_DIGITS,
+    [SPAN_ID_KEY]: SPAN_ID_WITH_CARD_DIGITS,
+    [PARENT_SPAN_ID_KEY]: PARENT_SPAN_ID_WITH_CARD_DIGITS,
+    description: `pago con ${CARD}`,
+    data: { rfc: RFC },
+    [START_TIMESTAMP_KEY]: SPAN_START,
+    [TIMESTAMP_KEY]: SPAN_END,
+  };
+}
+
+function transactionEvent(): TransactionEvent {
+  return {
+    type: 'transaction',
+    [EVENT_ID_KEY]: EVENT_ID_WITH_CARD_DIGITS,
+    transaction: `GET /cuentas/${CLABE}`,
+    contexts: {
+      trace: {
+        [TRACE_ID_KEY]: TRACE_ID_WITH_CLABE_DIGITS,
+        [SPAN_ID_KEY]: SPAN_ID_WITH_CARD_DIGITS,
+      },
+    },
+    spans: [staticSpan() as unknown as SpanJson],
+  };
+}
+
+type Integration = Exclude<
+  NonNullable<NodeOptions['integrations']>,
+  (...args: never[]) => unknown
+>[number];
+type Client = Parameters<NonNullable<Integration['setup']>>[0];
+type TraceHeader = Record<string, unknown>;
+type TraceHeaderListener = (header: TraceHeader) => void;
+
+const TRACE_HEADER_INTEGRATION = 'EnmascaraTraceHeader';
+const CREATE_TRACE_HEADER_HOOK = 'createDsc';
+const applicationIntegration: Integration = { name: 'aplicacion' };
+const defaultIntegration: Integration = { name: 'predeterminada' };
+
+function integrationNames(
+  integrations: NodeOptions['integrations'],
+  defaults: Integration[],
+): readonly string[] {
+  const resolved =
+    typeof integrations === 'function'
+      ? integrations(defaults)
+      : (integrations ?? []);
+  return resolved.map(({ name }) => name);
+}
+
+function createTraceHeader(
+  redactor: Redactor,
+  header: TraceHeader,
+): TraceHeader {
+  const listeners: TraceHeaderListener[] = [];
+  const client = {
+    on: (hook: string, listener: TraceHeaderListener) => {
+      if (hook === CREATE_TRACE_HEADER_HOOK) {
+        listeners.push(listener);
+      }
+      return () => undefined;
+    },
+  } as unknown as Client;
+  const { integrations } = maskedSentryOptions(redactor, {});
+  const traceHeaderIntegration = (integrations as Integration[]).find(
+    ({ name }) => name === TRACE_HEADER_INTEGRATION,
+  );
+  traceHeaderIntegration?.setup?.(client);
+  for (const listener of listeners) {
+    listener(header);
+  }
+  return header;
+}
+
+type Log = Parameters<NonNullable<NodeOptions['beforeSendLog']>>[0];
+type Metric = Parameters<NonNullable<NodeOptions['beforeSendMetric']>>[0];
+
+function applicationLog(): Log {
+  return {
+    level: 'info',
+    message: `SPEI a ${CLABE}`,
+    attributes: { curp: CURP },
+  };
+}
+
+function applicationMetric(): Metric {
+  return {
+    name: 'cobros',
+    value: 1,
+    type: 'counter',
+    attributes: { tarjeta: CARD },
+  };
+}
+
+function failingRedactor(): Redactor {
+  const fail = (): never => {
+    throw new Error('masking failed');
+  };
+  return { text: fail, object: fail, findings: () => [] };
+}
+
+function redactorReturning(value: unknown): Redactor {
+  return {
+    text: () => '[TEXT]',
+    object: () => value,
+    findings: () => [],
+  };
+}
+
+function redactorWithText(text: unknown): Redactor {
+  return {
+    text: () => text as string,
+    object: (value) => value,
+    findings: () => [],
+  };
+}
+
+function asSent(value: unknown): unknown {
+  return JSON.parse(JSON.stringify(value));
+}
+
+function expectNoRawIdentifier(value: unknown): void {
+  const serialized = JSON.stringify(value);
+  for (const identifier of RAW_IDENTIFIERS) {
+    expect(serialized).not.toContain(identifier);
+  }
+}
+
+describe('maskedSentryOptions', () => {
+  it('masks identifiers in every field of an error event', async () => {
+    const { beforeSend } = maskedSentryOptions(redact, {});
+
+    const sent = await beforeSend(errorEvent(), {});
+
+    expect(asSent(sent)).toMatchObject({
+      message: 'SPEI a [CLABE]',
+      exception: {
+        values: [
+          {
+            value: 'RFC [RFC] inválido',
+            stacktrace: {
+              frames: [{ vars: { curp: '[CURP]', tarjeta: '[CARD]' } }],
+            },
+          },
+        ],
+      },
+      request: {
+        url: 'https://api.example.mx/cuentas/[CLABE]',
+        [QUERY_STRING_KEY]: 'curp=[CURP]',
+        data: { tarjeta: '[CARD]' },
+        headers: { 'x-rfc': '[RFC]' },
+        cookies: { curp: '[CURP]' },
+      },
+      extra: { clabe: '[CLABE]' },
+      contexts: { pago: { tarjeta: '[CARD]' } },
+      user: { id: '[CURP]' },
+      tags: { rfc: '[RFC]' },
+      breadcrumbs: [{ message: 'cargo a [CARD]', data: { clabe: '[CLABE]' } }],
+      transaction: '/cuentas/[CLABE]',
+    });
+    expectNoRawIdentifier(sent);
+  });
+
+  it('keeps the identifiers Sentry generates for the event and its trace', async () => {
+    const { beforeSend } = maskedSentryOptions(redact, {});
+
+    const sent = await beforeSend(errorEvent(), {});
+
+    expect(asSent(sent)).toMatchObject({
+      [EVENT_ID_KEY]: EVENT_ID_WITH_CARD_DIGITS,
+      contexts: {
+        trace: {
+          [TRACE_ID_KEY]: TRACE_ID_WITH_CLABE_DIGITS,
+          [SPAN_ID_KEY]: SPAN_ID_WITH_CARD_DIGITS,
+          [PARENT_SPAN_ID_KEY]: PARENT_SPAN_ID_WITH_CARD_DIGITS,
+        },
+      },
+    });
+  });
+
+  it('masks trace identifiers that Sentry did not generate', async () => {
+    const { beforeSend } = maskedSentryOptions(redact, {});
+    const event: ErrorEvent = {
+      type: undefined,
+      [EVENT_ID_KEY]: `evento ${CURP}`,
+      contexts: {
+        trace: { [TRACE_ID_KEY]: CURP, [SPAN_ID_KEY]: `span ${RFC}` },
+      },
+    };
+
+    const sent = await beforeSend(event, {});
+
+    expect(asSent(sent)).toMatchObject({
+      [EVENT_ID_KEY]: 'evento [CURP]',
+      contexts: {
+        trace: { [TRACE_ID_KEY]: '[CURP]', [SPAN_ID_KEY]: 'span [RFC]' },
+      },
+    });
+  });
+
+  it('leaves the original event untouched', async () => {
+    const { beforeSend } = maskedSentryOptions(redact, {});
+    const event = errorEvent();
+
+    await beforeSend(event, {});
+
+    expect(event).toEqual(errorEvent());
+  });
+
+  it('runs the beforeSend of the application before masking', async () => {
+    const { beforeSend } = maskedSentryOptions(redact, {
+      beforeSend: (event) => ({ ...event, extra: { cuenta: CLABE } }),
+    });
+
+    const sent = await beforeSend(errorEvent(), {});
+
+    expect(asSent(sent)).toMatchObject({ extra: { cuenta: '[CLABE]' } });
+  });
+
+  it('awaits an asynchronous beforeSend of the application', async () => {
+    const { beforeSend } = maskedSentryOptions(redact, {
+      beforeSend: async (event) => ({ ...event, tags: { curp: CURP } }),
+    });
+
+    const sent = await beforeSend(errorEvent(), {});
+
+    expect(asSent(sent)).toMatchObject({ tags: { curp: '[CURP]' } });
+    expectNoRawIdentifier(sent);
+  });
+
+  it.each([
+    ['synchronously', () => null],
+    ['asynchronously', async () => null],
+  ])('drops the event when the application drops it %s', async (_, drop) => {
+    const { beforeSend } = maskedSentryOptions(redact, { beforeSend: drop });
+
+    expect(await beforeSend(errorEvent(), {})).toBeNull();
+  });
+
+  it('answers synchronously when the hooks of the application do', () => {
+    const { beforeSend } = maskedSentryOptions(redact, {
+      beforeSend: (event) => event,
+    });
+
+    const sent = beforeSend(errorEvent(), {});
+
+    expect(sent).not.toBeInstanceOf(Promise);
+    expect(asSent(sent)).toMatchObject({ message: 'SPEI a [CLABE]' });
+  });
+
+  it('sends an event whose trace context is not an object', async () => {
+    const { beforeSend } = maskedSentryOptions(redact, {});
+    const event = {
+      ...errorEvent(),
+      contexts: { trace: null },
+    } as unknown as ErrorEvent;
+
+    const sent = await beforeSend(event, {});
+
+    expect(asSent(sent)).toMatchObject({
+      [EVENT_ID_KEY]: EVENT_ID_WITH_CARD_DIGITS,
+      contexts: { trace: null },
+      message: 'SPEI a [CLABE]',
+    });
+  });
+
+  it('masks identifiers in breadcrumbs', () => {
+    const { beforeBreadcrumb } = maskedSentryOptions(redact, {});
+    const breadcrumb: Breadcrumb = {
+      category: 'pago',
+      message: `SPEI a ${CLABE}`,
+      data: { curp: CURP, url: `/tarjetas/${CARD}` },
+    };
+
+    const recorded = beforeBreadcrumb(breadcrumb);
+
+    expect(asSent(recorded)).toEqual({
+      category: 'pago',
+      message: 'SPEI a [CLABE]',
+      data: { curp: '[CURP]', url: '/tarjetas/[CARD]' },
+    });
+    expect(breadcrumb.message).toBe(`SPEI a ${CLABE}`);
+  });
+
+  it('runs the beforeBreadcrumb of the application before masking', () => {
+    const { beforeBreadcrumb } = maskedSentryOptions(redact, {
+      beforeBreadcrumb: (breadcrumb, hint) => ({
+        ...breadcrumb,
+        data: { rfc: RFC, hint },
+      }),
+    });
+
+    const recorded = beforeBreadcrumb({ message: 'pago' }, { level: 2 });
+
+    expect(asSent(recorded)).toEqual({
+      message: 'pago',
+      data: { rfc: '[RFC]', hint: { level: 2 } },
+    });
+  });
+
+  it('drops the breadcrumb when the application drops it', () => {
+    const { beforeBreadcrumb } = maskedSentryOptions(redact, {
+      beforeBreadcrumb: () => null,
+    });
+
+    expect(beforeBreadcrumb({ message: CLABE })).toBeNull();
+  });
+
+  it.each([
+    ['throws', failingRedactor()],
+    ['returns text', redactorReturning('[TEXT]')],
+    ['returns null', redactorReturning(null)],
+  ])(
+    'drops events and breadcrumbs when the redactor %s',
+    async (_, redactor) => {
+      const { beforeSend, beforeBreadcrumb } = maskedSentryOptions(
+        redactor,
+        {},
+      );
+
+      expect(await beforeSend(errorEvent(), {})).toBeNull();
+      expect(beforeBreadcrumb({ message: CLABE })).toBeNull();
+    },
+  );
+
+  it('masks a streamed span and keeps the identifiers Sentry generated', () => {
+    const { beforeSendSpan } = maskedSentryOptions(redact, {});
+
+    const sent = beforeSendSpan(streamedSpan());
+
+    expect(asSent(sent)).toEqual({
+      ...streamedSpan(),
+      name: 'GET /cuentas/[CLABE]',
+      attributes: { curp: { type: 'string', value: '[CURP]' } },
+    });
+  });
+
+  it('masks a static span and keeps the identifiers Sentry generated', () => {
+    const { beforeSendSpan } = maskedSentryOptions(redact, {
+      traceLifecycle: 'static',
+    });
+
+    const sent = (beforeSendSpan as unknown as MaskSpan)(staticSpan());
+
+    expect(asSent(sent)).toEqual({
+      ...staticSpan(),
+      description: 'pago con [CARD]',
+      data: { rfc: '[RFC]' },
+    });
+  });
+
+  it('runs the beforeSendSpan of the application before masking', () => {
+    const { beforeSendSpan } = maskedSentryOptions(redact, {
+      beforeSendSpan: (span) => ({ ...span, name: `cuenta ${CLABE}` }),
+    });
+
+    expect(asSent(beforeSendSpan(streamedSpan()))).toMatchObject({
+      name: 'cuenta [CLABE]',
+    });
+  });
+
+  it('leaves the original span untouched', () => {
+    const { beforeSendSpan } = maskedSentryOptions(redact, {});
+    const span = streamedSpan();
+
+    beforeSendSpan(span);
+
+    expect(span).toEqual(streamedSpan());
+  });
+
+  it.each([
+    ['throws', failingRedactor()],
+    ['returns text', redactorReturning('[TEXT]')],
+  ])(
+    'sends a span reduced to its timing when the redactor %s',
+    (_, redactor) => {
+      const { beforeSendSpan } = maskedSentryOptions(redactor, {});
+
+      const sent = beforeSendSpan(streamedSpan());
+
+      expect(asSent(sent)).toEqual({
+        [TRACE_ID_KEY]: TRACE_ID_WITH_CLABE_DIGITS,
+        [SPAN_ID_KEY]: SPAN_ID_WITH_CARD_DIGITS,
+        [PARENT_SPAN_ID_KEY]: PARENT_SPAN_ID_WITH_CARD_DIGITS,
+        name: '[REDACTED]',
+        status: 'ok',
+        [IS_SEGMENT_KEY]: true,
+        [START_TIMESTAMP_KEY]: SPAN_START,
+        [END_TIMESTAMP_KEY]: SPAN_END,
+      });
+    },
+  );
+
+  it('masks a transaction and the spans it carries', async () => {
+    const { beforeSendTransaction } = maskedSentryOptions(redact, {
+      traceLifecycle: 'static',
+    });
+
+    const sent = await beforeSendTransaction?.(transactionEvent(), {});
+
+    expect(asSent(sent)).toMatchObject({
+      [EVENT_ID_KEY]: EVENT_ID_WITH_CARD_DIGITS,
+      transaction: 'GET /cuentas/[CLABE]',
+      contexts: { trace: { [TRACE_ID_KEY]: TRACE_ID_WITH_CLABE_DIGITS } },
+      spans: [
+        {
+          ...staticSpan(),
+          description: 'pago con [CARD]',
+          data: { rfc: '[RFC]' },
+        },
+      ],
+    });
+    expectNoRawIdentifier(sent);
+  });
+
+  it.each([
+    ['the application drops it', redact, () => null],
+    ['the redactor throws', failingRedactor(), undefined],
+  ])('drops the transaction when %s', async (_, redactor, drop) => {
+    const { beforeSendTransaction } = maskedSentryOptions(redactor, {
+      traceLifecycle: 'static',
+      ...(drop === undefined ? {} : { beforeSendTransaction: drop }),
+    });
+
+    expect(await beforeSendTransaction?.(transactionEvent(), {})).toBeNull();
+  });
+
+  it('leaves beforeSendTransaction to the application with streamed spans', () => {
+    const applicationBeforeSendTransaction = (event: TransactionEvent) => event;
+
+    expect(maskedSentryOptions(redact, {}).beforeSendTransaction).toBe(
+      undefined,
+    );
+    expect(
+      maskedSentryOptions(redact, {
+        beforeSendTransaction: applicationBeforeSendTransaction,
+      }).beforeSendTransaction,
+    ).toBe(applicationBeforeSendTransaction);
+  });
+
+  it('reduces the span when the beforeSendSpan of the application throws', () => {
+    const { beforeSendSpan } = maskedSentryOptions(redact, {
+      beforeSendSpan: () => {
+        throw new Error('application failed');
+      },
+    });
+
+    expect(asSent(beforeSendSpan(streamedSpan()))).toMatchObject({
+      name: '[REDACTED]',
+      [SPAN_ID_KEY]: SPAN_ID_WITH_CARD_DIGITS,
+    });
+  });
+
+  it.each([
+    ['no integrations', undefined, []],
+    ['a list of integrations', [applicationIntegration], ['aplicacion']],
+  ])(
+    'adds the trace header integration to %s',
+    (_, integrations, expectedNames) => {
+      const masked = maskedSentryOptions(
+        redact,
+        integrations === undefined ? {} : { integrations },
+      );
+
+      expect(integrationNames(masked.integrations, [])).toEqual([
+        ...expectedNames,
+        TRACE_HEADER_INTEGRATION,
+      ]);
+    },
+  );
+
+  it('adds the trace header integration to an integrations function', () => {
+    const masked = maskedSentryOptions(redact, {
+      integrations: (defaults) => [...defaults, applicationIntegration],
+    });
+
+    expect(integrationNames(masked.integrations, [defaultIntegration])).toEqual(
+      ['predeterminada', 'aplicacion', TRACE_HEADER_INTEGRATION],
+    );
+  });
+
+  it('masks the transaction of each trace header', () => {
+    const header = createTraceHeader(redact, {
+      transaction: `GET /cuentas/${CLABE}`,
+      [TRACE_ID_KEY]: TRACE_ID_WITH_CLABE_DIGITS,
+    });
+
+    expect(header).toEqual({
+      transaction: 'GET /cuentas/[CLABE]',
+      [TRACE_ID_KEY]: TRACE_ID_WITH_CLABE_DIGITS,
+    });
+  });
+
+  it.each([
+    ['throws', failingRedactor()],
+    ['returns no text', redactorWithText(null)],
+  ])(
+    'removes the transaction from the trace header when the redactor %s',
+    (_, redactor) => {
+      const header = createTraceHeader(redactor, {
+        transaction: `GET /cuentas/${CLABE}`,
+        [TRACE_ID_KEY]: TRACE_ID_WITH_CLABE_DIGITS,
+      });
+
+      expect(header).toEqual({ [TRACE_ID_KEY]: TRACE_ID_WITH_CLABE_DIGITS });
+    },
+  );
+
+  it('masks the message and attributes of a log', () => {
+    const { beforeSendLog } = maskedSentryOptions(redact, {});
+
+    expect(asSent(beforeSendLog(applicationLog()))).toEqual({
+      level: 'info',
+      message: 'SPEI a [CLABE]',
+      attributes: { curp: '[CURP]' },
+    });
+  });
+
+  it('masks the attributes of a metric', () => {
+    const { beforeSendMetric } = maskedSentryOptions(redact, {});
+
+    expect(asSent(beforeSendMetric(applicationMetric()))).toEqual({
+      ...applicationMetric(),
+      attributes: { tarjeta: '[CARD]' },
+    });
+  });
+
+  it('runs the log and metric hooks of the application before masking', () => {
+    const { beforeSendLog, beforeSendMetric } = maskedSentryOptions(redact, {
+      beforeSendLog: (log) => ({ ...log, message: `cuenta ${CLABE}` }),
+      beforeSendMetric: (metric) => ({ ...metric, attributes: { rfc: RFC } }),
+    });
+
+    expect(asSent(beforeSendLog(applicationLog()))).toMatchObject({
+      message: 'cuenta [CLABE]',
+    });
+    expect(asSent(beforeSendMetric(applicationMetric()))).toMatchObject({
+      attributes: { rfc: '[RFC]' },
+    });
+  });
+
+  it.each([
+    ['the application drops them', redact, () => null],
+    ['the redactor throws', failingRedactor(), undefined],
+  ])('drops logs and metrics when %s', (_, redactor, drop) => {
+    const { beforeSendLog, beforeSendMetric } = maskedSentryOptions(
+      redactor,
+      drop === undefined ? {} : { beforeSendLog: drop, beforeSendMetric: drop },
+    );
+
+    expect(beforeSendLog(applicationLog())).toBeNull();
+    expect(beforeSendMetric(applicationMetric())).toBeNull();
+  });
+
+  it('keeps the other options and leaves them untouched', () => {
+    const applicationBeforeSend = (event: ErrorEvent) => event;
+    const options = {
+      dsn: 'https://public@example.invalid/1',
+      sampleRate: 0.5,
+      beforeSend: applicationBeforeSend,
+    };
+
+    const masked = maskedSentryOptions(redact, options);
+
+    expect(masked).toMatchObject({
+      dsn: 'https://public@example.invalid/1',
+      sampleRate: 0.5,
+    });
+    expect(masked.beforeSend).not.toBe(applicationBeforeSend);
+    expect(options).toEqual({
+      dsn: 'https://public@example.invalid/1',
+      sampleRate: 0.5,
+      beforeSend: applicationBeforeSend,
+    });
+  });
+});

@@ -136,6 +136,13 @@ Lo que Enmascara **no** detecta en esta versión:
 - Una CURP real cuyo dígito verificador no coincida con el algoritmo publicado en fuentes no oficiales. Ver [ADR 0002](docs/decisions/0002-digito-verificador-curp-no-verificado.md).
 - Tarjetas Carnet: sus rangos no son públicos. Ver [ADR 0003](docs/decisions/0003-redes-de-tarjeta.md).
 
+## Integraciones
+
+| Paquete | Para | Qué enmascara |
+| --- | --- | --- |
+| [`enmascara-pino`](packages/pino#readme) | pino 9 y 10 | Objetos, mensajes interpolados, errores, mixins y bindings de cada línea |
+| [`enmascara-sentry`](packages/sentry#readme) | `@sentry/node` 10 y 11 | Errores, transacciones, spans, logs, métricas, breadcrumbs y el encabezado de cada envelope |
+
 ## Seguridad
 
 - Las expresiones regulares son lineales; el CI rechaza cualquier patrón vulnerable a ReDoS.
