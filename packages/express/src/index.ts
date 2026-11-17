@@ -1,3 +1,4 @@
+export { maskedPinoHttpOptions } from './masked-pino-http-options.js';
 export {
   type MaskedRequestFields,
   type MaskedRequestView,

@@ -1,7 +1,10 @@
 import type { Redactor } from 'enmascara';
-import { withoutCredentialValues } from './credential-headers.js';
+import {
+  hasMaskableHeaders,
+  withoutCredentialHeaders,
+} from './credential-headers.js';
+import { REDACTED_RECORD, type RedactedRecord } from './masking.js';
 import { isRecord, type UnknownRecord } from './records.js';
-import { REDACTED } from './redacted.js';
 
 /**
  * The parts of an Express request that {@link maskedRequestView} reads. An
@@ -28,16 +31,10 @@ export interface MaskedRequestFields {
 }
 
 /** What {@link maskedRequestView} returns when masking fails. */
-export interface RedactedRequestView {
-  readonly enmascara: typeof REDACTED;
-}
+export type RedactedRequestView = RedactedRecord;
 
 /** The result of {@link maskedRequestView}. */
 export type MaskedRequestView = MaskedRequestFields | RedactedRequestView;
-
-const REDACTED_VIEW: RedactedRequestView = Object.freeze({
-  enmascara: REDACTED,
-});
 
 function requestFields(request: ViewableRequest): UnknownRecord {
   return {
@@ -50,18 +47,9 @@ function requestFields(request: ViewableRequest): UnknownRecord {
   };
 }
 
-function maskedHeaders(headers: unknown): unknown {
-  return isRecord(headers) ? withoutCredentialValues(headers) : headers;
-}
-
-function hasViewableHeaders(masked: UnknownRecord): boolean {
-  const { headers } = masked;
-  return headers === undefined || isRecord(headers);
-}
-
 function viewOf(masked: unknown): MaskedRequestView {
-  if (!isRecord(masked) || !hasViewableHeaders(masked)) {
-    return REDACTED_VIEW;
+  if (!isRecord(masked) || !hasMaskableHeaders(masked)) {
+    return REDACTED_RECORD;
   }
   const { method, url, params, query, headers, body } = masked;
   return {
@@ -69,7 +57,7 @@ function viewOf(masked: unknown): MaskedRequestView {
     url,
     params,
     query,
-    headers: maskedHeaders(headers),
+    headers: withoutCredentialHeaders(headers),
     body,
   };
 }
@@ -112,6 +100,6 @@ export function maskedRequestView(
   try {
     return viewOf(redactor.object(requestFields(request)));
   } catch {
-    return REDACTED_VIEW;
+    return REDACTED_RECORD;
   }
 }
