@@ -28,9 +28,19 @@ const markStaticSpanCallback: typeof sentry.withStaticSpan | undefined =
 
 /**
  * Sentry options returned by {@link maskedSentryOptions}: the options
- * received, with their masking hooks always defined. `beforeSendTransaction`
- * is only replaced when Sentry uses it, which excludes streamed spans in
- * `@sentry/node` 11.
+ * received, with their masking hooks and integrations always defined.
+ * `beforeSendTransaction` is only replaced when Sentry uses it, which excludes
+ * streamed spans in `@sentry/node` 11.
+ *
+ * @example
+ * ```ts
+ * import type { MaskedSentryOptions } from 'enmascara-sentry';
+ *
+ * function sentWithoutIdentifiers(options: MaskedSentryOptions) {
+ *   return options.beforeSendLog({ level: 'info', message: 'CURP GODE561231HDFRRN00' });
+ * }
+ * // { level: 'info', message: 'CURP [CURP]' }
+ * ```
  */
 export type MaskedSentryOptions = NodeOptions & {
   readonly integrations: NonNullable<NodeOptions['integrations']>;
