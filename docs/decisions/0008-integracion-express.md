@@ -1,6 +1,6 @@
 # ADR 0008: Integración con Express
 
-- **Estado:** propuesto
+- **Estado:** aceptado
 - **Fecha:** 2026-11-17
 - **Historia:** Sprint 2, historia 3
 
@@ -45,6 +45,7 @@ morgan escribe una línea de texto a partir de tokens. Los formatos predefinidos
 4. **morgan: `maskedMorganFormat(redactor, morgan, format)`.**
    - Devuelve una función de formato para `morgan(...)`.
    - Compila el formato, por nombre o como cadena, con `morgan.compile` y enmascara la línea completa con `redact.text()`. Así cubre `:url`, el referer y cualquier token propio.
+   - Los tokens `:req[header]` y `:res[header]` devuelven `[REDACTED]` para los headers de credenciales de la decisión 7.
    - Falla cerrada: si enmascarar falla, la línea es `[REDACTED]`.
    - morgan se recibe como parámetro, como pino en la historia 1, para que el paquete no lo cargue por su cuenta.
 5. **Dependencias.**
@@ -69,5 +70,5 @@ morgan escribe una línea de texto a partir de tokens. Los formatos predefinidos
 | Mutación de lo que usa el negocio | La vista es una copia; el paquete nunca escribe en `req` ni en `res` | Comparar `req.body`, `req.query`, `req.params` y `req.headers` antes y después de cada adaptador |
 | Falla abierta | Cada adaptador devuelve `[REDACTED]` o `{ enmascara: '[REDACTED]' }` si el redactor lanza | Test con un redactor que lanza |
 | Datos que el detector no conoce | El cuerpo no se registra por omisión | Test de que la línea de pino-http no contiene el cuerpo |
-| Credenciales en los headers | Según la decisión 7 | Según la decisión 7 |
+| Credenciales en los headers | Los headers de `spec/credential-headers.yaml` salen como `[REDACTED]` | Test con cada header de la lista, en mayúsculas y minúsculas, en la vista, en pino-http y en `:req[...]` de morgan |
 | Identificadores en la URL | `url` y `:url` se enmascaran completas, con ruta y query | Test con CLABE en la ruta y CURP en la query |
