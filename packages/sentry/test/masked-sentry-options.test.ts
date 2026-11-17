@@ -121,6 +121,54 @@ function transactionEvent(): TransactionEvent {
   };
 }
 
+type Integration = Exclude<
+  NonNullable<NodeOptions['integrations']>,
+  (...args: never[]) => unknown
+>[number];
+type Client = Parameters<NonNullable<Integration['setup']>>[0];
+type TraceHeader = Record<string, unknown>;
+type TraceHeaderListener = (header: TraceHeader) => void;
+
+const TRACE_HEADER_INTEGRATION = 'EnmascaraTraceHeader';
+const CREATE_TRACE_HEADER_HOOK = 'createDsc';
+const applicationIntegration: Integration = { name: 'aplicacion' };
+const defaultIntegration: Integration = { name: 'predeterminada' };
+
+function integrationNames(
+  integrations: NodeOptions['integrations'],
+  defaults: Integration[],
+): readonly string[] {
+  const resolved =
+    typeof integrations === 'function'
+      ? integrations(defaults)
+      : (integrations ?? []);
+  return resolved.map(({ name }) => name);
+}
+
+function createTraceHeader(
+  redactor: Redactor,
+  header: TraceHeader,
+): TraceHeader {
+  const listeners: TraceHeaderListener[] = [];
+  const client = {
+    on: (hook: string, listener: TraceHeaderListener) => {
+      if (hook === CREATE_TRACE_HEADER_HOOK) {
+        listeners.push(listener);
+      }
+      return () => undefined;
+    },
+  } as unknown as Client;
+  const { integrations } = maskedSentryOptions(redactor, {});
+  const traceHeaderIntegration = (integrations as Integration[]).find(
+    ({ name }) => name === TRACE_HEADER_INTEGRATION,
+  );
+  traceHeaderIntegration?.setup?.(client);
+  for (const listener of listeners) {
+    listener(header);
+  }
+  return header;
+}
+
 function failingRedactor(): Redactor {
   const fail = (): never => {
     throw new Error('masking failed');
@@ -132,6 +180,14 @@ function redactorReturning(value: unknown): Redactor {
   return {
     text: () => '[TEXT]',
     object: () => value,
+    findings: () => [],
+  };
+}
+
+function redactorWithText(text: unknown): Redactor {
+  return {
+    text: () => text as string,
+    object: (value) => value,
     findings: () => [],
   };
 }
@@ -471,6 +527,61 @@ describe('maskedSentryOptions', () => {
       [SPAN_ID_KEY]: SPAN_ID_WITH_CARD_DIGITS,
     });
   });
+
+  it.each([
+    ['no integrations', undefined, []],
+    ['a list of integrations', [applicationIntegration], ['aplicacion']],
+  ])(
+    'adds the trace header integration to %s',
+    (_, integrations, expectedNames) => {
+      const masked = maskedSentryOptions(
+        redact,
+        integrations === undefined ? {} : { integrations },
+      );
+
+      expect(integrationNames(masked.integrations, [])).toEqual([
+        ...expectedNames,
+        TRACE_HEADER_INTEGRATION,
+      ]);
+    },
+  );
+
+  it('adds the trace header integration to an integrations function', () => {
+    const masked = maskedSentryOptions(redact, {
+      integrations: (defaults) => [...defaults, applicationIntegration],
+    });
+
+    expect(integrationNames(masked.integrations, [defaultIntegration])).toEqual(
+      ['predeterminada', 'aplicacion', TRACE_HEADER_INTEGRATION],
+    );
+  });
+
+  it('masks the transaction of each trace header', () => {
+    const header = createTraceHeader(redact, {
+      transaction: `GET /cuentas/${CLABE}`,
+      [TRACE_ID_KEY]: TRACE_ID_WITH_CLABE_DIGITS,
+    });
+
+    expect(header).toEqual({
+      transaction: 'GET /cuentas/[CLABE]',
+      [TRACE_ID_KEY]: TRACE_ID_WITH_CLABE_DIGITS,
+    });
+  });
+
+  it.each([
+    ['throws', failingRedactor()],
+    ['returns no text', redactorWithText(null)],
+  ])(
+    'removes the transaction from the trace header when the redactor %s',
+    (_, redactor) => {
+      const header = createTraceHeader(redactor, {
+        transaction: `GET /cuentas/${CLABE}`,
+        [TRACE_ID_KEY]: TRACE_ID_WITH_CLABE_DIGITS,
+      });
+
+      expect(header).toEqual({ [TRACE_ID_KEY]: TRACE_ID_WITH_CLABE_DIGITS });
+    },
+  );
 
   it('keeps the other options and leaves them untouched', () => {
     const applicationBeforeSend = (event: ErrorEvent) => event;
