@@ -280,6 +280,24 @@ describe('maskedPinoHttpOptions', () => {
     ).toEqual({ params: REDACTED_RECORD });
   });
 
+  it('fails closed when the redactor returns null', () => {
+    const options = maskedPinoHttpOptions<object, object>(
+      redactorReturning(null),
+    );
+    const { req: requestSerializer } = options.serializers ?? {};
+
+    expect(requestSerializer?.({ url: CURP })).toEqual(REDACTED_RECORD);
+  });
+
+  it('adds no headers to a serialized record that has none', () => {
+    const options = maskedPinoHttpOptions<object, object>(redact);
+    const { err: errorSerializer } = options.serializers ?? {};
+
+    expect(Object.keys(errorSerializer?.({ message: CURP }) as object)).toEqual(
+      ['message'],
+    );
+  });
+
   it('fails closed when the serialized headers are not an object', () => {
     const options = maskedPinoHttpOptions<object, object>(redact, {
       serializers: { req: () => ({ headers: CREDENTIAL }) },
