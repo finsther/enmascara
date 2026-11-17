@@ -11,7 +11,7 @@ export default defineConfig({
     exclude: [
       '**/node_modules/**',
       'packages/core/test/fuzzing.test.ts',
-      'packages/core/test/package-contents.test.ts',
+      'packages/*/test/package-contents.test.ts',
       'packages/core/test/readme.test.ts',
     ],
   },
