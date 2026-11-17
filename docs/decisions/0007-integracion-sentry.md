@@ -38,6 +38,8 @@
 - **Sentry 10 con su propio SDK.** Las dos versiones están instaladas para los tests, así que el archivo de Sentry 10 hace `vi.mock('@sentry/node')` con `sentry-node-10`. Así el paquete también ve la versión 10, como en una instalación real, y cada archivo comprueba la versión del SDK con el que corre.
 - **Tests unitarios de cada hook:** copias, IDs, hooks de la aplicación, descarte y reducción.
 
+- **Un mutante equivalente.** En `isPromiseLike`, cambiar `typeof then === 'function'` por `true` sobrevive. Solo cambia algo si un hook devuelve un evento con una propiedad `then` que no es función: ese evento pasaría por `Promise.resolve` y saldría con el mismo contenido enmascarado, de forma asíncrona, lo que Sentry acepta. Biome prohíbe construir ese objeto (`noThenProperty`), así que ningún test lo crea.
+
 ## Consecuencias
 
 - Con trazas, cada span y cada transacción pasan por `redact.object()`, y eso se suma al costo de enmascarar. Medirlo queda pendiente.
