@@ -25,7 +25,7 @@ function isTimingValue(key: string, value: unknown): boolean {
   );
 }
 
-function reducedSpan(span: object): SentryRecord {
+export function reduceSpan<Span extends object>(span: Span): Span {
   const reduced: SentryRecord = {};
   for (const [key, descriptor] of Object.entries(
     Object.getOwnPropertyDescriptors(span),
@@ -36,7 +36,7 @@ function reducedSpan(span: object): SentryRecord {
       reduced[key] = descriptor.value;
     }
   }
-  return reduced;
+  return reduced as Span;
 }
 
 export function maskSpan<Span extends object>(
@@ -49,7 +49,7 @@ export function maskSpan<Span extends object>(
       return withSdkIdentifiers(span, copy as Span);
     }
   } catch {
-    return reducedSpan(span) as Span;
+    return reduceSpan(span);
   }
-  return reducedSpan(span) as Span;
+  return reduceSpan(span);
 }

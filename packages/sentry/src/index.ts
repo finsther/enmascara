@@ -2,7 +2,7 @@ import type { NodeOptions } from '@sentry/node';
 import * as sentry from '@sentry/node';
 import type { Redactor } from 'enmascara';
 import { maskOrDrop } from './masking.js';
-import { maskSpan } from './spans.js';
+import { maskSpan, reduceSpan } from './spans.js';
 
 type BeforeSend = NonNullable<NodeOptions['beforeSend']>;
 type BeforeSendTransaction = NonNullable<NodeOptions['beforeSendTransaction']>;
@@ -17,13 +17,19 @@ type StaticSpanCallback = Parameters<typeof sentry.withStaticSpan>[0];
 
 const STATIC_TRACE_LIFECYCLE = 'static';
 
+const WITH_STATIC_SPAN_EXPORT = 'withStaticSpan';
+
+const markStaticSpanCallback: typeof sentry.withStaticSpan | undefined =
+  WITH_STATIC_SPAN_EXPORT in sentry ? sentry.withStaticSpan : undefined;
+
 /**
  * Sentry options returned by {@link maskedSentryOptions}: the options
- * received, with their masking hooks always defined.
+ * received, with their masking hooks always defined. `beforeSendTransaction`
+ * is only replaced when Sentry uses it, which excludes streamed spans in
+ * `@sentry/node` 11.
  */
 export type MaskedSentryOptions = NodeOptions & {
   readonly beforeSend: BeforeSend;
-  readonly beforeSendTransaction: BeforeSendTransaction;
   readonly beforeSendSpan: BeforeSendSpan;
   readonly beforeBreadcrumb: BeforeBreadcrumb;
 };
@@ -54,25 +60,46 @@ function maskedEventHook<Event extends object>(
   };
 }
 
+function streamsSpans(options: NodeOptions): boolean {
+  return (
+    markStaticSpanCallback !== undefined &&
+    options.traceLifecycle !== STATIC_TRACE_LIFECYCLE
+  );
+}
+
 function maskedBeforeSendSpan(
   redactor: Redactor,
   options: NodeOptions,
 ): BeforeSendSpan {
   const applicationBeforeSendSpan = options.beforeSendSpan;
-  const beforeSendSpan: BeforeSendSpan = (span) =>
-    maskSpan(
-      redactor,
-      applicationBeforeSendSpan === undefined
-        ? span
-        : applicationBeforeSendSpan(span),
-    );
-  const markStatic: typeof sentry.withStaticSpan | undefined = (
-    sentry as Partial<typeof sentry>
-  ).withStaticSpan;
-  return options.traceLifecycle === STATIC_TRACE_LIFECYCLE &&
-    markStatic !== undefined
-    ? markStatic(beforeSendSpan as unknown as StaticSpanCallback)
+  const beforeSendSpan: BeforeSendSpan = (span) => {
+    try {
+      return maskSpan(
+        redactor,
+        applicationBeforeSendSpan === undefined
+          ? span
+          : applicationBeforeSendSpan(span),
+      );
+    } catch {
+      return reduceSpan(span);
+    }
+  };
+  return markStaticSpanCallback !== undefined && !streamsSpans(options)
+    ? markStaticSpanCallback(beforeSendSpan as unknown as StaticSpanCallback)
     : beforeSendSpan;
+}
+
+function maskedBeforeSendTransaction(
+  redactor: Redactor,
+  options: NodeOptions,
+): Pick<NodeOptions, 'beforeSendTransaction'> {
+  return streamsSpans(options)
+    ? {}
+    : {
+        beforeSendTransaction: maskedEventHook<
+          Parameters<BeforeSendTransaction>[0]
+        >(redactor, options.beforeSendTransaction),
+      };
 }
 
 function maskedBeforeBreadcrumb(
@@ -133,10 +160,7 @@ export function maskedSentryOptions(
   return {
     ...options,
     beforeSend: maskedEventHook(redactor, options.beforeSend),
-    beforeSendTransaction: maskedEventHook(
-      redactor,
-      options.beforeSendTransaction,
-    ),
+    ...maskedBeforeSendTransaction(redactor, options),
     beforeSendSpan: maskedBeforeSendSpan(redactor, options),
     beforeBreadcrumb: maskedBeforeBreadcrumb(
       redactor,
