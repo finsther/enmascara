@@ -11,6 +11,7 @@
 | `banks.yaml`, `banks.schema.json` | Catálogo de códigos de banco para CLABE |
 | `states.yaml`, `states.schema.json` | Catálogo de entidades para CURP |
 | `card-networks.yaml`, `card-networks.schema.json` | Redes de tarjeta con sus prefijos, longitudes y fuentes |
+| `credential-headers.yaml`, `credential-headers.schema.json` | Headers HTTP que llevan credenciales o sesiones; las integraciones reemplazan su valor por `[REDACTED]` |
 | `fixtures/*.yaml`, `fixtures.schema.json` | Valores válidos, inválidos y lookalikes por tipo |
 | `fixtures/texts.yaml`, `texts.schema.json` | Líneas de texto y su salida con la estrategia `redact` |
 | `fixtures/strategies.yaml`, `strategies.schema.json` | Valores enmascarados con `redact`, `partial` y `hmac` bajo una llave de prueba |
@@ -81,15 +82,15 @@ pbpaste | pnpm --silent --filter enmascara-spec verify-curps
 
 Termina con código 1 si algún dígito verificador no coincide.
 
-## Catálogos del núcleo
+## Catálogos generados
 
-El paquete `enmascara` no puede leer YAML en tiempo de ejecución. Después de cambiar `banks.yaml` o `card-networks.yaml`, regenera las copias JSON del núcleo:
+Los paquetes no pueden leer YAML en tiempo de ejecución. Después de cambiar `banks.yaml`, `states.yaml`, `card-networks.yaml` o `credential-headers.yaml`, regenera sus copias JSON en `packages/core/src/catalogs/` y `packages/express/src/catalogs/`:
 
 ```bash
 pnpm --filter enmascara-spec generate-core-catalogs
 ```
 
-Si alguna copia deja de coincidir con la spec, `test/core-catalogs.test.ts` falla.
+Si alguna copia deja de coincidir con la spec, `test/core-catalogs.test.ts` o `test/express-catalogs.test.ts` falla. Pasa las copias por `pnpm exec biome check --write` antes de confirmarlas.
 
 ## Fixtures de texto del motor
 
