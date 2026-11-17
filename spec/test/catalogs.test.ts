@@ -33,6 +33,10 @@ interface CardNetworkCatalog {
   readonly networks: readonly CardNetwork[];
 }
 
+interface CredentialHeaderCatalog {
+  readonly headers: readonly { readonly name: string }[];
+}
+
 function codesOf(entries: readonly CatalogEntry[]): readonly string[] {
   return entries.map((entry) => entry.code);
 }
@@ -45,6 +49,7 @@ describe.each([
   ['banks.yaml', 'banks.schema.json'],
   ['states.yaml', 'states.schema.json'],
   ['card-networks.yaml', 'card-networks.schema.json'],
+  ['credential-headers.yaml', 'credential-headers.schema.json'],
 ])('%s', (catalogFile, schemaFile) => {
   it(`conforms to ${schemaFile}`, () => {
     const validateCatalog = compileSchema(schemaFile);
@@ -112,6 +117,40 @@ describe('card-networks.yaml', () => {
     ).toEqual([]);
   });
 });
+
+describe('credential-headers.yaml', () => {
+  const catalog = readYamlDocument(
+    'credential-headers.yaml',
+  ) as CredentialHeaderCatalog;
+  const names = catalog.headers.map((header) => header.name);
+
+  it('names every header once', () => {
+    expect(duplicatesIn(names)).toEqual([]);
+  });
+
+  it('lists the headers that carry credentials or sessions', () => {
+    expect([...names].sort()).toEqual([
+      'authorization',
+      'cookie',
+      'proxy-authorization',
+      'set-cookie',
+    ]);
+  });
+});
+
+describe.each(['Authorization', 'x api key', ''])(
+  'credential-headers.schema.json',
+  (name) => {
+    it(`rejects the header name "${name}"`, () => {
+      const validateCatalog = compileSchema('credential-headers.schema.json');
+      const catalog = {
+        headers: [{ name, source: 'https://www.rfc-editor.org/rfc/rfc9110' }],
+      };
+
+      expect(validateCatalog(catalog)).toBe(false);
+    });
+  },
+);
 
 describe.each([
   ['banks.schema.json', 'banks', { code: '02', name: 'Two digits' }],
