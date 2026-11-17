@@ -1,6 +1,6 @@
 import type { Redactor } from 'enmascara';
 import type { CustomAttributeKeys, Options } from 'pino-http';
-import { maskRecord, maskValue } from './masking.js';
+import { maskHttpRecord, maskRecord } from './masking.js';
 import { isRecord } from './records.js';
 
 type DefaultObjectCallback = NonNullable<Options['customSuccessObject']>;
@@ -19,7 +19,7 @@ function maskingSerializer(
   applicationSerializer: Serializer | undefined,
 ): Serializer {
   return (value) =>
-    maskRecord(
+    maskHttpRecord(
       redactor,
       applicationSerializer === undefined
         ? value
@@ -40,19 +40,18 @@ function maskedSerializers(
   return { ...serializers, ...Object.fromEntries(masked) };
 }
 
-function ownParams(request: unknown): unknown {
-  return isRecord(request)
-    ? Object.getOwnPropertyDescriptor(request, PARAMS_KEY)?.value
-    : undefined;
+function ownParams(request: object): unknown {
+  return Object.getOwnPropertyDescriptor(request, PARAMS_KEY)?.value;
 }
 
 function withMaskedParams(
   redactor: Redactor,
-  request: unknown,
+  request: object,
   logObject: unknown,
 ): unknown {
-  return isRecord(logObject)
-    ? { ...logObject, [PARAMS_KEY]: maskValue(redactor, ownParams(request)) }
+  const params = ownParams(request);
+  return isRecord(logObject) && params !== undefined
+    ? { ...logObject, [PARAMS_KEY]: maskRecord(redactor, params) }
     : logObject;
 }
 
@@ -93,7 +92,7 @@ function withMaskedParams(
  * ```
  */
 export function maskedPinoHttpOptions<
-  Request = DefaultRequest,
+  Request extends object = DefaultRequest,
   Response = DefaultResponse,
   CustomLevels extends string = never,
 >(
