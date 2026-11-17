@@ -1,41 +1,133 @@
 import type { NodeOptions } from '@sentry/node';
+import * as sentry from '@sentry/node';
 import type { Redactor } from 'enmascara';
 import { maskOrDrop } from './masking.js';
+import { maskSpan, reduceSpan } from './spans.js';
+import { withTraceHeaderIntegration } from './trace-header.js';
 
 type BeforeSend = NonNullable<NodeOptions['beforeSend']>;
+type BeforeSendTransaction = NonNullable<NodeOptions['beforeSendTransaction']>;
+type BeforeSendSpan = NonNullable<NodeOptions['beforeSendSpan']>;
 type BeforeBreadcrumb = NonNullable<NodeOptions['beforeBreadcrumb']>;
-type BeforeSendResult = ReturnType<BeforeSend>;
+type BeforeSendLog = NonNullable<NodeOptions['beforeSendLog']>;
+type BeforeSendMetric = NonNullable<NodeOptions['beforeSendMetric']>;
+type ItemHook<Item> = (item: Item) => Item | null;
+type EventHint = Parameters<BeforeSend>[1];
+type EventHook<Event> = (
+  event: Event,
+  hint: EventHint,
+) => PromiseLike<Event | null> | Event | null;
+type StaticSpanCallback = Parameters<typeof sentry.withStaticSpan>[0];
+
+const STATIC_TRACE_LIFECYCLE = 'static';
+
+const WITH_STATIC_SPAN_EXPORT = 'withStaticSpan';
+
+const markStaticSpanCallback: typeof sentry.withStaticSpan | undefined =
+  WITH_STATIC_SPAN_EXPORT in sentry ? sentry.withStaticSpan : undefined;
 
 /**
  * Sentry options returned by {@link maskedSentryOptions}: the options
- * received, with `beforeSend` and `beforeBreadcrumb` always defined.
+ * received, with their masking hooks and integrations always defined.
+ * `beforeSendTransaction` is only replaced when Sentry uses it, which excludes
+ * streamed spans in `@sentry/node` 11.
+ *
+ * @example
+ * ```ts
+ * import type { MaskedSentryOptions } from 'enmascara-sentry';
+ *
+ * function sentWithoutIdentifiers(options: MaskedSentryOptions) {
+ *   return options.beforeSendLog({ level: 'info', message: 'CURP GODE561231HDFRRN00' });
+ * }
+ * // { level: 'info', message: 'CURP [CURP]' }
+ * ```
  */
 export type MaskedSentryOptions = NodeOptions & {
+  readonly integrations: NonNullable<NodeOptions['integrations']>;
   readonly beforeSend: BeforeSend;
+  readonly beforeSendSpan: BeforeSendSpan;
   readonly beforeBreadcrumb: BeforeBreadcrumb;
+  readonly beforeSendLog: BeforeSendLog;
+  readonly beforeSendMetric: BeforeSendMetric;
 };
 
-function isPromiseLike(
-  result: BeforeSendResult,
-): result is Extract<BeforeSendResult, PromiseLike<unknown>> {
-  return result !== null && 'then' in result;
+function isPromiseLike<Event>(
+  result: PromiseLike<Event | null> | Event | null,
+): result is PromiseLike<Event | null> {
+  return (
+    typeof result === 'object' &&
+    result !== null &&
+    'then' in result &&
+    typeof result.then === 'function'
+  );
 }
 
-function maskedBeforeSend(
+function maskedEventHook<Event extends object>(
   redactor: Redactor,
-  applicationBeforeSend: BeforeSend | undefined,
-): BeforeSend {
+  applicationHook: EventHook<Event> | undefined,
+): EventHook<Event> {
   return (event, hint) => {
     const result =
-      applicationBeforeSend === undefined
-        ? event
-        : applicationBeforeSend(event, hint);
+      applicationHook === undefined ? event : applicationHook(event, hint);
     return isPromiseLike(result)
       ? Promise.resolve(result).then((resolved) =>
           maskOrDrop(redactor, resolved),
         )
       : maskOrDrop(redactor, result);
   };
+}
+
+function streamsSpans(options: NodeOptions): boolean {
+  return (
+    markStaticSpanCallback !== undefined &&
+    options.traceLifecycle !== STATIC_TRACE_LIFECYCLE
+  );
+}
+
+function maskedBeforeSendSpan(
+  redactor: Redactor,
+  options: NodeOptions,
+): BeforeSendSpan {
+  const applicationBeforeSendSpan = options.beforeSendSpan;
+  const beforeSendSpan: BeforeSendSpan = (span) => {
+    try {
+      return maskSpan(
+        redactor,
+        applicationBeforeSendSpan === undefined
+          ? span
+          : applicationBeforeSendSpan(span),
+      );
+    } catch {
+      return reduceSpan(span);
+    }
+  };
+  return markStaticSpanCallback !== undefined && !streamsSpans(options)
+    ? markStaticSpanCallback(beforeSendSpan as unknown as StaticSpanCallback)
+    : beforeSendSpan;
+}
+
+function maskedBeforeSendTransaction(
+  redactor: Redactor,
+  options: NodeOptions,
+): Pick<NodeOptions, 'beforeSendTransaction'> {
+  return streamsSpans(options)
+    ? {}
+    : {
+        beforeSendTransaction: maskedEventHook<
+          Parameters<BeforeSendTransaction>[0]
+        >(redactor, options.beforeSendTransaction),
+      };
+}
+
+function maskedItemHook<Item extends object>(
+  redactor: Redactor,
+  applicationHook: ItemHook<Item> | undefined,
+): ItemHook<Item> {
+  return (item) =>
+    maskOrDrop(
+      redactor,
+      applicationHook === undefined ? item : applicationHook(item),
+    );
 }
 
 function maskedBeforeBreadcrumb(
@@ -52,27 +144,29 @@ function maskedBeforeBreadcrumb(
 }
 
 /**
- * Returns a copy of the Sentry options whose `beforeSend` and
- * `beforeBreadcrumb` mask every identifier the redactor detects before an
- * error event or breadcrumb leaves the process: messages, exception values,
- * stack frame variables, `request` (URL, query, data, headers and cookies),
- * `extra`, `contexts`, `user`, `tags` and breadcrumbs.
+ * Returns a copy of the Sentry options whose hooks mask every identifier the
+ * redactor detects before an error event, transaction, span, log, metric or
+ * breadcrumb leaves the process: messages, exception values, stack frame
+ * variables, `request` (URL, query, data, headers and cookies), `extra`,
+ * `contexts`, `user`, `tags`, span names and attributes, log messages, the
+ * attributes of logs and metrics, and breadcrumbs. An `EnmascaraTraceHeader`
+ * integration, added after the integrations of the application, also masks
+ * the transaction in the trace header of each envelope.
  *
- * Each event is masked as a copy, so the original stays as it was. The
- * identifiers Sentry generates for the event and its trace (`event_id`,
+ * Each payload is masked as a copy, so the original stays as it was. The
+ * identifiers Sentry generates for events, traces and spans (`event_id`,
  * `trace_id`, `span_id` and `parent_span_id`, in hexadecimal) are kept even
  * when their digits look like a CLABE or a card.
  *
- * The `beforeSend` and `beforeBreadcrumb` of the application still run first,
- * and masking applies to what they return; if they return `null`, the event
- * or breadcrumb is dropped. The options received are never modified.
+ * The hooks of the application still run first, and masking applies to what
+ * they return; if they return `null`, the payload is dropped. The options
+ * received are never modified. With streamed spans in `@sentry/node` 11,
+ * `beforeSendTransaction` is left as received, because Sentry ignores it.
  *
- * Masking fails closed: if the redactor throws, the event or breadcrumb is
- * dropped instead of being sent.
- *
- * Only error events and breadcrumbs are masked. Transactions, spans, logs,
- * metrics, attachments and the trace header of each envelope, which carries
- * the name of the root span, are sent as Sentry builds them.
+ * Masking fails closed: if the redactor throws, error events, transactions,
+ * logs, metrics and breadcrumbs are dropped, the transaction is removed from
+ * the trace header, and a span, which Sentry does not let a hook drop, is sent
+ * with its name replaced by `[REDACTED]` and only its timing.
  *
  * @param redactor - Redactor created with `createRedactor` from `enmascara`.
  * @param options - Options for `Sentry.init` from `@sentry/node`, version 10
@@ -98,10 +192,15 @@ export function maskedSentryOptions(
 ): MaskedSentryOptions {
   return {
     ...options,
-    beforeSend: maskedBeforeSend(redactor, options.beforeSend),
+    beforeSend: maskedEventHook(redactor, options.beforeSend),
+    ...maskedBeforeSendTransaction(redactor, options),
+    beforeSendSpan: maskedBeforeSendSpan(redactor, options),
     beforeBreadcrumb: maskedBeforeBreadcrumb(
       redactor,
       options.beforeBreadcrumb,
     ),
+    beforeSendLog: maskedItemHook(redactor, options.beforeSendLog),
+    beforeSendMetric: maskedItemHook(redactor, options.beforeSendMetric),
+    integrations: withTraceHeaderIntegration(redactor, options.integrations),
   };
 }

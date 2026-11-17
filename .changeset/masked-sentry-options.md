@@ -2,4 +2,4 @@
 'enmascara-sentry': minor
 ---
 
-Add `maskedSentryOptions(redactor, options)` for `@sentry/node` 10 and 11. Its `beforeSend` and `beforeBreadcrumb` mask a copy of every error event and breadcrumb after the hooks of the application run, keep the identifiers Sentry generates for the event and its trace, and drop what cannot be masked. Transactions, spans, logs and the trace header of each envelope are not masked yet.
+Add `maskedSentryOptions(redactor, options)` for `@sentry/node` 10 and 11, with streamed or static spans. Its `beforeSend`, `beforeSendTransaction`, `beforeSendSpan`, `beforeSendLog`, `beforeSendMetric` and `beforeBreadcrumb` mask a copy of every error event, transaction, span, log, metric and breadcrumb after the hooks of the application run, and an `EnmascaraTraceHeader` integration masks the transaction in the trace header of each envelope. The identifiers Sentry generates are kept. What cannot be masked is dropped, except spans, which Sentry does not let a hook drop and are sent with only their timing and the name `[REDACTED]`. The package ships its README and the MIT license.
