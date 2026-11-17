@@ -39,25 +39,26 @@ morgan escribe una línea de texto a partir de tokens. Los formatos predefinidos
    - Falla cerrada: si enmascarar falla, devuelve `{ enmascara: '[REDACTED]' }`.
 3. **pino-http: `maskedPinoHttpOptions(redactor, options)`.** Devuelve las opciones de pino-http:
    - Sus serializers `req`, `res` y `err` enmascaran la salida de los serializers de pino-http y de la aplicación.
-   - `customSuccessObject` y `customErrorObject` agregan `params`, enmascarados y leídos al terminar la respuesta.
+   - `customSuccessObject` y `customErrorObject` agregan `params`, enmascarados y leídos al terminar la respuesta, si la petición tiene `params` propios.
    - Las funciones de la aplicación corren antes que las del paquete.
    - **El cuerpo no se agrega a la línea.** `enmascara` solo detecta CLABE, CURP, RFC y tarjetas, y un cuerpo puede llevar nombres, correos o domicilios. Registrarlo es una decisión de la aplicación, que puede usar `maskedRequestView(...).body`.
 4. **morgan: `maskedMorganFormat(redactor, morgan, format)`.**
    - Devuelve una función de formato para `morgan(...)`.
-   - Compila el formato, por nombre o como cadena, con `morgan.compile` y enmascara la línea completa con `redact.text()`. Así cubre `:url`, el referer y cualquier token propio.
+   - Acepta el nombre de un formato predefinido, una cadena de formato o una función. Compila los dos primeros con `morgan.compile` y enmascara la línea completa con `redact.text()`. Así cubre `:url`, el referer y cualquier token propio.
    - Los tokens `:req[header]` y `:res[header]` devuelven `[REDACTED]` para los headers de credenciales de la decisión 7.
    - Falla cerrada: si enmascarar falla, la línea es `[REDACTED]`.
    - morgan se recibe como parámetro, como pino en la historia 1, para que el paquete no lo cargue por su cuenta.
 5. **Dependencias.**
-   - `express` es la única `peerDependency` obligatoria (`^4.17.0 || ^5.0.0`), y solo para tipos.
-   - `pino-http` y `morgan` son `peerDependencies` opcionales: el paquete importa sus tipos, nunca su código.
-   - El build no importa ningún módulo en runtime.
+   - `express` es la única `peerDependency` obligatoria (`^4.17.0 || ^5.0.0`). El paquete no importa ni sus tipos: `maskedRequestView` acepta cualquier objeto con la forma de una petición, y así sirve igual con los tipos de Express 4 y 5.
+   - `pino-http` (`^11.0.0`) y `morgan` (`^1.10.0`) son `peerDependencies` opcionales: el paquete importa sus tipos, nunca su código.
+   - El build no importa ningún módulo en runtime; un test lo revisa sobre `dist`.
 6. **Arreglo en `enmascara-pino`.** `createMaskedLogger` debe aplicar los serializers del logger, incluidos los que agrega un hijo, antes de enmascarar los bindings y el objeto del log. Así no copia `IncomingMessage` ni `ServerResponse`. Va como `fix:` de `enmascara-pino`, con su test, en un PR aparte y antes del ejemplo de pino-http.
 
 ## Consecuencias
 
 - La documentación de Express muestra dos configuraciones, pino-http y morgan, en lugar de un `app.use(enmascara())`.
 - Con pino-http, `req.params` sale vacío en la línea de entrada y aparece como `params` en la línea de respuesta.
+- Si un error pasa con `next(error)` a un manejador de errores de la aplicación, Express ya restauró `req.params` a `{}` antes de que termine la respuesta, y la línea sale con `"params":{}`. Recuperarlos exigiría guardarlos en `req` antes, lo que la decisión 1 descarta. El README lo documenta y un test lo fija.
 - Un formato de morgan que no compila lanza al crear el middleware, como lo hace morgan; ese error nunca incluye datos de la petición.
 - El paquete no registra tokens globales de morgan ni reemplaza los existentes.
 - `enmascara-express` pasa `describeIntegrationPackage`, como pino y sentry: README en español, LICENSE, `publishConfig` y solo peers. El README de la raíz agrega Express a la tabla de integraciones.
