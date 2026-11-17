@@ -1,10 +1,11 @@
 {
   "name": "enmascara-express",
   "version": "0.0.0",
-  "description": "Masks Mexican identifiers in what Express request loggers write, with enmascara.",
+  "description": "Masks Mexican identifiers in what pino-http and morgan write for Express requests, with enmascara.",
   "keywords": [
     "express",
-    "middleware",
+    "pino-http",
+    "morgan",
     "logging",
     "clabe",
     "curp",
@@ -57,7 +58,17 @@
   },
   "peerDependencies": {
     "enmascara": "^0.1.0",
-    "express": "^4.17.0 || ^5.0.0"
+    "express": "^4.17.0 || ^5.0.0",
+    "morgan": "^1.10.0",
+    "pino-http": "^11.0.0"
+  },
+  "peerDependenciesMeta": {
+    "morgan": {
+      "optional": true
+    },
+    "pino-http": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@types/express": "5.0.6",
