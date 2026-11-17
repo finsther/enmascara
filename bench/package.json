@@ -9,7 +9,7 @@
   },
   "devDependencies": {
     "enmascara": "workspace:*",
-    "tinybench": "6.2.2",
+    "tinybench": "6.2.3",
     "yaml": "2.9.1"
   }
 }
