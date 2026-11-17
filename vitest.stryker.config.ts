@@ -4,6 +4,7 @@ export default defineConfig({
   test: {
     include: [
       'packages/core/test/**/*.test.ts',
+      'packages/express/test/**/*.test.ts',
       'packages/pino/test/**/*.test.ts',
       'packages/sentry/test/**/*.test.ts',
       'spec/test/**/*.test.ts',
