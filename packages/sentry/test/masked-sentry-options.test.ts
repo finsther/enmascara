@@ -413,9 +413,11 @@ describe('maskedSentryOptions', () => {
   );
 
   it('masks a transaction and the spans it carries', async () => {
-    const { beforeSendTransaction } = maskedSentryOptions(redact, {});
+    const { beforeSendTransaction } = maskedSentryOptions(redact, {
+      traceLifecycle: 'static',
+    });
 
-    const sent = await beforeSendTransaction(transactionEvent(), {});
+    const sent = await beforeSendTransaction?.(transactionEvent(), {});
 
     expect(asSent(sent)).toMatchObject({
       [EVENT_ID_KEY]: EVENT_ID_WITH_CARD_DIGITS,
@@ -436,12 +438,38 @@ describe('maskedSentryOptions', () => {
     ['the application drops it', redact, () => null],
     ['the redactor throws', failingRedactor(), undefined],
   ])('drops the transaction when %s', async (_, redactor, drop) => {
-    const { beforeSendTransaction } = maskedSentryOptions(
-      redactor,
-      drop === undefined ? {} : { beforeSendTransaction: drop },
-    );
+    const { beforeSendTransaction } = maskedSentryOptions(redactor, {
+      traceLifecycle: 'static',
+      ...(drop === undefined ? {} : { beforeSendTransaction: drop }),
+    });
 
-    expect(await beforeSendTransaction(transactionEvent(), {})).toBeNull();
+    expect(await beforeSendTransaction?.(transactionEvent(), {})).toBeNull();
+  });
+
+  it('leaves beforeSendTransaction to the application with streamed spans', () => {
+    const applicationBeforeSendTransaction = (event: TransactionEvent) => event;
+
+    expect(maskedSentryOptions(redact, {}).beforeSendTransaction).toBe(
+      undefined,
+    );
+    expect(
+      maskedSentryOptions(redact, {
+        beforeSendTransaction: applicationBeforeSendTransaction,
+      }).beforeSendTransaction,
+    ).toBe(applicationBeforeSendTransaction);
+  });
+
+  it('reduces the span when the beforeSendSpan of the application throws', () => {
+    const { beforeSendSpan } = maskedSentryOptions(redact, {
+      beforeSendSpan: () => {
+        throw new Error('application failed');
+      },
+    });
+
+    expect(asSent(beforeSendSpan(streamedSpan()))).toMatchObject({
+      name: '[REDACTED]',
+      [SPAN_ID_KEY]: SPAN_ID_WITH_CARD_DIGITS,
+    });
   });
 
   it('keeps the other options and leaves them untouched', () => {

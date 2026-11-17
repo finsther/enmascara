@@ -1,7 +1,7 @@
 import * as sentryEleven from '@sentry/node';
 import { createRedactor, type Redactor } from 'enmascara';
 import * as sentryTen from 'sentry-node-10';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { maskedSentryOptions } from '../src/index.js';
 
 const CLABE = '002180032240946700';
@@ -129,6 +129,17 @@ describe.each(TRACING_SETUPS)(
       for (const identifier of RAW_IDENTIFIERS) {
         expect(envelopes.payloads()).not.toContain(identifier);
       }
+    });
+
+    it('starts without Sentry warnings', () => {
+      const warn = vi
+        .spyOn(console, 'warn')
+        .mockImplementation(() => undefined);
+
+      startSentry(sentry, redact, { tracesSampleRate: 1, ...lifecycle });
+
+      expect(warn).not.toHaveBeenCalled();
+      warn.mockRestore();
     });
 
     it('sends envelope headers without identifiers', async () => {
