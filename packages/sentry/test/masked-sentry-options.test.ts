@@ -1,7 +1,15 @@
-import type { Breadcrumb, ErrorEvent } from '@sentry/node';
+import type { Breadcrumb, ErrorEvent, NodeOptions } from '@sentry/node';
 import { createRedactor, type Redactor } from 'enmascara';
 import { describe, expect, it } from 'vitest';
 import { maskedSentryOptions } from '../src/index.js';
+
+type StreamedSpanJson = Parameters<
+  NonNullable<NodeOptions['beforeSendSpan']>
+>[0];
+type TransactionEvent = Parameters<
+  NonNullable<NodeOptions['beforeSendTransaction']>
+>[0];
+type SpanJson = NonNullable<TransactionEvent['spans']>[number];
 
 const CLABE = '002180032240946700';
 const CURP = 'GODE561231HDFRRN00';
@@ -60,6 +68,56 @@ function errorEvent(): ErrorEvent {
     tags: { rfc: RFC },
     breadcrumbs: [{ message: `cargo a ${CARD}`, data: { clabe: CLABE } }],
     transaction: `/cuentas/${CLABE}`,
+  };
+}
+
+const IS_SEGMENT_KEY = 'is_segment';
+const START_TIMESTAMP_KEY = 'start_timestamp';
+const END_TIMESTAMP_KEY = 'end_timestamp';
+const TIMESTAMP_KEY = 'timestamp';
+const SPAN_START = 1_763_400_000.25;
+const SPAN_END = 1_763_400_001.5;
+
+type MaskSpan = (span: object) => unknown;
+
+function streamedSpan(): StreamedSpanJson {
+  return {
+    [TRACE_ID_KEY]: TRACE_ID_WITH_CLABE_DIGITS,
+    [SPAN_ID_KEY]: SPAN_ID_WITH_CARD_DIGITS,
+    [PARENT_SPAN_ID_KEY]: PARENT_SPAN_ID_WITH_CARD_DIGITS,
+    name: `GET /cuentas/${CLABE}`,
+    status: 'ok',
+    [IS_SEGMENT_KEY]: true,
+    [START_TIMESTAMP_KEY]: SPAN_START,
+    [END_TIMESTAMP_KEY]: SPAN_END,
+    attributes: { curp: { type: 'string', value: CURP } },
+  };
+}
+
+function staticSpan(): Record<string, unknown> {
+  return {
+    [TRACE_ID_KEY]: TRACE_ID_WITH_CLABE_DIGITS,
+    [SPAN_ID_KEY]: SPAN_ID_WITH_CARD_DIGITS,
+    [PARENT_SPAN_ID_KEY]: PARENT_SPAN_ID_WITH_CARD_DIGITS,
+    description: `pago con ${CARD}`,
+    data: { rfc: RFC },
+    [START_TIMESTAMP_KEY]: SPAN_START,
+    [TIMESTAMP_KEY]: SPAN_END,
+  };
+}
+
+function transactionEvent(): TransactionEvent {
+  return {
+    type: 'transaction',
+    [EVENT_ID_KEY]: EVENT_ID_WITH_CARD_DIGITS,
+    transaction: `GET /cuentas/${CLABE}`,
+    contexts: {
+      trace: {
+        [TRACE_ID_KEY]: TRACE_ID_WITH_CLABE_DIGITS,
+        [SPAN_ID_KEY]: SPAN_ID_WITH_CARD_DIGITS,
+      },
+    },
+    spans: [staticSpan() as unknown as SpanJson],
   };
 }
 
@@ -285,6 +343,106 @@ describe('maskedSentryOptions', () => {
       expect(beforeBreadcrumb({ message: CLABE })).toBeNull();
     },
   );
+
+  it('masks a streamed span and keeps the identifiers Sentry generated', () => {
+    const { beforeSendSpan } = maskedSentryOptions(redact, {});
+
+    const sent = beforeSendSpan(streamedSpan());
+
+    expect(asSent(sent)).toEqual({
+      ...streamedSpan(),
+      name: 'GET /cuentas/[CLABE]',
+      attributes: { curp: { type: 'string', value: '[CURP]' } },
+    });
+  });
+
+  it('masks a static span and keeps the identifiers Sentry generated', () => {
+    const { beforeSendSpan } = maskedSentryOptions(redact, {
+      traceLifecycle: 'static',
+    });
+
+    const sent = (beforeSendSpan as unknown as MaskSpan)(staticSpan());
+
+    expect(asSent(sent)).toEqual({
+      ...staticSpan(),
+      description: 'pago con [CARD]',
+      data: { rfc: '[RFC]' },
+    });
+  });
+
+  it('runs the beforeSendSpan of the application before masking', () => {
+    const { beforeSendSpan } = maskedSentryOptions(redact, {
+      beforeSendSpan: (span) => ({ ...span, name: `cuenta ${CLABE}` }),
+    });
+
+    expect(asSent(beforeSendSpan(streamedSpan()))).toMatchObject({
+      name: 'cuenta [CLABE]',
+    });
+  });
+
+  it('leaves the original span untouched', () => {
+    const { beforeSendSpan } = maskedSentryOptions(redact, {});
+    const span = streamedSpan();
+
+    beforeSendSpan(span);
+
+    expect(span).toEqual(streamedSpan());
+  });
+
+  it.each([
+    ['throws', failingRedactor()],
+    ['returns text', redactorReturning('[TEXT]')],
+  ])(
+    'sends a span reduced to its timing when the redactor %s',
+    (_, redactor) => {
+      const { beforeSendSpan } = maskedSentryOptions(redactor, {});
+
+      const sent = beforeSendSpan(streamedSpan());
+
+      expect(asSent(sent)).toEqual({
+        [TRACE_ID_KEY]: TRACE_ID_WITH_CLABE_DIGITS,
+        [SPAN_ID_KEY]: SPAN_ID_WITH_CARD_DIGITS,
+        [PARENT_SPAN_ID_KEY]: PARENT_SPAN_ID_WITH_CARD_DIGITS,
+        name: '[REDACTED]',
+        status: 'ok',
+        [IS_SEGMENT_KEY]: true,
+        [START_TIMESTAMP_KEY]: SPAN_START,
+        [END_TIMESTAMP_KEY]: SPAN_END,
+      });
+    },
+  );
+
+  it('masks a transaction and the spans it carries', async () => {
+    const { beforeSendTransaction } = maskedSentryOptions(redact, {});
+
+    const sent = await beforeSendTransaction(transactionEvent(), {});
+
+    expect(asSent(sent)).toMatchObject({
+      [EVENT_ID_KEY]: EVENT_ID_WITH_CARD_DIGITS,
+      transaction: 'GET /cuentas/[CLABE]',
+      contexts: { trace: { [TRACE_ID_KEY]: TRACE_ID_WITH_CLABE_DIGITS } },
+      spans: [
+        {
+          ...staticSpan(),
+          description: 'pago con [CARD]',
+          data: { rfc: '[RFC]' },
+        },
+      ],
+    });
+    expectNoRawIdentifier(sent);
+  });
+
+  it.each([
+    ['the application drops it', redact, () => null],
+    ['the redactor throws', failingRedactor(), undefined],
+  ])('drops the transaction when %s', async (_, redactor, drop) => {
+    const { beforeSendTransaction } = maskedSentryOptions(
+      redactor,
+      drop === undefined ? {} : { beforeSendTransaction: drop },
+    );
+
+    expect(await beforeSendTransaction(transactionEvent(), {})).toBeNull();
+  });
 
   it('keeps the other options and leaves them untouched', () => {
     const applicationBeforeSend = (event: ErrorEvent) => event;

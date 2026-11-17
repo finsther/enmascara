@@ -30,13 +30,25 @@ function failingRedactor(): Redactor {
 interface CapturedEnvelopes {
   readonly items: (type: string) => readonly unknown[];
   readonly raw: () => string;
+  readonly headers: () => string;
+  readonly payloads: () => string;
 }
 
-function startSentry(sentry: Sentry, redactor: Redactor): CapturedEnvelopes {
+type TracingOptions = Pick<
+  sentryEleven.NodeOptions,
+  'tracesSampleRate' | 'traceLifecycle'
+>;
+
+function startSentry(
+  sentry: Sentry,
+  redactor: Redactor,
+  tracingOptions: TracingOptions = {},
+): CapturedEnvelopes {
   const bodies: string[] = [];
   const decoder = new TextDecoder();
   sentry.init(
     maskedSentryOptions(redactor, {
+      ...tracingOptions,
       dsn: UNREACHABLE_DSN,
       defaultIntegrations: false,
       sendClientReports: false,
@@ -71,8 +83,70 @@ function startSentry(sentry: Sentry, redactor: Redactor): CapturedEnvelopes {
         .filter(([header]) => (header as { type?: string }).type === type)
         .map(([, payload]) => payload),
     raw: () => bodies.join('\n'),
+    headers: () => bodies.map((body) => body.split('\n')[0]).join('\n'),
+    payloads: () =>
+      bodies.map((body) => body.split('\n').slice(1).join('\n')).join('\n'),
   };
 }
+
+const TRACING_SETUPS = [
+  ['@sentry/node 11 with streamed spans', sentryEleven, {}],
+  [
+    '@sentry/node 11 with static spans',
+    sentryEleven,
+    { traceLifecycle: 'static' },
+  ],
+  ['@sentry/node 10', sentryTen as unknown as Sentry, {}],
+] as const satisfies readonly (readonly [string, Sentry, TracingOptions])[];
+
+function traceRequest(sentry: Sentry): void {
+  sentry.startSpan(
+    { name: `GET /cuentas/${CLABE}`, attributes: { curp: CURP } },
+    () => {
+      sentry.startSpan({ name: `cobro a ${CARD}` }, () => undefined);
+    },
+  );
+}
+
+describe.each(TRACING_SETUPS)(
+  'maskedSentryOptions tracing with %s',
+  (_, sentry, lifecycle) => {
+    afterEach(async () => {
+      await sentry.close();
+    });
+
+    it('sends span and transaction payloads masked', async () => {
+      const envelopes = startSentry(sentry, redact, {
+        tracesSampleRate: 1,
+        ...lifecycle,
+      });
+
+      traceRequest(sentry);
+      await sentry.flush();
+
+      expect(envelopes.payloads()).toContain('GET /cuentas/[CLABE]');
+      expect(envelopes.payloads()).toContain('cobro a [CARD]');
+      for (const identifier of RAW_IDENTIFIERS) {
+        expect(envelopes.payloads()).not.toContain(identifier);
+      }
+    });
+
+    it('sends envelope headers without identifiers', async () => {
+      const envelopes = startSentry(sentry, redact, {
+        tracesSampleRate: 1,
+        ...lifecycle,
+      });
+
+      traceRequest(sentry);
+      await sentry.flush();
+
+      expect(envelopes.headers()).not.toBe('');
+      for (const identifier of RAW_IDENTIFIERS) {
+        expect(envelopes.headers()).not.toContain(identifier);
+      }
+    });
+  },
+);
 
 describe.each(SENTRY_VERSIONS)('maskedSentryOptions with %s', (_, sentry) => {
   afterEach(async () => {
