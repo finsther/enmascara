@@ -169,6 +169,26 @@ function createTraceHeader(
   return header;
 }
 
+type Log = Parameters<NonNullable<NodeOptions['beforeSendLog']>>[0];
+type Metric = Parameters<NonNullable<NodeOptions['beforeSendMetric']>>[0];
+
+function applicationLog(): Log {
+  return {
+    level: 'info',
+    message: `SPEI a ${CLABE}`,
+    attributes: { curp: CURP },
+  };
+}
+
+function applicationMetric(): Metric {
+  return {
+    name: 'cobros',
+    value: 1,
+    type: 'counter',
+    attributes: { tarjeta: CARD },
+  };
+}
+
 function failingRedactor(): Redactor {
   const fail = (): never => {
     throw new Error('masking failed');
@@ -582,6 +602,52 @@ describe('maskedSentryOptions', () => {
       expect(header).toEqual({ [TRACE_ID_KEY]: TRACE_ID_WITH_CLABE_DIGITS });
     },
   );
+
+  it('masks the message and attributes of a log', () => {
+    const { beforeSendLog } = maskedSentryOptions(redact, {});
+
+    expect(asSent(beforeSendLog(applicationLog()))).toEqual({
+      level: 'info',
+      message: 'SPEI a [CLABE]',
+      attributes: { curp: '[CURP]' },
+    });
+  });
+
+  it('masks the attributes of a metric', () => {
+    const { beforeSendMetric } = maskedSentryOptions(redact, {});
+
+    expect(asSent(beforeSendMetric(applicationMetric()))).toEqual({
+      ...applicationMetric(),
+      attributes: { tarjeta: '[CARD]' },
+    });
+  });
+
+  it('runs the log and metric hooks of the application before masking', () => {
+    const { beforeSendLog, beforeSendMetric } = maskedSentryOptions(redact, {
+      beforeSendLog: (log) => ({ ...log, message: `cuenta ${CLABE}` }),
+      beforeSendMetric: (metric) => ({ ...metric, attributes: { rfc: RFC } }),
+    });
+
+    expect(asSent(beforeSendLog(applicationLog()))).toMatchObject({
+      message: 'cuenta [CLABE]',
+    });
+    expect(asSent(beforeSendMetric(applicationMetric()))).toMatchObject({
+      attributes: { rfc: '[RFC]' },
+    });
+  });
+
+  it.each([
+    ['the application drops them', redact, () => null],
+    ['the redactor throws', failingRedactor(), undefined],
+  ])('drops logs and metrics when %s', (_, redactor, drop) => {
+    const { beforeSendLog, beforeSendMetric } = maskedSentryOptions(
+      redactor,
+      drop === undefined ? {} : { beforeSendLog: drop, beforeSendMetric: drop },
+    );
+
+    expect(beforeSendLog(applicationLog())).toBeNull();
+    expect(beforeSendMetric(applicationMetric())).toBeNull();
+  });
 
   it('keeps the other options and leaves them untouched', () => {
     const applicationBeforeSend = (event: ErrorEvent) => event;

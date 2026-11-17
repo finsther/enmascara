@@ -32,7 +32,8 @@ interface CapturedEnvelopes {
 export type TracingOptions = Pick<
   NodeOptions,
   'tracesSampleRate' | 'traceLifecycle'
->;
+> &
+  Readonly<Record<string, unknown>>;
 
 export interface TracingSetup {
   readonly name: string;
@@ -102,6 +103,7 @@ export function describeSentryClient(
   version: string,
   sentry: Sentry,
   tracingSetups: readonly TracingSetup[],
+  telemetryOptions: TracingOptions = {},
 ): void {
   describe.each(
     tracingSetups.map((setup) => [setup.name, setup.options] as const),
@@ -199,6 +201,20 @@ export function describeSentryClient(
       ).toMatchObject([
         { message: 'SPEI a [CLABE]', data: { curp: '[CURP]' } },
       ]);
+    });
+
+    it('sends logs and metrics masked', async () => {
+      const envelopes = startSentry(sentry, redact, telemetryOptions);
+
+      sentry.logger.info(`SPEI a ${CLABE}`, { curp: CURP });
+      sentry.metrics.count('cobros', 1, { attributes: { tarjeta: CARD } });
+      await sentry.flush();
+
+      expect(envelopes.payloads()).toContain('SPEI a [CLABE]');
+      expect(envelopes.payloads()).toContain('[CARD]');
+      for (const identifier of RAW_IDENTIFIERS) {
+        expect(envelopes.payloads()).not.toContain(identifier);
+      }
     });
 
     it('sends nothing when masking fails', async () => {
