@@ -9,6 +9,9 @@ type BeforeSend = NonNullable<NodeOptions['beforeSend']>;
 type BeforeSendTransaction = NonNullable<NodeOptions['beforeSendTransaction']>;
 type BeforeSendSpan = NonNullable<NodeOptions['beforeSendSpan']>;
 type BeforeBreadcrumb = NonNullable<NodeOptions['beforeBreadcrumb']>;
+type BeforeSendLog = NonNullable<NodeOptions['beforeSendLog']>;
+type BeforeSendMetric = NonNullable<NodeOptions['beforeSendMetric']>;
+type ItemHook<Item> = (item: Item) => Item | null;
 type EventHint = Parameters<BeforeSend>[1];
 type EventHook<Event> = (
   event: Event,
@@ -34,6 +37,8 @@ export type MaskedSentryOptions = NodeOptions & {
   readonly beforeSend: BeforeSend;
   readonly beforeSendSpan: BeforeSendSpan;
   readonly beforeBreadcrumb: BeforeBreadcrumb;
+  readonly beforeSendLog: BeforeSendLog;
+  readonly beforeSendMetric: BeforeSendMetric;
 };
 
 function isPromiseLike<Event>(
@@ -104,6 +109,17 @@ function maskedBeforeSendTransaction(
       };
 }
 
+function maskedItemHook<Item extends object>(
+  redactor: Redactor,
+  applicationHook: ItemHook<Item> | undefined,
+): ItemHook<Item> {
+  return (item) =>
+    maskOrDrop(
+      redactor,
+      applicationHook === undefined ? item : applicationHook(item),
+    );
+}
+
 function maskedBeforeBreadcrumb(
   redactor: Redactor,
   applicationBeforeBreadcrumb: BeforeBreadcrumb | undefined,
@@ -119,10 +135,13 @@ function maskedBeforeBreadcrumb(
 
 /**
  * Returns a copy of the Sentry options whose hooks mask every identifier the
- * redactor detects before an error event, transaction, span or breadcrumb
- * leaves the process: messages, exception values, stack frame variables,
- * `request` (URL, query, data, headers and cookies), `extra`, `contexts`,
- * `user`, `tags`, span names and attributes, and breadcrumbs.
+ * redactor detects before an error event, transaction, span, log, metric or
+ * breadcrumb leaves the process: messages, exception values, stack frame
+ * variables, `request` (URL, query, data, headers and cookies), `extra`,
+ * `contexts`, `user`, `tags`, span names and attributes, log messages, the
+ * attributes of logs and metrics, and breadcrumbs. An `EnmascaraTraceHeader`
+ * integration, added after the integrations of the application, also masks
+ * the transaction in the trace header of each envelope.
  *
  * Each payload is masked as a copy, so the original stays as it was. The
  * identifiers Sentry generates for events, traces and spans (`event_id`,
@@ -131,11 +150,13 @@ function maskedBeforeBreadcrumb(
  *
  * The hooks of the application still run first, and masking applies to what
  * they return; if they return `null`, the payload is dropped. The options
- * received are never modified.
+ * received are never modified. With streamed spans in `@sentry/node` 11,
+ * `beforeSendTransaction` is left as received, because Sentry ignores it.
  *
- * Masking fails closed: if the redactor throws, error events, transactions and
- * breadcrumbs are dropped, and a span, which Sentry does not let a hook drop,
- * is sent with its name replaced by `[REDACTED]` and only its timing.
+ * Masking fails closed: if the redactor throws, error events, transactions,
+ * logs, metrics and breadcrumbs are dropped, the transaction is removed from
+ * the trace header, and a span, which Sentry does not let a hook drop, is sent
+ * with its name replaced by `[REDACTED]` and only its timing.
  *
  * @param redactor - Redactor created with `createRedactor` from `enmascara`.
  * @param options - Options for `Sentry.init` from `@sentry/node`, version 10
@@ -168,6 +189,8 @@ export function maskedSentryOptions(
       redactor,
       options.beforeBreadcrumb,
     ),
+    beforeSendLog: maskedItemHook(redactor, options.beforeSendLog),
+    beforeSendMetric: maskedItemHook(redactor, options.beforeSendMetric),
     integrations: withTraceHeaderIntegration(redactor, options.integrations),
   };
 }
