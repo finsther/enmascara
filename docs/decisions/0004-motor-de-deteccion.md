@@ -32,6 +32,7 @@ El motor convierte texto u objetos en su versión enmascarada. El plan del sprin
    - Copia iterativa, con una pila de tareas, así que la profundidad no depende de la pila de llamadas.
    - Las copias de objetos no tienen prototipo y solo llevan propiedades propias de datos. Los accesores se omiten sin ejecutarse y las funciones se descartan.
    - Se enmascaran también las claves, y los números y bigint que contienen un identificador. Un `Error` se copia como `name`, `message`, `stack` y sus propiedades propias.
+   - En Node 22 y 24, `stack` es un accesor propio de cada error. La copia lo lee solo si su getter es el del motor de JavaScript, comparado por identidad con el de un `Error` de prueba; un getter de `stack` definido por la aplicación se omite sin ejecutarse.
    - Un objeto que vuelve a un ancestro se reemplaza por `[Circular]`; uno compartido por dos ramas se copia dos veces.
    - Lo que pasa de `maxDepth` (32 por omisión) se reemplaza por `[MaxDepth]`.
 7. **Errores sin valores.** Los mensajes de `InvalidConfigurationError` nombran la opción y nunca repiten lo que recibieron. `text()`, `findings()` y `object()` no lanzan con ninguna entrada; fast-check lo comprueba con texto Unicode y valores JSON arbitrarios.
@@ -40,5 +41,6 @@ El motor convierte texto u objetos en su versión enmascarada. El plan del sprin
 
 - Hay cuatro pasadas por texto en lugar de una. La meta de rendimiento se medirá en la historia 9.
 - Si dos claves de un objeto se enmascaran igual, por ejemplo dos CURP como claves, la segunda sobrescribe a la primera en la copia.
+- Leer `stack` ejecuta `Error.prepareStackTrace` si la aplicación lo definió, igual que cualquier acceso a `err.stack`. Si lanza, el error completo pasa a `[REDACTED]`.
 - `Date`, `Map` y `Set` se copian como objetos con solo sus propiedades propias de datos, así que quedan vacíos. Tratarlos de forma especial queda para otra historia.
 - La normalización carácter por carácter no recompone secuencias de varios caracteres, como una letra seguida de un acento combinante. No afecta a los identificadores del MVP, que son ASCII después de NFKC.

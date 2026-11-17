@@ -140,7 +140,7 @@ Lo que Enmascara **no** detecta en esta versión:
 
 - Las expresiones regulares son lineales; el CI rechaza cualquier patrón vulnerable a ReDoS.
 - Las entradas de 1 MB se enmascaran en menos de 5 segundos, y las más largas se truncan con `[REDACTED]`.
-- `object()` copia solo propiedades propias de datos, sin prototipo, con límite de profundidad y detección de ciclos. No ejecuta getters, y un objeto que falla al leerse, como un Proxy que lanza, pasa a `[REDACTED]`.
+- `object()` copia solo propiedades propias de datos, sin prototipo, con límite de profundidad y detección de ciclos. No ejecuta getters, salvo el de `stack` que el motor de JavaScript pone en cada `Error`, y un objeto que falla al leerse, como un Proxy que lanza, pasa a `[REDACTED]`.
 - El paquete se publica desde GitHub Actions con provenance de npm.
 
 Para reportar una vulnerabilidad, sigue [SECURITY.md](SECURITY.md).
