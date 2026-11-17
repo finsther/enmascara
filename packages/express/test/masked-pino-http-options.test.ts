@@ -13,6 +13,7 @@ import {
   failingRedactor,
   RAW_IDENTIFIERS,
   RFC,
+  redactorReturning,
 } from './support/identifiers.js';
 
 const REDACTED_RECORD = { enmascara: '[REDACTED]' };
@@ -218,6 +219,30 @@ describe.each(EXPRESS_VERSIONS)('maskedPinoHttpOptions on %s', (_, express) => {
     });
   });
 
+  it('applies a serializer the application kept under the default key after renaming it', async () => {
+    const { output } = await logRequest({
+      customAttributeKeys: { req: 'peticion' },
+      serializers: {
+        req: (request: Readonly<Record<string, unknown>>) => ({
+          ...request,
+          titular: CURP,
+        }),
+      },
+    });
+
+    expect(onlyLine(output)).toMatchObject({
+      peticion: { titular: '[CURP]' },
+    });
+  });
+
+  it('adds no params to a custom object that is not an object', async () => {
+    const { output } = await logRequest({
+      customSuccessObject: () => 'listo',
+    });
+
+    expect(onlyLine(output)).not.toHaveProperty('params');
+  });
+
   it('leaves the body, query, params and headers of req untouched', async () => {
     const { before, after } = await logRequest();
 
@@ -242,6 +267,36 @@ describe.each(EXPRESS_VERSIONS)('maskedPinoHttpOptions on %s', (_, express) => {
 });
 
 describe('maskedPinoHttpOptions', () => {
+  it('fails closed when the redactor returns something other than an object', async () => {
+    const options = maskedPinoHttpOptions<object, object>(
+      redactorReturning(CURP),
+    );
+
+    const { req: requestSerializer } = options.serializers ?? {};
+
+    expect(requestSerializer?.({ url: CURP })).toEqual(REDACTED_RECORD);
+    expect(
+      options.customSuccessObject?.({ params: { clabe: CLABE } }, {}, {}),
+    ).toEqual({ params: REDACTED_RECORD });
+  });
+
+  it('fails closed when the serialized headers are not an object', () => {
+    const options = maskedPinoHttpOptions<object, object>(redact, {
+      serializers: { req: () => ({ headers: CREDENTIAL }) },
+    });
+    const { req: requestSerializer } = options.serializers ?? {};
+
+    expect(requestSerializer?.({})).toEqual(REDACTED_RECORD);
+  });
+
+  it('adds no params when the request has none', () => {
+    const options = maskedPinoHttpOptions<object, object>(redact);
+
+    expect(
+      Object.keys(options.customSuccessObject?.({}, {}, {}) as object),
+    ).toEqual([]);
+  });
+
   it('leaves the options it receives untouched', () => {
     const serializers = Object.freeze({ req: (value: unknown) => value });
     const options = Object.freeze({ level: 'warn', serializers });
