@@ -43,13 +43,8 @@ export function maskSpan<Span extends object>(
   redactor: Redactor,
   span: Span,
 ): Span {
-  try {
-    const copy = redactor.object(span);
-    if (isRecord(copy)) {
-      return withSdkIdentifiers(span, copy as Span);
-    }
-  } catch {
-    return reduceSpan(span);
-  }
-  return reduceSpan(span);
+  const copy = redactor.object(span);
+  return isRecord(copy)
+    ? withSdkIdentifiers(span, copy as Span)
+    : reduceSpan(span);
 }
