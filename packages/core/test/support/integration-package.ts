@@ -18,6 +18,9 @@ interface PackageManifest {
   readonly scripts?: Readonly<Record<string, string>>;
   readonly dependencies?: Readonly<Record<string, string>>;
   readonly peerDependencies?: Readonly<Record<string, string>>;
+  readonly peerDependenciesMeta?: Readonly<
+    Record<string, { readonly optional?: boolean }>
+  >;
 }
 
 interface PackDryRun {
@@ -27,6 +30,7 @@ interface PackDryRun {
 export interface IntegrationPackage {
   readonly directory: string;
   readonly sdk: string;
+  readonly optionalPeers?: readonly string[];
 }
 
 const repositoryDirectory = fileURLToPath(
@@ -93,6 +97,7 @@ export function describeIntegrationPackage(
   const packageDirectory = join(repositoryDirectory, integration.directory);
   const manifest = readManifest(packageDirectory);
   const readme = readText(join(packageDirectory, README));
+  const optionalPeers = integration.optionalPeers ?? [];
 
   describe(`${manifest.name ?? integration.directory} as published`, () => {
     it('points provenance and its page at the GitHub repository', () => {
@@ -118,7 +123,15 @@ export function describeIntegrationPackage(
     it('leaves enmascara and the SDK to the application', () => {
       expect(manifest.dependencies).toBeUndefined();
       expect(Object.keys(manifest.peerDependencies ?? {}).sort()).toEqual(
-        ['enmascara', integration.sdk].sort(),
+        ['enmascara', integration.sdk, ...optionalPeers].sort(),
+      );
+    });
+
+    it('marks as optional only the peers the application may leave out', () => {
+      expect(manifest.peerDependenciesMeta ?? {}).toEqual(
+        Object.fromEntries(
+          optionalPeers.map((peer) => [peer, { optional: true }]),
+        ),
       );
     });
 

@@ -142,6 +142,7 @@ Lo que Enmascara **no** detecta en esta versión:
 | --- | --- | --- |
 | [`enmascara-pino`](packages/pino#readme) | pino 9 y 10 | Objetos, mensajes interpolados, errores, mixins y bindings de cada línea |
 | [`enmascara-sentry`](packages/sentry#readme) | `@sentry/node` 10 y 11 | Errores, transacciones, spans, logs, métricas, breadcrumbs y el encabezado de cada envelope |
+| [`enmascara-express`](packages/express#readme) | Express 4 y 5 con pino-http 11 o morgan 1 | URL, query, params, headers y errores de cada petición; los headers de credenciales salen como `[REDACTED]` |
 
 ## Seguridad
 

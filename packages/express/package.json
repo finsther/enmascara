@@ -1,0 +1,83 @@
+{
+  "name": "enmascara-express",
+  "version": "0.0.0",
+  "description": "Masks Mexican identifiers in what pino-http and morgan write for Express requests, with enmascara.",
+  "keywords": [
+    "express",
+    "pino-http",
+    "morgan",
+    "logging",
+    "clabe",
+    "curp",
+    "rfc",
+    "pii",
+    "redaction",
+    "masking"
+  ],
+  "license": "MIT",
+  "homepage": "https://github.com/finsther/enmascara/tree/main/packages/express#readme",
+  "bugs": {
+    "url": "https://github.com/finsther/enmascara/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/finsther/enmascara.git",
+    "directory": "packages/express"
+  },
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "enmascara": "^0.1.0",
+    "express": "^4.17.0 || ^5.0.0",
+    "morgan": "^1.10.0",
+    "pino-http": "^11.0.0"
+  },
+  "peerDependenciesMeta": {
+    "morgan": {
+      "optional": true
+    },
+    "pino-http": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@types/express": "5.0.6",
+    "@types/morgan": "1.9.10",
+    "enmascara": "workspace:*",
+    "express": "5.3.0",
+    "express-4": "npm:express@4.22.3",
+    "morgan": "1.12.1",
+    "pino": "10.4.0",
+    "pino-http": "11.0.0"
+  }
+}
