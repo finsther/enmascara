@@ -113,6 +113,13 @@ function copyArray(source: readonly unknown[]): ShallowCopy {
   return { container, children };
 }
 
+function reserveKeyInInsertionOrder(
+  container: Record<string, unknown>,
+  key: string,
+): void {
+  container[key] = undefined;
+}
+
 function copyProperties(
   source: object,
   keys: readonly string[],
@@ -126,6 +133,7 @@ function copyProperties(
       return [];
     }
     const maskedKey = redactText(key, engine);
+    reserveKeyInInsertionOrder(container, maskedKey);
     return [
       {
         source: data.value,
