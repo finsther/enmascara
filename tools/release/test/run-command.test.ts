@@ -13,12 +13,16 @@ describe('runCommand', () => {
     });
   });
 
-  it('returns what a failed command prints on both streams', async () => {
+  it('keeps apart what a failed command prints on each stream', async () => {
     await expect(
       node(
         "process.stdout.write('salida'); process.stderr.write('error'); process.exit(1)",
       ),
-    ).resolves.toEqual({ kind: 'failed', output: 'salidaerror' });
+    ).resolves.toEqual({
+      kind: 'failed',
+      output: 'salida',
+      errorOutput: 'error',
+    });
   });
 
   it('runs the command in the given directory', async () => {

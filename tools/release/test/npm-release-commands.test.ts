@@ -40,7 +40,11 @@ function answering(outcome: CommandOutcome): {
 }
 
 const SUCCEEDED: CommandOutcome = { kind: 'succeeded', output: '' };
-const FAILED: CommandOutcome = { kind: 'failed', output: 'npm error 403' };
+const FAILED: CommandOutcome = {
+  kind: 'failed',
+  output: 'stdout',
+  errorOutput: 'error 403',
+};
 
 describe('createNpmReleaseCommands', () => {
   it('publishes with npm from the package directory', async () => {
@@ -64,7 +68,7 @@ describe('createNpmReleaseCommands', () => {
     ).rejects.toThrow(
       new ReleaseCommandError(
         'npm could not publish enmascara-pino@0.1.0',
-        'npm error 403',
+        'stdout\nerror 403',
       ),
     );
   });
@@ -94,7 +98,10 @@ describe('createNpmReleaseCommands', () => {
       'another predicate',
       { kind: 'succeeded', output: 'https://example.com/other' },
     ],
-    ['the version not visible yet', { kind: 'failed', output: 'E404' }],
+    [
+      'the version not visible yet',
+      { kind: 'failed', output: '', errorOutput: 'E404' },
+    ],
   ] as const)('treats %s as missing provenance', async (_case, outcome) => {
     const npm = answering(outcome);
 
@@ -129,7 +136,7 @@ describe('createNpmReleaseCommands', () => {
     ).rejects.toThrow(
       new ReleaseCommandError(
         'GitHub could not create the tag enmascara-pino@0.1.0',
-        'npm error 403',
+        'stdout\nerror 403',
       ),
     );
   });

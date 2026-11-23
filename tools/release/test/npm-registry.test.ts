@@ -54,7 +54,11 @@ describe('createNpmRegistry', () => {
   });
 
   it('treats a package npm does not know as unreserved', async () => {
-    const npm = answering({ kind: 'failed', output: NOT_FOUND });
+    const npm = answering({
+      kind: 'failed',
+      output: NOT_FOUND,
+      errorOutput: 'npm error code E404\nnpm error 404 Not Found',
+    });
 
     await expect(
       createNpmRegistry(npm.run).record('enmascara-pino'),
@@ -64,7 +68,7 @@ describe('createNpmRegistry', () => {
   it.each([
     [
       'a network failure',
-      { kind: 'failed', output: 'npm error code ETIMEDOUT' },
+      { kind: 'failed', output: '', errorOutput: 'npm error code ETIMEDOUT' },
     ],
     ['output that is not JSON', { kind: 'succeeded', output: 'Not JSON' }],
     ['a list with something else', { kind: 'succeeded', output: '[1]' }],

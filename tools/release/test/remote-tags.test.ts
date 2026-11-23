@@ -36,7 +36,11 @@ describe('readRemoteTags', () => {
 
   it('fails instead of assuming there are no tags', async () => {
     await expect(
-      readRemoteTags(async () => ({ kind: 'failed', output: 'fatal' })),
+      readRemoteTags(async () => ({
+        kind: 'failed',
+        output: '',
+        errorOutput: 'fatal',
+      })),
     ).rejects.toThrow(
       new RemoteTagsUnavailableError('git could not list the tags of origin'),
     );
