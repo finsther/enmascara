@@ -1,23 +1,12 @@
-import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import {
+  BUNDLES,
+  moduleSpecifiers,
+  networkApis,
+  readBundle,
+} from './support/bundle-scanners.js';
 
-const BUNDLES = ['index.js', 'index.cjs'] as const;
-const MODULE_SPECIFIER =
-  /(?:\bfrom\s*|\bimport\s*\(\s*|\bimport\s+|\brequire\s*\(\s*)["']([^"']+)["']/g;
-const NETWORK_APIS =
-  /\b(?:fetch|XMLHttpRequest|WebSocket|EventSource|sendBeacon)\b/g;
-
-function readBundle(fileName: string): string {
-  return readFileSync(new URL(`../dist/${fileName}`, import.meta.url), 'utf8');
-}
-
-function moduleSpecifiers(source: string): readonly string[] {
-  return [...source.matchAll(MODULE_SPECIFIER)].map((match) => match[1] ?? '');
-}
-
-function networkApis(source: string): readonly string[] {
-  return [...source.matchAll(NETWORK_APIS)].map((match) => match[0]);
-}
+const packageUrl = new URL('..', import.meta.url);
 
 describe('bundle scanners', () => {
   it('find every kind of module import', () => {
@@ -46,7 +35,7 @@ describe('bundle scanners', () => {
 });
 
 describe.each(BUNDLES)('dist/%s', (fileName) => {
-  const source = readBundle(fileName);
+  const source = readBundle(packageUrl, fileName);
 
   it('imports no module at all', () => {
     expect(moduleSpecifiers(source)).toEqual([]);
