@@ -17,6 +17,8 @@
     "packages/sentry/src",
     "packages/sentry/test",
     "spec/tools",
-    "spec/test"
+    "spec/test",
+    "tools/release/src",
+    "tools/release/test"
   ]
 }
