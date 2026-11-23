@@ -240,6 +240,51 @@ describe('redactObject', () => {
     expect(property(result, 'hostile')).toBe('[REDACTED]');
   });
 
+  it('keeps the insertion order of keys at the top level', () => {
+    const result = redactObject({ a: 1, b: 2, c: 3 }, engine);
+
+    expect(Object.keys(result as object)).toEqual(['a', 'b', 'c']);
+  });
+
+  it('keeps the insertion order of keys in nested objects', () => {
+    const result = redactObject(
+      { outer: { x: 1, y: 2, z: { first: 1, second: 2 } } },
+      engine,
+    );
+    const outer = property(result, 'outer');
+
+    expect(Object.keys(outer as object)).toEqual(['x', 'y', 'z']);
+    expect(Object.keys(property(outer, 'z') as object)).toEqual([
+      'first',
+      'second',
+    ]);
+  });
+
+  it('keeps the order of array elements and of keys inside them', () => {
+    const result = redactObject(
+      { items: [{ id: 1, name: 'one' }, CURP, [1, 2, 3]] },
+      engine,
+    );
+
+    expect(JSON.stringify(result)).toBe(
+      '{"items":[{"id":1,"name":"one"},"[CURP]",[1,2,3]]}',
+    );
+  });
+
+  it('copies an error as name, message, stack and then its own keys', () => {
+    const error = Object.assign(new Error('fallo'), { code: 'E1', path: 'x' });
+
+    const copy = property(redactObject({ error }, engine), 'error');
+
+    expect(Object.keys(copy as object)).toEqual([
+      'name',
+      'message',
+      'stack',
+      'code',
+      'path',
+    ]);
+  });
+
   it('handles primitive roots', () => {
     expect(redactObject(CURP, engine)).toBe('[CURP]');
     expect(redactObject(null, engine)).toBeNull();
