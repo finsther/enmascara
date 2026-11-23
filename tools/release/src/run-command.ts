@@ -2,7 +2,11 @@ import { execFile } from 'node:child_process';
 
 export type CommandOutcome =
   | { readonly kind: 'succeeded'; readonly output: string }
-  | { readonly kind: 'failed'; readonly output: string };
+  | {
+      readonly kind: 'failed';
+      readonly output: string;
+      readonly errorOutput: string;
+    };
 
 export interface CommandOptions {
   readonly workingDirectory?: string;
@@ -24,7 +28,11 @@ export const runCommand: RunCommand = (command, args, options = {}) =>
         resolve(
           error === null
             ? { kind: 'succeeded', output: standardOutput }
-            : { kind: 'failed', output: `${standardOutput}${standardError}` },
+            : {
+                kind: 'failed',
+                output: standardOutput,
+                errorOutput: standardError,
+              },
         );
       },
     );

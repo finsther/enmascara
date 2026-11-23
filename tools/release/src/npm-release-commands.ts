@@ -1,5 +1,5 @@
 import type { ProvenanceRecord, ReleaseCommands } from './publish-release.ts';
-import type { RunCommand } from './run-command.ts';
+import type { CommandOutcome, RunCommand } from './run-command.ts';
 
 export const SLSA_PROVENANCE = 'https://slsa.dev/provenance/v1';
 
@@ -18,6 +18,12 @@ export class ReleaseCommandError extends Error {
   }
 }
 
+function everythingPrinted(
+  outcome: Extract<CommandOutcome, { kind: 'failed' }>,
+): string {
+  return `${outcome.output}\n${outcome.errorOutput}`;
+}
+
 export function createNpmReleaseCommands(
   run: RunCommand,
   target: ReleaseTarget,
@@ -30,7 +36,7 @@ export function createNpmReleaseCommands(
       if (outcome.kind === 'failed') {
         throw new ReleaseCommandError(
           `npm could not publish ${tag}`,
-          outcome.output,
+          everythingPrinted(outcome),
         );
       }
     },
@@ -57,7 +63,7 @@ export function createNpmReleaseCommands(
       if (outcome.kind === 'failed') {
         throw new ReleaseCommandError(
           `GitHub could not create the tag ${tag}`,
-          outcome.output,
+          everythingPrinted(outcome),
         );
       }
     },
