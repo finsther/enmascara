@@ -11,9 +11,8 @@ function isReady(
   candidate: DependentPackage,
   pending: readonly DependentPackage[],
 ): boolean {
-  return !pending.some(
-    (other) =>
-      other !== candidate && candidate.peerDependencies.includes(other.name),
+  return !pending.some((other) =>
+    candidate.peerDependencies.includes(other.name),
   );
 }
 
