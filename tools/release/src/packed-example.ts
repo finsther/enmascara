@@ -68,7 +68,7 @@ function parsedJson(output: string): unknown {
 
 export function packedFileName(output: string): string {
   const parsed = parsedJson(output);
-  const [entry] = Array.isArray(parsed) ? parsed : [];
+  const entry: unknown = Array.isArray(parsed) ? parsed[0] : undefined;
   const { filename: fileName } = isRecord(entry) ? entry : {};
   if (typeof fileName === 'string') {
     return fileName;
