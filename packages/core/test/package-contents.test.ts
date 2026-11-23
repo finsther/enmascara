@@ -12,6 +12,9 @@ interface PackageManifest {
   readonly bugs?: unknown;
   readonly publishConfig?: unknown;
   readonly scripts?: Readonly<Record<string, string>>;
+  readonly dependencies?: Readonly<Record<string, string>>;
+  readonly optionalDependencies?: Readonly<Record<string, string>>;
+  readonly peerDependencies?: Readonly<Record<string, string>>;
 }
 
 interface PackDryRun {
@@ -77,6 +80,12 @@ describe('published package metadata', () => {
     expect(manifest.keywords).toEqual(
       expect.arrayContaining(['clabe', 'curp', 'rfc', 'pii', 'redaction']),
     );
+  });
+
+  it('installs nothing else at runtime', () => {
+    expect(manifest.dependencies).toBeUndefined();
+    expect(manifest.optionalDependencies).toBeUndefined();
+    expect(manifest.peerDependencies).toBeUndefined();
   });
 
   it('runs no lifecycle script on install or publish', () => {
