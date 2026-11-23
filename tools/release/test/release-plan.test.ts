@@ -142,6 +142,34 @@ describe('planRelease', () => {
     ]);
   });
 
+  it('releases a dependency first even when its name sorts last', async () => {
+    const steps = await planRelease(
+      [
+        publishable('a-integration', RESERVATION, ['z-core']),
+        publishable('z-core', RESERVATION),
+      ],
+      registryWith({}),
+      NO_TAGS,
+    );
+
+    expect(steps.map(({ name }) => name)).toEqual(['z-core', 'a-integration']);
+  });
+
+  it('names every package to reserve in its message', async () => {
+    await expect(
+      planRelease(
+        [
+          publishable('enmascara-pino', '0.1.0'),
+          publishable('enmascara-sentry', '0.1.0'),
+        ],
+        registryWith({}),
+        NO_TAGS,
+      ),
+    ).rejects.toThrow(
+      'Reserve enmascara-pino, enmascara-sentry on npm with version 0.0.0',
+    );
+  });
+
   it('orders packages without dependencies between them by name', async () => {
     const steps = await planRelease(
       [publishable('b', RESERVATION), publishable('a', RESERVATION)],

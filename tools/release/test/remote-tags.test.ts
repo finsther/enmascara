@@ -34,6 +34,12 @@ describe('readRemoteTags', () => {
     expect([...tags]).toEqual(['enmascara@0.1.0', 'v1']);
   });
 
+  it('names its errors', () => {
+    expect(new RemoteTagsUnavailableError('').name).toBe(
+      'RemoteTagsUnavailableError',
+    );
+  });
+
   it('fails instead of assuming there are no tags', async () => {
     await expect(
       readRemoteTags(async () => ({

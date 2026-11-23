@@ -139,6 +139,10 @@ describe('publishRelease', () => {
     ]);
   });
 
+  it('names its errors', () => {
+    expect(new MissingProvenanceError('').name).toBe('MissingProvenanceError');
+  });
+
   it('stops without tagging or going on when the provenance never shows', async () => {
     const release = recorder([]);
 

@@ -62,6 +62,19 @@ describe('packedManifest', () => {
     );
   });
 
+  it('keeps dependency fields that are not records as they are', () => {
+    expect(packedManifest({ devDependencies: null }, TARBALLS)).toEqual({
+      devDependencies: null,
+    });
+  });
+
+  it('names its errors', () => {
+    expect(new MissingTarballError('').name).toBe('MissingTarballError');
+    expect(new UnreadablePackOutputError('').name).toBe(
+      'UnreadablePackOutputError',
+    );
+  });
+
   it('keeps a manifest without dependencies as it is', () => {
     expect(packedManifest({ name: 'example' }, TARBALLS)).toEqual({
       name: 'example',
@@ -86,6 +99,8 @@ describe('packedFileName', () => {
     ['an entry without a file name', '[{"id":"enmascara"}]'],
     ['a file name that is not text', '[{"filename":1}]'],
     ['an entry that is not an object', '["enmascara-pino-0.1.0.tgz"]'],
+    ['an empty entry', '[null]'],
+    ['an object instead of a list', '{"0":{"filename":"enmascara.tgz"}}'],
   ])('refuses %s', (_case, output) => {
     expect(() => packedFileName(output)).toThrow(
       new UnreadablePackOutputError('npm pack did not report a tarball'),

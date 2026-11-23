@@ -71,7 +71,26 @@ describe('createNpmRegistry', () => {
       { kind: 'failed', output: '', errorOutput: 'npm error code ETIMEDOUT' },
     ],
     ['output that is not JSON', { kind: 'succeeded', output: 'Not JSON' }],
-    ['a list with something else', { kind: 'succeeded', output: '[1]' }],
+    [
+      'a list with something else',
+      { kind: 'succeeded', output: '["0.1.0", 1]' },
+    ],
+    [
+      'another npm error',
+      {
+        kind: 'failed',
+        output: '{"error":{"code":"E500"}}',
+        errorOutput: 'npm error code E500',
+      },
+    ],
+    [
+      'a 404 from a command that succeeded',
+      { kind: 'succeeded', output: NOT_FOUND },
+    ],
+    [
+      'versions printed by a command that failed',
+      { kind: 'failed', output: '["0.1.0"]', errorOutput: 'npm error' },
+    ],
     ['an object', { kind: 'succeeded', output: '{}' }],
   ] as const)('refuses to guess after %s', async (_case, outcome) => {
     const npm = answering(outcome);
@@ -83,5 +102,8 @@ describe('createNpmRegistry', () => {
         'npm did not report the versions of enmascara-pino',
       ),
     );
+    await expect(
+      createNpmRegistry(npm.run).record('enmascara-pino'),
+    ).rejects.toMatchObject({ name: 'RegistryUnavailableError' });
   });
 });

@@ -58,6 +58,10 @@ describe('readPublishablePackages', () => {
     ]);
   });
 
+  it('names its errors', () => {
+    expect(new InvalidManifestError('').name).toBe('InvalidManifestError');
+  });
+
   it.each([
     ['without a name', { version: '0.1.0' }],
     ['without a version', { name: 'enmascara' }],

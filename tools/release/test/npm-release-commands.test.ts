@@ -99,6 +99,10 @@ describe('createNpmReleaseCommands', () => {
       { kind: 'succeeded', output: 'https://example.com/other' },
     ],
     [
+      'the predicate printed by a command that failed',
+      { kind: 'failed', output: SLSA_PROVENANCE, errorOutput: 'npm error' },
+    ],
+    [
       'the version not visible yet',
       { kind: 'failed', output: '', errorOutput: 'E404' },
     ],
@@ -126,6 +130,10 @@ describe('createNpmReleaseCommands', () => {
         'sha=abc123',
       ],
     ]);
+  });
+
+  it('names its errors', () => {
+    expect(new ReleaseCommandError('', '').name).toBe('ReleaseCommandError');
   });
 
   it('fails when the tag cannot be created', async () => {
