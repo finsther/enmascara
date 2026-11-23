@@ -16,7 +16,8 @@
     "mutation": "pnpm build && stryker run",
     "changeset": "changeset",
     "bench": "pnpm build && pnpm --filter enmascara-bench bench",
-    "bench:check": "pnpm build && pnpm --filter enmascara-bench bench:check"
+    "bench:check": "pnpm build && pnpm --filter enmascara-bench bench:check",
+    "examples:packed": "pnpm build && node tools/release/scripts/test-packed-examples.ts"
   },
   "devDependencies": {
     "@biomejs/biome": "2.6.6",
