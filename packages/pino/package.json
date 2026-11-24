@@ -1,6 +1,6 @@
 {
   "name": "enmascara-pino",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Masks Mexican identifiers in pino logs with enmascara.",
   "keywords": [
     "pino",
@@ -55,7 +55,7 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "enmascara": "^0.1.0",
+    "enmascara": "^0.1.1",
     "pino": "^9.0.0 || ^10.0.0"
   },
   "devDependencies": {

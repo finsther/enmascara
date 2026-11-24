@@ -1,6 +1,6 @@
 {
   "name": "enmascara-express",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Masks Mexican identifiers in what pino-http and morgan write for Express requests, with enmascara.",
   "keywords": [
     "express",
@@ -57,7 +57,7 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "enmascara": "^0.1.0",
+    "enmascara": "^0.1.1",
     "express": "^4.17.0 || ^5.0.0",
     "morgan": "^1.10.0",
     "pino-http": "^11.0.0"

@@ -1,6 +1,6 @@
 {
   "name": "enmascara-sentry",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Masks Mexican identifiers in Sentry events and breadcrumbs with enmascara.",
   "keywords": [
     "sentry",
@@ -56,7 +56,7 @@
   },
   "peerDependencies": {
     "@sentry/node": "^10.0.0 || ^11.0.0",
-    "enmascara": "^0.1.0"
+    "enmascara": "^0.1.1"
   },
   "devDependencies": {
     "@sentry/node": "11.12.0",
