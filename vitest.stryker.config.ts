@@ -8,6 +8,7 @@ export default defineConfig({
       'packages/pino/test/**/*.test.ts',
       'packages/sentry/test/**/*.test.ts',
       'spec/test/**/*.test.ts',
+      'tools/release/test/**/*.test.ts',
     ],
     exclude: [
       '**/node_modules/**',

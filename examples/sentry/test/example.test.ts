@@ -1,8 +1,13 @@
 import { execFileSync } from 'node:child_process';
+import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
-const exampleDirectory = fileURLToPath(new URL('..', import.meta.url));
+const { ENMASCARA_PACKED_EXAMPLES: packedExamples } = process.env;
+const exampleDirectory =
+  packedExamples === undefined
+    ? fileURLToPath(new URL('..', import.meta.url))
+    : join(packedExamples, 'sentry');
 const RAW_IDENTIFIERS = [
   '002180032240946700',
   'GODE561231HDFRRN00',

@@ -17,7 +17,8 @@
     "packages/express/src/**/*.ts",
     "packages/pino/src/**/*.ts",
     "packages/sentry/src/**/*.ts",
-    "spec/tools/**/*.ts"
+    "spec/tools/**/*.ts",
+    "tools/release/src/**/*.ts"
   ],
   "incremental": true,
   "incrementalFile": "reports/stryker-incremental.json",
