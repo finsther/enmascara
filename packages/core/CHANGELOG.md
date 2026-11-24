@@ -1,5 +1,12 @@
 # enmascara
 
+## 0.1.1
+
+### Patch Changes
+
+- f5dd8ef: `redact.object()` keeps the stack of copied errors, masked. In Node 22 and 24 the stack is an accessor and was dropped; it is now read through the engine's own getter, and getters defined by the application still never run.
+- 5055db0: `redact.object()` keeps the insertion order of keys. Copies used to list keys in reverse at every level, so every log line written through the integrations came out backwards; errors now list `name`, `message` and `stack` first, followed by their own keys.
+
 ## 0.1.0
 
 ### Minor Changes
