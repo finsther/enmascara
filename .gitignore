@@ -6,3 +6,6 @@ reports/
 *.tsbuildinfo
 .DS_Store
 .astro/
+test-results/
+playwright-report/
+.lighthouseci/
