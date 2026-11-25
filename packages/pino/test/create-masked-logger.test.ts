@@ -47,6 +47,61 @@ function redactorReturning(value: unknown): Redactor {
   };
 }
 
+class IncomingRequest {
+  readonly url: string;
+
+  constructor(url: string) {
+    this.url = url;
+  }
+}
+
+interface RecordingSerializer {
+  readonly received: unknown[];
+  readonly serialize: (request: IncomingRequest) => { readonly url: string };
+}
+
+function recordingSerializer(): RecordingSerializer {
+  const received: unknown[] = [];
+  return {
+    received,
+    serialize: (request) => {
+      received.push(request);
+      return { url: request.url };
+    },
+  };
+}
+
+interface SpyingRedactor {
+  readonly redactor: Redactor;
+  readonly received: unknown[];
+}
+
+function spyingRedactor(): SpyingRedactor {
+  const received: unknown[] = [];
+  return {
+    received,
+    redactor: {
+      text: (text) => redact.text(text),
+      findings: (text) => redact.findings(text),
+      object: (value) => {
+        received.push(value);
+        return redact.object(value);
+      },
+    },
+  };
+}
+
+function reaches(value: unknown, target: object): boolean {
+  if (value === target) {
+    return true;
+  }
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    Object.values(value).some((nested) => reaches(nested, target))
+  );
+}
+
 function expectNoRawIdentifier(output: CapturedOutput): void {
   for (const identifier of RAW_IDENTIFIERS) {
     expect(output.raw()).not.toContain(identifier);
@@ -246,6 +301,88 @@ describe.each(PINO_VERSIONS)('createMaskedLogger on %s', (_, pino) => {
         clabe: '[CLABE]',
       },
     ]);
+  });
+
+  it('serializes the logged object with the application serializers before masking', () => {
+    const request = new IncomingRequest(`/transferencias/${CLABE}`);
+    const serializer = recordingSerializer();
+    const { logger, output } = maskedLogger({
+      serializers: { req: serializer.serialize },
+    });
+
+    logger.info({ req: request }, 'entrada');
+
+    expect(serializer.received).toHaveLength(1);
+    expect(serializer.received[0]).toBe(request);
+    expect(output.lines()).toMatchObject([
+      { req: { url: '/transferencias/[CLABE]' }, msg: 'entrada' },
+    ]);
+  });
+
+  it('serializes child bindings with the application serializers before masking', () => {
+    const request = new IncomingRequest(`/transferencias/${CLABE}`);
+    const serializer = recordingSerializer();
+    const { logger, output } = maskedLogger({
+      serializers: { req: serializer.serialize },
+    });
+
+    logger.child({ req: request }).info('entrada');
+
+    expect(serializer.received).toHaveLength(1);
+    expect(serializer.received[0]).toBe(request);
+    expect(output.lines()).toMatchObject([
+      { req: { url: '/transferencias/[CLABE]' }, msg: 'entrada' },
+    ]);
+  });
+
+  it('serializes with the serializers a child adds before masking', () => {
+    const request = new IncomingRequest(`/transferencias/${CLABE}`);
+    const serializer = recordingSerializer();
+    const { logger, output } = maskedLogger();
+
+    const child = logger.child(
+      {},
+      { serializers: { req: serializer.serialize } },
+    );
+    child.info({ req: request }, 'hijo');
+    child.child({ req: request }).info('nieto');
+
+    expect(serializer.received).toEqual([request, request]);
+    expect(serializer.received.every((value) => value === request)).toBe(true);
+    expect(output.lines()).toMatchObject([
+      { req: { url: '/transferencias/[CLABE]' }, msg: 'hijo' },
+      { req: { url: '/transferencias/[CLABE]' }, msg: 'nieto' },
+    ]);
+  });
+
+  it('never hands a value with a serializer to the redactor before its serializer runs', () => {
+    const request = new IncomingRequest(`/transferencias/${CLABE}`);
+    const spy = spyingRedactor();
+    const { logger } = maskedLogger(
+      { serializers: { req: recordingSerializer().serialize } },
+      spy.redactor,
+    );
+
+    logger.info({ req: request, curp: CURP }, 'entrada');
+    logger.child({ req: request, rfc: RFC }).info('hijo');
+    logger
+      .child({}, { serializers: { res: recordingSerializer().serialize } })
+      .info({ res: request, card: CARD }, 'respuesta');
+
+    expect(spy.received.length).toBeGreaterThan(0);
+    expect(spy.received.filter((value) => reaches(value, request))).toEqual([]);
+  });
+
+  it('masks the output of a serializer that fails to mask', () => {
+    const request = new IncomingRequest(`/transferencias/${CLABE}`);
+    const { logger, output } = maskedLogger(
+      { serializers: { req: recordingSerializer().serialize } },
+      failingRedactor(),
+    );
+
+    logger.info({ req: request });
+
+    expectNoRawIdentifier(output);
   });
 
   it('runs the message serializer of the application before masking', () => {
