@@ -48,7 +48,19 @@ El plan pide que este ADR registre cómo se hidrata la isla, el tamaño de su bu
 
 ### Lo que se midió al construirlo
 
-Pendiente hasta el PR: tamaño del bundle de la isla (sin comprimir y con gzip) y Lighthouse de `/ring` a 390 y 1440 px.
+- **Bundle de la isla.** Son dos archivos:
+
+  | Archivo | Sin comprimir | gzip |
+  | --- | --- | --- |
+  | Cargador (`ring-island.ts`) | 431 B | 361 B |
+  | Controlador con el núcleo y sus catálogos | 18,7 KB | 7,9 KB |
+
+  En la versión compacta, el controlador se pide solo cuando el ring entra a la vista; Playwright lo comprueba.
+- **Lighthouse:** 100 en rendimiento, accesibilidad y buenas prácticas para `/` y `/ring`, en móvil y escritorio (mediana de tres corridas).
+- **CLS por hidratación.** La primera versión servía los ajustes abiertos y la isla los plegaba en móvil al arrancar. Eso daba CLS de 0,163 y rendimiento de 93 en móvil. Ahora `Ring.astro` los sirve plegados (`aria-expanded="false"` y `data-collapsed`), y el CSS los muestra siempre desde 48 rem.
+- **Biome pide `<fieldset>` en lugar de `role="group"`** para los botones de ejemplos (`useSemanticElements`).
+- **Cobertura y mutación.** Los módulos puros de `src/ring` tienen 100 % de líneas y ramas, y la mutación no deja sobrevivientes. Los `Timeout` de Stryker son mutantes de constantes a nivel módulo, como el texto de un ejemplo o una etiqueta vacía, que los tests matan. Stryker necesitó `apps/site/src/ring/*.ts` en el `tsconfig.json` raíz para su checker de tipos. El adaptador del DOM (`src/ring/dom/`) queda fuera de cobertura y mutación; lo prueba Playwright.
+- **Tests de Playwright:** 72 en verde a 390 y 1440 px, 32 de ellos del ring.
 
 ## Seguridad
 
