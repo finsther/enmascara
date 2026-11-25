@@ -16,7 +16,7 @@ export interface RingOptions {
 }
 
 /**
- * What the ring starts with: every type and the full mask.
+ * What the ring starts with: every type and the half mask.
  *
  * @example
  * ```ts
@@ -25,7 +25,7 @@ export interface RingOptions {
  */
 export const DEFAULT_RING_OPTIONS: RingOptions = {
   detect: IDENTIFIER_TYPES,
-  strategy: 'fullMask',
+  strategy: 'halfMask',
 };
 
 /**
