@@ -18,6 +18,7 @@ export default defineConfig({
         'packages/*/src/**/*.ts',
         'spec/tools/**/*.ts',
         'tools/*/src/**/*.ts',
+        'apps/site/csp/**/*.ts',
       ],
       reporter: ['text', 'lcov'],
       thresholds: {

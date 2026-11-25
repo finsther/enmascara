@@ -9,6 +9,8 @@ export default defineConfig({
       'packages/sentry/test/**/*.test.ts',
       'spec/test/**/*.test.ts',
       'tools/release/test/**/*.test.ts',
+      'apps/site/test/inline-sources.test.ts',
+      'apps/site/test/content-security-policy.test.ts',
     ],
     exclude: [
       '**/node_modules/**',

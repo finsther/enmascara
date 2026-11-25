@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "build": "astro build",
+    "csp:hashes": "astro build && node scripts/write-csp-hashes.ts && astro build",
     "preview": "astro preview",
     "typecheck": "astro check"
   },

@@ -18,7 +18,8 @@
     "packages/pino/src/**/*.ts",
     "packages/sentry/src/**/*.ts",
     "spec/tools/**/*.ts",
-    "tools/release/src/**/*.ts"
+    "tools/release/src/**/*.ts",
+    "apps/site/csp/**/*.ts"
   ],
   "incremental": true,
   "incrementalFile": "reports/stryker-incremental.json",
