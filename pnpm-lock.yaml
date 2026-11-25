@@ -61,7 +61,7 @@ importers:
         version: 5.3.0
       '@lhci/cli':
         specifier: 0.16.1
-        version: 0.16.1(@types/node@24.19.2)(ajv@8.20.0)(rollup@4.65.0)
+        version: 0.16.1(@types/node@24.19.2)(ajv@8.20.0)
       '@playwright/test':
         specifier: 1.65.1
         version: 1.65.1
@@ -124,8 +124,8 @@ importers:
   examples/sentry:
     dependencies:
       '@sentry/node':
-        specifier: 11.12.0
-        version: 11.12.0(rollup@4.65.0)
+        specifier: 11.16.0
+        version: 11.16.0(rollup@4.65.0)
       enmascara:
         specifier: workspace:*
         version: link:../../packages/core
@@ -184,8 +184,8 @@ importers:
   packages/sentry:
     devDependencies:
       '@sentry/node':
-        specifier: 11.12.0
-        version: 11.12.0(rollup@4.65.0)
+        specifier: 11.16.0
+        version: 11.16.0(rollup@4.65.0)
       enmascara:
         specifier: workspace:*
         version: link:../core
@@ -2040,8 +2040,8 @@ packages:
   '@sec-ant/readable-stream@0.4.1':
     resolution: {integrity: sha512-831qok9r2t8AlxLko40y2ebgSDhenenCatLVeW/uBtnHPyhHOvG0C7TvfgecV+wHzIm5KUICgzmVpWS+IMEAeg==}
 
-  '@sentry/bundler-plugins@11.12.0':
-    resolution: {integrity: sha512-7vBXoHMoYKjYu08anYv5I0nplSWOfQyl7BqV0VOrLxEtGoOpk1+DxL2dyBiaWoAtISkaqJEV/ft813OsCGuuMg==}
+  '@sentry/bundler-plugins@11.16.0':
+    resolution: {integrity: sha512-HGP4ppnqHwGKlibB08PCicBcVbjeC1utzwXHTTqDeZVACSpkBqRnhHKH53iHvXnoEaIbePyOcntJS6loEbxd8Q==}
     engines: {node: '>=20.19.0 <22.0.0 || >=22.12.0 <23.0.0 || >=23.2.0'}
     peerDependencies:
       rollup: '>=3.2.0'
@@ -2056,16 +2056,16 @@ packages:
     resolution: {integrity: sha512-fO9PLmHdVURcSPUpWCItWAtgKiMwGdJHbovoSEyLplX5sxs2ugvI4CBPTrkkgqhObnZOD0CnWBKDzSVQYBKEyQ==}
     engines: {node: '>=14'}
 
-  '@sentry/conventions@0.32.0':
-    resolution: {integrity: sha512-WkSQcDhUUsz1SwxR23LpmyPKba+dgxxiH0DWV4VSM9yaAvhhl87ppW2Ts3g4piIKCVflc31aJeWy+biUbYfsMQ==}
+  '@sentry/conventions@0.34.0':
+    resolution: {integrity: sha512-sGYLaq/zyRTOCoadW3Z66q6WHp16stnwezGK45B50mGO6QUTl/ttzsPpy+oxZlj2pKARyOohZ1pX9grdpMxo2Q==}
     engines: {node: '>=14'}
 
   '@sentry/core@10.78.0':
     resolution: {integrity: sha512-MMR4ME+agrjbvQ0DtTYJJypm+QlCoz9UJgWN8gjcXqlyDjYk69LwPjnaocYN1JyQMy2dx5Hk4S/Rt12gTQ5cGw==}
     engines: {node: '>=18'}
 
-  '@sentry/core@11.12.0':
-    resolution: {integrity: sha512-HKER7EcRpPPgC8mLRe5BzP6njfRYFZ53BFLZxVp1whWbY6lp/b2mvTBk4q6+rKsUFhLhRDsd6jL8y/8ddEWv6A==}
+  '@sentry/core@11.16.0':
+    resolution: {integrity: sha512-hu7gw///rDLwVYKmkAgztXUx0sFkpxG1zDwnuHBYCXqHRaEwzEJ/ntBZfAmLbjOSIsg5dcM07AI09KSicFeXBw==}
     engines: {node: '>=20.19.0 <22.0.0 || >=22.12.0 <23.0.0 || >=23.2.0'}
 
   '@sentry/node-core@10.78.0':
@@ -2093,8 +2093,8 @@ packages:
     resolution: {integrity: sha512-AE6nyehiCK6zcktrqzzBby5OCBqIL2ZwOyOLqoenczI7ufumfmcOMSpD0IVqjeIC/Kf0N0ymujqGPzqXgu9KrA==}
     engines: {node: '>=18'}
 
-  '@sentry/node@11.12.0':
-    resolution: {integrity: sha512-MNSZDOd92Twrq5Z4ZAkxZdIfhr3YGytFb1T+vh5bNXVHkqByWpI/P2VtTSrzBR4Pi1IDRMz0i8t/OWNOsuAuBg==}
+  '@sentry/node@11.16.0':
+    resolution: {integrity: sha512-0yS89Ck8VK0LSVJK7xLps0JDSp7hIHpdAkS4VcId0rsx9Pad8q4Qi0pBY1kqwJaYGhKYn8J1cc9AX7TZMDt42w==}
     engines: {node: '>=20.19.0 <22.0.0 || >=22.12.0 <23.0.0 || >=23.2.0'}
 
   '@sentry/opentelemetry@10.78.0':
@@ -2105,22 +2105,22 @@ packages:
       '@opentelemetry/core': ^1.30.1 || ^2.1.0
       '@opentelemetry/sdk-trace-base': ^1.30.1 || ^2.1.0
 
-  '@sentry/opentelemetry@11.12.0':
-    resolution: {integrity: sha512-oWJwUdc2OSSvyOPXn/E1nWkC3GV5KNTWfR5prbw/0XxlKJepdlBsW19y+FAE9n3QznZ52aMZmetWEAFMsPJ0KQ==}
+  '@sentry/opentelemetry@11.16.0':
+    resolution: {integrity: sha512-1SROq4fl02vt9SvQ5Nf51dklQUbcNj5OGtDk2n6BMNa6n3dM7sTCj594b6zFM/YhecrgcHTRJLV61ruW7a2z8w==}
     engines: {node: '>=20.19.0 <22.0.0 || >=22.12.0 <23.0.0 || >=23.2.0'}
     peerDependencies:
       '@opentelemetry/api': ^1.9.0
 
-  '@sentry/server-runtime-injection@11.12.0':
-    resolution: {integrity: sha512-fAZjCFyEfhvyfEdbav0/X13Yqbom5Ka1+hG0Nyl6bd7GxkQIWd68unSIw/Rvzfj/DSO8A1JidezST3D6omALkw==}
+  '@sentry/server-runtime-injection@11.16.0':
+    resolution: {integrity: sha512-G1DFz/iBsbqf/Cqh8L0MFOIP43rSai/yhUJAA5K3TRgL9O2pj32XI2z4DKlfuXblRKzF3FaeEqZ7nIUjoqVbIQ==}
     engines: {node: '>=20.19.0 <22.0.0 || >=22.12.0 <23.0.0 || >=23.2.0'}
 
   '@sentry/server-utils@10.78.0':
     resolution: {integrity: sha512-MssOiA9SansFX4E51cloHZEy4bYSZyszFNWUWeIGgQiYyTN84PbPJmyLuboj26G/ycSBW2pUERPbcfjxcs7BrA==}
     engines: {node: '>=18'}
 
-  '@sentry/server-utils@11.12.0':
-    resolution: {integrity: sha512-gAP5FLhXSiMs9vsU7guc54QNY1OzUJmhqyXMjhiP4SYlhQltoKtipcyo8pFWVsmylIzIkA8e2eGR6e0YA6YF3A==}
+  '@sentry/server-utils@11.16.0':
+    resolution: {integrity: sha512-tfJpkLuGq/QfhMtPqsFd5gDYJ6ScN9ef6KS86t/GvRXR63Z0XzeaWUCXKEUhXdYsI7qDmwVal+gySewDyHPJcA==}
     engines: {node: '>=20.19.0 <22.0.0 || >=22.12.0 <23.0.0 || >=23.2.0'}
 
   '@shikijs/core@4.6.0':
@@ -4388,8 +4388,8 @@ packages:
     resolution: {integrity: sha512-1gnZf7DFcoIcajTjTwjwuDjzuz4PPcY2StKPlsGAQ1+YH20IRVrBaXSWmdjowTJ6u8Rc01PoYOGHXfP1mYcZNQ==}
     engines: {node: '>= 18'}
 
-  sentry@0.49.0:
-    resolution: {integrity: sha512-9tjS0jTx5FQzhwAGhpcnwvqE0MlQiwJtunsIUNqGkw6E9CBOMbijlamIDUqvZTDtJAveVwa9L5ziP44bOJUzcQ==}
+  sentry@0.50.0:
+    resolution: {integrity: sha512-2BCdoK4xO3mN4c0QTXaMtJBJ9rjL5v1VawaV7Wd605hVWVrpZTipLbjGHEFavS8IliI0W68TGi8CuScbHALPjA==}
     engines: {node: '>=20.0'}
     hasBin: true
 
@@ -6323,16 +6323,16 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.6.0
 
-  '@lhci/cli@0.16.1(@types/node@24.19.2)(ajv@8.20.0)(rollup@4.65.0)':
+  '@lhci/cli@0.16.1(@types/node@24.19.2)(ajv@8.20.0)':
     dependencies:
-      '@lhci/utils': 0.16.1(ajv@8.20.0)(proxy-agent@8.0.3)(rollup@4.65.0)
+      '@lhci/utils': 0.16.1(ajv@8.20.0)(proxy-agent@8.0.3)
       chrome-launcher: 0.13.4
       compression: 1.8.2
       debug: 4.4.3
       express: 4.22.3
       inquirer: 8.2.7(@types/node@24.19.2)
       isomorphic-fetch: 3.0.0
-      lighthouse: 13.6.0(ajv@8.20.0)(proxy-agent@8.0.3)(rollup@4.65.0)
+      lighthouse: 13.6.0(ajv@8.20.0)(proxy-agent@8.0.3)
       lighthouse-logger: 1.2.0
       open: 8.4.2
       proxy-agent: 8.0.3
@@ -6351,12 +6351,12 @@ snapshots:
       - webpack
       - yauzl
 
-  '@lhci/utils@0.16.1(ajv@8.20.0)(proxy-agent@8.0.3)(rollup@4.65.0)':
+  '@lhci/utils@0.16.1(ajv@8.20.0)(proxy-agent@8.0.3)':
     dependencies:
       debug: 4.4.3
       isomorphic-fetch: 3.0.0
       js-yaml: 5.5.0
-      lighthouse: 13.6.0(ajv@8.20.0)(proxy-agent@8.0.3)(rollup@4.65.0)
+      lighthouse: 13.6.0(ajv@8.20.0)(proxy-agent@8.0.3)
       tree-kill: 1.2.2
     transitivePeerDependencies:
       - ajv
@@ -6423,7 +6423,7 @@ snapshots:
 
   '@opentelemetry/api-logs@0.220.0':
     dependencies:
-      '@opentelemetry/api': 1.9.1
+      '@opentelemetry/api': 1.10.0
 
   '@opentelemetry/api@1.10.0': {}
 
@@ -6758,28 +6758,28 @@ snapshots:
 
   '@sec-ant/readable-stream@0.4.1': {}
 
-  '@sentry/bundler-plugins@11.12.0(rollup@4.65.0)':
+  '@sentry/bundler-plugins@11.16.0(rollup@4.65.0)':
     dependencies:
-      '@sentry/core': 11.12.0
+      '@sentry/core': 11.16.0
       dotenv: 17.4.2
       glob: 14.0.6
-      magic-string: 0.30.21
+      magic-string: 1.4.5
       oxc-parser: 0.152.0
-      sentry: 0.49.0
+      sentry: 0.50.0
     optionalDependencies:
       rollup: 4.65.0
 
   '@sentry/conventions@0.16.0': {}
 
-  '@sentry/conventions@0.32.0': {}
+  '@sentry/conventions@0.34.0': {}
 
   '@sentry/core@10.78.0':
     dependencies:
       '@sentry/conventions': 0.16.0
 
-  '@sentry/core@11.12.0':
+  '@sentry/core@11.16.0':
     dependencies:
-      '@sentry/conventions': 0.32.0
+      '@sentry/conventions': 0.34.0
 
   '@sentry/node-core@10.78.0(@opentelemetry/api@1.9.1)(@opentelemetry/core@2.12.0(@opentelemetry/api@1.9.1))(@opentelemetry/instrumentation@0.220.0(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-trace-base@2.12.0(@opentelemetry/api@1.9.1))':
     dependencies:
@@ -6809,15 +6809,15 @@ snapshots:
       - '@opentelemetry/exporter-trace-otlp-http'
       - supports-color
 
-  '@sentry/node@11.12.0(rollup@4.65.0)':
+  '@sentry/node@11.16.0(rollup@4.65.0)':
     dependencies:
       '@opentelemetry/api': 1.10.0
-      '@sentry/bundler-plugins': 11.12.0(rollup@4.65.0)
-      '@sentry/conventions': 0.32.0
-      '@sentry/core': 11.12.0
-      '@sentry/opentelemetry': 11.12.0(@opentelemetry/api@1.10.0)
-      '@sentry/server-runtime-injection': 11.12.0
-      '@sentry/server-utils': 11.12.0
+      '@sentry/bundler-plugins': 11.16.0(rollup@4.65.0)
+      '@sentry/conventions': 0.34.0
+      '@sentry/core': 11.16.0
+      '@sentry/opentelemetry': 11.16.0(@opentelemetry/api@1.10.0)
+      '@sentry/server-runtime-injection': 11.16.0
+      '@sentry/server-utils': 11.16.0
     transitivePeerDependencies:
       - rollup
       - webpack
@@ -6830,27 +6830,27 @@ snapshots:
       '@sentry/conventions': 0.16.0
       '@sentry/core': 10.78.0
 
-  '@sentry/opentelemetry@11.12.0(@opentelemetry/api@1.10.0)':
+  '@sentry/opentelemetry@11.16.0(@opentelemetry/api@1.10.0)':
     dependencies:
       '@opentelemetry/api': 1.10.0
-      '@sentry/conventions': 0.32.0
-      '@sentry/core': 11.12.0
+      '@sentry/conventions': 0.34.0
+      '@sentry/core': 11.16.0
 
-  '@sentry/server-runtime-injection@11.12.0':
+  '@sentry/server-runtime-injection@11.16.0':
     dependencies:
-      '@sentry/core': 11.12.0
-      '@sentry/server-utils': 11.12.0
+      '@sentry/core': 11.16.0
+      '@sentry/server-utils': 11.16.0
 
   '@sentry/server-utils@10.78.0':
     dependencies:
       '@sentry/conventions': 0.16.0
       '@sentry/core': 10.78.0
 
-  '@sentry/server-utils@11.12.0':
+  '@sentry/server-utils@11.16.0':
     dependencies:
       '@opentelemetry/api': 1.10.0
-      '@sentry/conventions': 0.32.0
-      '@sentry/core': 11.12.0
+      '@sentry/conventions': 0.34.0
+      '@sentry/core': 11.16.0
 
   '@shikijs/core@4.6.0':
     dependencies:
@@ -8457,10 +8457,10 @@ snapshots:
 
   lighthouse-stack-packs@1.12.3: {}
 
-  lighthouse@13.6.0(ajv@8.20.0)(proxy-agent@8.0.3)(rollup@4.65.0):
+  lighthouse@13.6.0(ajv@8.20.0)(proxy-agent@8.0.3):
     dependencies:
       '@paulirish/trace_engine': 0.0.67
-      '@sentry/node': 11.12.0(rollup@4.65.0)
+      '@sentry/node': 11.16.0(rollup@4.65.0)
       ajv-formats: 3.0.1(ajv@8.20.0)
       axe-core: 4.14.0
       chrome-launcher: 1.2.3
@@ -9583,7 +9583,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  sentry@0.49.0: {}
+  sentry@0.50.0: {}
 
   serve-static@1.16.3:
     dependencies:
