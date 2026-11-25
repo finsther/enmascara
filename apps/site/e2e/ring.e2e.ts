@@ -291,16 +291,16 @@ test.describe('the ring', () => {
       dialogs.push(dialog.message());
       await dialog.dismiss();
     });
-    const elementsBefore = await opened.region.locator('*').count();
+    const renderedElements = opened.region.locator(
+      '[data-ring-output] *, [data-ring-findings] td *',
+    );
 
     for (const payload of XSS_PAYLOADS) {
       await opened.input.fill(payload);
-      await expect(opened.output).toContainText(
-        payload.includes(CLABE) ? '[CLABE]' : payload,
-      );
+      await expect(opened.output).toHaveText(payload.replace(CLABE, '[CLABE]'));
+      await expect(renderedElements).toHaveCount(0);
     }
 
-    expect(await opened.region.locator('*').count()).toBe(elementsBefore);
     expect(await page.evaluate(() => window.xssExecuted)).toBeUndefined();
     expect(dialogs).toEqual([]);
   });
@@ -323,18 +323,45 @@ test.describe('the ring', () => {
     const opened = await openRing(page);
     await openSettingsOnMobile(page, opened.settings);
     const controls = opened.region.locator(
-      'button, input, textarea, [tabindex="0"]',
+      'button:visible, input:visible, textarea:visible, [tabindex="0"]:visible',
     );
+    const tabStops = opened.region.locator(
+      'button:visible, input:visible:not([type="radio"]), input[type="radio"]:checked:visible, textarea:visible, [tabindex="0"]:visible',
+    );
+    const expectedStops = await tabStops.count();
+    const unfocused: string[] = [];
+    let stops = 0;
+
+    await opened.region.evaluate((region) => {
+      region.tabIndex = -1;
+      region.focus();
+    });
+    for (;;) {
+      await page.keyboard.press('Tab');
+      const focus = await page.evaluate(() => {
+        const element = document.activeElement;
+        if (!element?.closest('[data-ring]')) {
+          return undefined;
+        }
+        const style = getComputedStyle(element);
+        return {
+          name: element.outerHTML.slice(0, 80),
+          visible:
+            style.outlineStyle !== 'none' && style.outlineWidth !== '0px',
+        };
+      });
+      if (focus === undefined) {
+        break;
+      }
+      stops += 1;
+      if (!focus.visible) {
+        unfocused.push(focus.name);
+      }
+    }
+    expect(stops).toBe(expectedStops);
+    expect(unfocused).toEqual([]);
 
     for (const control of await controls.all()) {
-      await control.focus();
-      const focus = await control.evaluate((element) => {
-        const style = getComputedStyle(element);
-        return { outline: style.outlineStyle, width: style.outlineWidth };
-      });
-      expect(focus.outline).not.toBe('none');
-      expect(focus.width).not.toBe('0px');
-
       const target = await control.evaluate((element) => {
         const box = (
           element.closest('label') ?? element
