@@ -1,0 +1,373 @@
+---
+import { codeSnippet } from '../../ring/code-snippet.ts';
+import { RING_EXAMPLES } from '../../ring/examples.ts';
+import {
+  IDENTIFIER_TYPES,
+  identifierLabel,
+} from '../../ring/identifier-labels.ts';
+import {
+  DEFAULT_RING_OPTIONS,
+  type RingStrategy,
+} from '../../ring/ring-options.ts';
+
+interface Props {
+  readonly variant: 'full' | 'compact';
+}
+
+const { variant } = Astro.props;
+const isFull = variant === 'full';
+const hydration = isFull ? 'load' : 'visible';
+const prefix = `ring-${variant}`;
+const strategies: readonly { value: RingStrategy; label: string }[] = [
+  { value: 'fullMask', label: 'Máscara completa' },
+  { value: 'halfMask', label: 'Media máscara' },
+  { value: 'incognito', label: 'Incógnito' },
+];
+---
+
+<section
+  class:list={['ring', `ring--${variant}`]}
+  aria-label="El ring"
+  data-ring
+  data-ring-hydration={hydration}
+>
+  <div class="ring-controls">
+    {
+      isFull && (
+        <fieldset class="ring-fieldset ring-examples">
+          <legend>Ejemplos</legend>
+          {RING_EXAMPLES.map(({ id, label }) => (
+            <button type="button" class="ring-button" data-ring-example={id}>
+              {label}
+            </button>
+          ))}
+        </fieldset>
+      )
+    }
+    <button
+      type="button"
+      class="ring-button ring-settings-toggle"
+      aria-expanded="true"
+      aria-controls={`${prefix}-settings`}
+      data-ring-settings-toggle
+    >
+      Ajustes
+    </button>
+    <div id={`${prefix}-settings`} class="ring-settings" data-ring-settings>
+      <fieldset class="ring-fieldset">
+        <legend>Tipos</legend>
+        {
+          IDENTIFIER_TYPES.map((type) => (
+            <label class="ring-choice">
+              <input
+                type="checkbox"
+                name={`${prefix}-detect`}
+                value={type}
+                checked={DEFAULT_RING_OPTIONS.detect.includes(type)}
+                data-ring-type
+              />
+              {identifierLabel(type)}
+            </label>
+          ))
+        }
+      </fieldset>
+      <fieldset class="ring-fieldset">
+        <legend>Estrategia</legend>
+        {
+          strategies.map(({ value, label }) => (
+            <label class="ring-choice">
+              <input
+                type="radio"
+                name={`${prefix}-strategy`}
+                value={value}
+                checked={value === DEFAULT_RING_OPTIONS.strategy}
+                data-ring-strategy
+              />
+              {label}
+            </label>
+          ))
+        }
+      </fieldset>
+      <p class="ring-demo-key" hidden data-ring-demo-key>
+        Incógnito usa una llave de demostración pública. No protege nada: en tu
+        código, la llave sale de tu entorno.
+      </p>
+    </div>
+  </div>
+
+  <div class="ring-panels">
+    <div class="ring-panel">
+      <label class="ring-label" for={`${prefix}-input`}>Texto de entrada</label>
+      <textarea
+        id={`${prefix}-input`}
+        class="ring-text"
+        rows={isFull ? 10 : 4}
+        spellcheck="false"
+        autocomplete="off"
+        autocapitalize="off"
+        placeholder="Pega un log, un JSON o un CSV"
+        data-ring-input></textarea>
+    </div>
+    <div class="ring-panel">
+      <span class="ring-label" aria-hidden="true">Texto enmascarado</span>
+      <output
+        class="ring-text ring-output"
+        for={`${prefix}-input`}
+        aria-label="Texto enmascarado"
+        data-ring-output></output>
+    </div>
+  </div>
+
+  {
+    isFull && (
+      <div class="ring-details">
+        <table class="ring-findings">
+          <caption>Hallazgos</caption>
+          <thead>
+            <tr>
+              <th scope="col">Tipo</th>
+              <th scope="col">Línea</th>
+              <th scope="col">Resultado</th>
+            </tr>
+          </thead>
+          <tbody data-ring-findings />
+        </table>
+        <section class="ring-code" aria-label="Lo mismo en tu código">
+          <h2 class="ring-label">Lo mismo en tu código</h2>
+          <pre class="ring-code-block" tabindex="0"><code data-ring-code>{codeSnippet(DEFAULT_RING_OPTIONS)}</code></pre>
+          <div class="ring-copy">
+            <button type="button" class="ring-button" data-ring-copy>
+              Copiar código
+            </button>
+            <span role="status" class="ring-copy-status" data-ring-copy-status />
+          </div>
+        </section>
+      </div>
+    )
+  }
+</section>
+
+<script>
+  import '../../ring/dom/ring-island.ts';
+</script>
+
+<style>
+  .ring {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-20);
+    padding: var(--space-20);
+    border: 1px solid var(--color-ink-700);
+    border-radius: var(--radius-16);
+    background: var(--color-ink-900);
+    color: var(--color-paper-200);
+    font-family: var(--font-body);
+  }
+
+  .ring-controls,
+  .ring-examples,
+  .ring-settings {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-12);
+  }
+
+  .ring-controls {
+    flex-direction: column;
+  }
+
+  .ring-settings[data-collapsed] {
+    display: none;
+  }
+
+  .ring-fieldset {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-8);
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+
+  .ring-fieldset legend,
+  .ring-label {
+    margin: 0 0 var(--space-8);
+    padding: 0;
+    font-family: var(--font-code);
+    font-size: var(--font-size-12);
+    font-weight: var(--font-weight-medium);
+    letter-spacing: var(--letter-spacing-wide);
+    text-transform: uppercase;
+    color: var(--color-ink-300);
+  }
+
+  .ring-button,
+  .ring-choice {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-8);
+    min-width: var(--space-44);
+    min-height: var(--space-44);
+    padding: 0 var(--space-16);
+    border: 1px solid var(--color-ink-600);
+    border-radius: var(--radius-pill);
+    background: var(--color-ink-850);
+    color: var(--color-paper-200);
+    font: inherit;
+    font-size: var(--font-size-14);
+    cursor: pointer;
+  }
+
+  .ring-choice:has(input:checked) {
+    border-color: var(--color-pink-500);
+    background: var(--color-pink-950);
+  }
+
+  .ring-choice:has(input:disabled) {
+    cursor: not-allowed;
+  }
+
+  .ring-choice input {
+    accent-color: var(--color-pink-500);
+    margin: 0;
+  }
+
+  .ring-demo-key {
+    flex-basis: 100%;
+    margin: 0;
+    padding: var(--space-12) var(--space-16);
+    border-radius: var(--radius-8);
+    background: var(--color-gold-950);
+    color: var(--color-gold-200);
+    font-size: var(--font-size-14);
+    line-height: var(--line-height-150);
+  }
+
+  .ring-panels {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-16);
+  }
+
+  .ring-panel {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .ring-text {
+    box-sizing: border-box;
+    width: 100%;
+    min-height: var(--space-104);
+    margin: 0;
+    padding: var(--space-14);
+    border: 1px solid var(--color-ink-700);
+    border-radius: var(--radius-10);
+    background: var(--color-ink-950);
+    color: var(--color-paper-200);
+    font-family: var(--font-code);
+    font-size: var(--font-size-14);
+    line-height: var(--line-height-160);
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    resize: vertical;
+  }
+
+  .ring-text::placeholder {
+    color: var(--color-ink-400);
+  }
+
+  .ring-output {
+    display: block;
+    color: var(--color-gold-300);
+  }
+
+  .ring-details {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-20);
+  }
+
+  .ring-findings {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--font-size-14);
+  }
+
+  .ring-findings caption {
+    margin-bottom: var(--space-8);
+    font-family: var(--font-code);
+    font-size: var(--font-size-12);
+    letter-spacing: var(--letter-spacing-wide);
+    text-align: left;
+    text-transform: uppercase;
+    color: var(--color-ink-300);
+  }
+
+  .ring-findings th,
+  .ring-findings :global(td) {
+    padding: var(--space-8) var(--space-10);
+    border-bottom: 1px solid var(--color-ink-700);
+    text-align: left;
+  }
+
+  .ring-findings :global(td:last-child) {
+    font-family: var(--font-code);
+    overflow-wrap: anywhere;
+  }
+
+  .ring-code h2 {
+    font-size: var(--font-size-12);
+  }
+
+  .ring-code-block {
+    margin: 0 0 var(--space-12);
+    padding: var(--space-14);
+    border-radius: var(--radius-10);
+    background: var(--color-ink-950);
+    color: var(--color-paper-200);
+    font-family: var(--font-code);
+    font-size: var(--font-size-13);
+    line-height: var(--line-height-160);
+    overflow-x: auto;
+  }
+
+  .ring-copy {
+    display: flex;
+    align-items: center;
+    gap: var(--space-12);
+  }
+
+  .ring-copy-status {
+    font-size: var(--font-size-14);
+    color: var(--color-ink-200);
+  }
+
+  .ring :is(button, input, textarea, pre):focus-visible {
+    outline: 2px solid var(--color-gold-500);
+    outline-offset: 2px;
+  }
+
+  @media (min-width: 48rem) {
+    .ring {
+      padding: var(--space-32);
+    }
+
+    .ring-settings-toggle {
+      display: none;
+    }
+
+    .ring-settings[data-collapsed] {
+      display: flex;
+    }
+
+    .ring-panels {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .ring-details {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      align-items: start;
+    }
+  }
+</style>

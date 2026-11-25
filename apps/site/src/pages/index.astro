@@ -1,6 +1,7 @@
 ---
 import '../styles/fonts.css';
 import '../styles/tokens.css';
+import Ring from '../components/ring/Ring.astro';
 import SiteHeader from '../components/SiteHeader.astro';
 ---
 
@@ -25,6 +26,9 @@ import SiteHeader from '../components/SiteHeader.astro';
           Enmascara detecta CLABE, CURP, RFC y tarjetas en tus logs, errores y
           exports, y los oculta antes de que salgan de tu proceso.
         </p>
+      </div>
+      <div class="hero-ring">
+        <Ring variant="compact" />
       </div>
     </main>
   </body>
@@ -69,6 +73,12 @@ import SiteHeader from '../components/SiteHeader.astro';
     font-size: var(--font-size-52);
     line-height: var(--line-height-098);
     text-transform: uppercase;
+  }
+
+  .hero-ring {
+    max-width: var(--width-content);
+    margin: 0 auto;
+    padding: 0 var(--space-20) var(--space-56);
   }
 
   .accent {
