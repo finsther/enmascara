@@ -241,7 +241,6 @@ function listen(root: HTMLElement, elements: RingElements): void {
 export function attachRing(root: HTMLElement): void {
   const elements = ringElements(root);
   listen(root, elements);
-  collapseSettings(elements);
   render(elements);
   root.setAttribute(READY_ATTRIBUTE, 'true');
 }

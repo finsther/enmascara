@@ -47,13 +47,18 @@ const strategies: readonly { value: RingStrategy; label: string }[] = [
     <button
       type="button"
       class="ring-button ring-settings-toggle"
-      aria-expanded="true"
+      aria-expanded="false"
       aria-controls={`${prefix}-settings`}
       data-ring-settings-toggle
     >
       Ajustes
     </button>
-    <div id={`${prefix}-settings`} class="ring-settings" data-ring-settings>
+    <div
+      id={`${prefix}-settings`}
+      class="ring-settings"
+      data-collapsed
+      data-ring-settings
+    >
       <fieldset class="ring-fieldset">
         <legend>Tipos</legend>
         {
