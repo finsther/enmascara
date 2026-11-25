@@ -225,7 +225,7 @@ const summary = isFull
           </ul>
           <p class="ring-note">
             <span class="ring-desktop-only">
-              La tabla nunca muestra el valor detectado, igual que
+              La tabla nunca muestra el valor detectado, igual que{' '}
               <code>redact.findings()</code>: solo el tipo, dónde está y qué se
               hizo con él.
             </span>
@@ -491,7 +491,6 @@ const summary = isFull
   }
 
   .ring-panel {
-    flex: 1 1 var(--width-ring-panel);
     min-width: 0;
     display: flex;
     flex-direction: column;
@@ -571,7 +570,6 @@ const summary = isFull
   }
 
   .ring-findings {
-    flex: 999 1 var(--width-ring-findings);
     min-width: 0;
     display: flex;
     flex-direction: column;
@@ -705,7 +703,6 @@ const summary = isFull
   }
 
   .ring-code {
-    flex: 1 1 var(--width-ring-code);
     min-width: 0;
     background: var(--color-ink-900);
     border: 1px solid var(--color-ink-800);
@@ -775,7 +772,6 @@ const summary = isFull
   }
 
   .ring-compact-panel {
-    flex: 1 1 var(--width-ring-compact-panel);
     min-width: 0;
     display: flex;
     flex-direction: column;
@@ -933,6 +929,22 @@ const summary = isFull
 
     .ring-details {
       align-items: flex-start;
+    }
+
+    .ring-panel {
+      flex: 1 1 var(--width-ring-panel);
+    }
+
+    .ring-findings {
+      flex: 999 1 var(--width-ring-findings);
+    }
+
+    .ring-code {
+      flex: 1 1 var(--width-ring-code);
+    }
+
+    .ring-compact-panel {
+      flex: 1 1 var(--width-ring-compact-panel);
     }
 
     .ring-panel-meta {
