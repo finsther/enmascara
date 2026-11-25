@@ -246,14 +246,14 @@ Totales: Sprint 3, 12 puntos; Sprint 4, 11; Sprint 5, 10; Sprint 6, 6. El Sprint
 | D1 | Orden después del Sprint 2 | Sitio en los sprints 3 y 4 y gema en los sprints 4 a 6; o gema en los sprints 3 y 4 y sitio en los sprints 4 a 6 | **Decidido el 2026-11-13: sitio primero** |
 | D2 | Candidatos que no pasan la validación en el ring | Quitar las filas "Ignorado" y el conteo de ignorados del diseño; o agregar a la API pública un reporte de candidatos rechazados, empezando por la spec, en los tres lenguajes (+3 puntos) | Quitarlas por ahora y proponer la API como historia aparte con su propio contrato en la spec |
 | D3 | Lista de espera del escáner | Mostrar la sección sin formulario, con un enlace para seguir el proyecto en GitHub; o conectar un servicio, que requiere aprobación explícita | Sin formulario hasta aprobar un servicio |
-| D4 | Búsqueda de la documentación | Permitir `'wasm-unsafe-eval'` en `script-src` para Pagefind (local, sin red); o lanzar sin búsqueda | Permitirlo: no abre la red ni scripts inline, y la decisión queda en un ADR |
+| D4 | Búsqueda de la documentación | Permitir `'wasm-unsafe-eval'` en `script-src` para Pagefind (local, sin red); o lanzar sin búsqueda | **Decidido el 2026-11-24: permitirlo** (ADR 0010) |
 | D5 | Hosting del sitio | Cualquiera que permita cabeceras propias; GitHub Pages no las permite, así que `frame-ancestors` no funcionaría | Se decide antes del Sprint 4, junto con el dominio |
 
 ### Tareas del equipo, sin puntos
 
 Necesitan cuentas, pagos o 2FA, así que no las hace Claude Code.
 
-- [ ] **T1:** reservar `enmascara-pino`, `enmascara-express` y `enmascara-sentry` en npm con 0.0.0 y configurar trusted publishing en cada uno. Reservar `enmascara` en PyPI y RubyGems. **Bloquea la historia 4 desde la semana 2.**
+- [ ] **T1:** reservar `enmascara-pino`, `enmascara-express` y `enmascara-sentry` en npm con 0.0.0 y configurar trusted publishing en cada uno. Reservar `enmascara` en PyPI y RubyGems. **Bloquea la historia 4 desde la semana 2.** La parte de npm se hizo el 24 de noviembre; PyPI y RubyGems siguen sin reservar.
 - [ ] **T2:** crear GitHub Sponsors y Open Collective y definir los montos de los niveles.
 - [ ] **T3:** registrar el dominio y elegir el hosting (D5) antes del Sprint 4.
 - [ ] **T4:** definir el correo de contacto y de reportes de seguridad, y la respuesta sobre CFDI.
@@ -272,3 +272,69 @@ Empieza con la historia 1 (enmascara-pino). Antes de escribir código, muéstram
 del paquete, su API pública con TSDoc y el ejemplo que vas a crear. Cuando la apruebe,
 impleméntala, corre lint, tests y mutación, y prepara el PR. No avances a la historia 2 sin mi visto bueno.
 ```
+
+## Cierre del Sprint 2
+
+25 de noviembre de 2026
+
+Las cinco historias quedaron hechas en 8 días hábiles, del 16 al 25 de noviembre, dos días antes del fin del sprint. La historia 1 empezó el 13, antes del arranque formal. `enmascara@0.1.1` y las tres integraciones en 0.1.0 están publicados con provenance desde el 25 de noviembre (UTC). La historia 5 queda en el PR #29, con el CI en verde, en espera de revisión.
+
+### Historias
+
+| # | Historia | Puntos | Estado | Evidencia |
+| --- | --- | --- | --- | --- |
+| 1 | `enmascara-pino` con ejemplo | 2 | Completa | `createMaskedLogger` para pino 9 y 10, `examples/pino` en CI (PR #19) |
+| 2 | `enmascara-sentry` con ejemplo | 2 | Completa | `maskedSentryOptions` para `@sentry/node` 10 y 11, con spans, logs, métricas y encabezados enmascarados; ADR 0007 (PR #21 y #23) |
+| 3 | `enmascara-express` con ejemplo | 3 | Completa | Opciones para pino-http y morgan sin tocar `req`, Express 4 y 5; ADR 0008 (PR #24) |
+| 4 | Publicación de las integraciones con provenance | 2 | Completa | Plan de release probado en `tools/release`, ejemplos contra los tarballs; ADR 0009 (PR #26). Versiones en el PR #27 |
+| 5 | Base del sitio en `apps/site` | 3 | En revisión | Tokens, tipografías autoalojadas, CSP solo con hashes, Playwright a 390 y 1440 px, axe y Lighthouse; ADR 0010 (PR #29) |
+
+Comprometido: 12 puntos. Entregado: 9 puntos mezclados y 3 en revisión.
+
+### Definición de terminado
+
+| Criterio | Estado | Evidencia |
+| --- | --- | --- |
+| Los tres paquetes de integración publicados con provenance | Cumplido | `npm view <paquete>@0.1.0 dist.attestations.provenance.predicateType` reporta `https://slsa.dev/provenance/v1` en los tres; etiquetas `enmascara-pino@0.1.0`, `enmascara-express@0.1.0` y `enmascara-sentry@0.1.0` |
+| Un ejemplo ejecutable por integración en CI | Cumplido | `examples/pino`, `examples/express` y `examples/sentry`; el job `packed-examples` los corre además contra los tarballs que se publican |
+| Cobertura de 95 % y mutación en verde en cada paquete nuevo | Cumplido | 99,9 % de líneas en el último PR; job de Stryker en verde. `tools/release` y `apps/site/csp` con mutación al 100 % |
+| `apps/site` construye en CI con axe sin violaciones, Lighthouse de 95 o más y cero peticiones a otros orígenes | Cumplido en el PR #29 | Job `site` en verde; Lighthouse da 100 en rendimiento, accesibilidad y buenas prácticas, en móvil y escritorio. Cuenta cuando el PR entre a `main` |
+| El cierre del Sprint 1 registrado en `docs/sprint-1.md` | **No cumplido** | Está al inicio de este documento, pero `docs/sprint-1.md` no se actualizó (T5) |
+
+### Trabajo no planeado
+
+Construir las integraciones sacó a la luz cuatro defectos, tres del núcleo y del workspace y uno de la propia integración de Sentry. Cada uno llevó su PR con un `test:` antes del `fix:`:
+
+- La copia de errores perdía el stack ya enmascarado (PR #20, `enmascara@0.1.1`).
+- Los paquetes del workspace se verificaban contra `dist` en lugar del código fuente (PR #22).
+- `redact.object()` invertía el orden de las claves en sus copias (PR #25, `enmascara@0.1.1`).
+- `enmascara-sentry` dejaba pasar spans, logs, métricas y el encabezado del envelope, que Sentry envía por caminos que `beforeSend` no cubre (PR #23).
+
+### Lo que se midió
+
+- **Las pruebas contra servicios reales encontraron lo que los dobles no.** El plan de release contra npm reveló que su 404 llega en dos flujos de salida (ADR 0009). Lighthouse encontró fuentes sin `unicode-range` y un favicon inexistente (ADR 0010).
+- **Un spike antes del ADR quitó el riesgo técnico del sitio.** Starlight bloqueaba sus propios scripts y estilos con la CSP estricta; el ADR 0010 se escribió ya con la solución medida en el navegador.
+- **Las tareas del equipo marcaron el ritmo.** La historia 4 quedó lista el 24 de noviembre y publicó el mismo día, en cuanto se hizo T1.
+
+### Lecciones para estimar
+
+- **Velocidad: 12 puntos en 8 días hábiles.** Más rápida que el Sprint 1 (12 puntos por sprint de 10 días). Se mantiene 12 por sprint para el Sprint 3: el ring y la documentación son trabajo nuevo de navegador, y este sprint ya absorbió cuatro arreglos no planeados.
+- **Una integración nueva cuesta una o dos historias de arreglos del núcleo.** Conviene reservar margen en cada sprint que agregue una integración o un lenguaje.
+
+### Pendientes para el Sprint 3
+
+| Pendiente | Origen | Efecto |
+| --- | --- | --- |
+| Mezclar el PR #29 | Historia 5 | Cierra la definición de terminado del sitio |
+| Arreglo de `enmascara-pino`: aplicar los serializers antes de enmascarar | ADR 0008, decisión 6 | Sin él, un `IncomingMessage` en un log de pino se copia completo antes de enmascararse |
+| Reservar `enmascara` en PyPI y RubyGems | T1 | Ambos responden 404 al 25 de noviembre; alguien más puede ocupar el nombre |
+| Marcadores del diseño | Issue #28 | Dependen de T2 y T4; bloquean Patrocina (historia 10) |
+| D2 y D3 | Decisiones pendientes | D2 antes del ring (historia 6); D3 antes de la landing (historia 9) |
+| D5 y dominio | T3 | Antes del Sprint 4; también quita el aviso del sitemap en el build |
+| `docs/sprint-1.md` | T5 | Único criterio no cumplido de la definición de terminado |
+| PRs de Dependabot #30 a #35 | Mantenimiento | Se revisan el primer día del Sprint 3 |
+
+### Preguntas para planear el Sprint 3
+
+- ¿Entra una historia para el transporte enmascarado de Sentry, que cubriría lo que hoy queda fuera de los hooks?
+- ¿Se adelanta la landing, que hoy está en el Sprint 4, o se mantiene el orden ring y documentación primero?
