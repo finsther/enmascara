@@ -6,6 +6,7 @@
     "build": "astro build",
     "csp:hashes": "astro build && node scripts/write-csp-hashes.ts && astro build",
     "preview": "astro preview",
+    "test:e2e": "playwright test",
     "typecheck": "astro check"
   },
   "devDependencies": {

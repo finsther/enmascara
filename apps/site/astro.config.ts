@@ -11,7 +11,11 @@ export default defineConfig({
   integrations: [
     starlight({
       title: 'Enmascara',
-      customCss: ['./src/styles/fonts.css', './src/styles/tokens.css'],
+      customCss: [
+        './src/styles/fonts.css',
+        './src/styles/tokens.css',
+        './src/styles/starlight.css',
+      ],
       defaultLocale: 'root',
       locales: { root: { label: 'Español', lang: 'es' } },
     }),

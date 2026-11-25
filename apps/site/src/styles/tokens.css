@@ -138,6 +138,8 @@
   --radius-pill: 999px;
 
   --width-page: 90rem;
+  --width-content: 75rem;
+  --width-lead: 33.75rem;
 
   --sl-font: var(--font-body);
   --sl-font-mono: var(--font-code);

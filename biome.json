@@ -15,6 +15,9 @@
       "!spec/fixtures/strategies.yaml"
     ]
   },
+  "html": {
+    "experimentalFullSupportEnabled": true
+  },
   "formatter": {
     "enabled": true,
     "indentStyle": "space",

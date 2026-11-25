@@ -1,0 +1,81 @@
+---
+import Logo from './Logo.astro';
+---
+
+<header class="site-header">
+  <nav class="navigation" aria-label="Principal">
+    <a class="brand" href="/">
+      <Logo />
+      <span class="brand-name">enmascara</span>
+    </a>
+    <a class="documentation" href="/docs/">Documentación</a>
+  </nav>
+</header>
+
+<style>
+  .site-header {
+    background: var(--color-ink-950);
+    color: var(--color-paper-200);
+  }
+
+  .navigation {
+    max-width: var(--width-content);
+    margin: 0 auto;
+    padding: var(--space-14) var(--space-20);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-12);
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: var(--space-8);
+    min-height: var(--space-44);
+    color: var(--color-paper-200);
+    text-decoration: none;
+  }
+
+  .brand-name {
+    font-family: var(--font-display);
+    font-size: var(--font-size-23);
+    letter-spacing: var(--letter-spacing-wide);
+    text-transform: lowercase;
+  }
+
+  .documentation {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--space-44);
+    padding: 0 var(--space-18);
+    border-radius: var(--radius-pill);
+    background: var(--color-paper-200);
+    color: var(--color-ink-950);
+    font-size: var(--font-size-15);
+    font-weight: var(--font-weight-semibold);
+    text-decoration: none;
+  }
+
+  .brand:focus-visible,
+  .documentation:focus-visible {
+    outline: 2px solid var(--color-gold-500);
+    outline-offset: 2px;
+  }
+
+  @media (min-width: 48rem) {
+    .navigation {
+      padding: var(--space-20) var(--space-32);
+      gap: var(--space-16);
+    }
+
+    .brand {
+      gap: var(--space-10);
+    }
+
+    .brand-name {
+      font-size: var(--font-size-26);
+    }
+  }
+</style>
