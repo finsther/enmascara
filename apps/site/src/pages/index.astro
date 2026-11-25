@@ -1,0 +1,106 @@
+---
+import '../styles/fonts.css';
+import '../styles/tokens.css';
+import SiteHeader from '../components/SiteHeader.astro';
+---
+
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Enmascara detecta CLABE, CURP, RFC y tarjetas en tus logs, errores y exports, y los oculta antes de que salgan de tu proceso."
+    />
+    <title>Enmascara</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  </head>
+  <body>
+    <SiteHeader />
+    <main class="hero">
+      <div class="hero-content">
+        <p class="eyebrow">Open source · MIT · Hecho en México</p>
+        <h1 class="title">Ningún dato pierde <span class="accent">la máscara</span>.</h1>
+        <p class="lead">
+          Enmascara detecta CLABE, CURP, RFC y tarjetas en tus logs, errores y
+          exports, y los oculta antes de que salgan de tu proceso.
+        </p>
+      </div>
+    </main>
+  </body>
+</html>
+
+<style is:global>
+  body {
+    margin: 0;
+    background: var(--color-ink-950);
+    color: var(--color-paper-200);
+    font-family: var(--font-body);
+  }
+</style>
+
+<style>
+  .hero {
+    background: var(--color-ink-950);
+  }
+
+  .hero-content {
+    max-width: var(--width-content);
+    margin: 0 auto;
+    padding: var(--space-40) var(--space-20) var(--space-56);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-22);
+  }
+
+  .eyebrow {
+    margin: 0;
+    font-family: var(--font-code);
+    font-size: var(--font-size-12);
+    letter-spacing: var(--letter-spacing-wide);
+    text-transform: uppercase;
+    color: var(--color-gold-500);
+  }
+
+  .title {
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: var(--font-weight-regular);
+    font-size: var(--font-size-52);
+    line-height: var(--line-height-098);
+    text-transform: uppercase;
+  }
+
+  .accent {
+    color: var(--color-pink-500);
+  }
+
+  .lead {
+    margin: 0;
+    max-width: var(--width-lead);
+    font-size: var(--font-size-17);
+    line-height: var(--line-height-155);
+    color: var(--color-ink-150);
+  }
+
+  @media (min-width: 48rem) {
+    .hero-content {
+      padding: var(--space-72) var(--space-32) var(--space-104);
+      gap: var(--space-28);
+    }
+
+    .eyebrow {
+      font-size: var(--font-size-14);
+    }
+
+    .title {
+      font-size: var(--font-size-88);
+      line-height: var(--line-height-095);
+      letter-spacing: var(--letter-spacing-narrow);
+    }
+
+    .lead {
+      font-size: var(--font-size-20);
+    }
+  }
+</style>

@@ -1,0 +1,3 @@
+button[data-open-modal] kbd {
+  display: none;
+}

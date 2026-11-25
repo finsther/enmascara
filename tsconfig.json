@@ -19,6 +19,8 @@
     "spec/tools",
     "spec/test",
     "tools/release/src",
-    "tools/release/test"
+    "tools/release/test",
+    "apps/site/csp",
+    "apps/site/test"
   ]
 }

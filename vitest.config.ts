@@ -4,13 +4,21 @@ const MINIMUM_CORE_COVERAGE_PERCENT = 95;
 
 export default defineConfig({
   test: {
-    projects: ['packages/*', 'examples/*', 'spec', 'bench', 'tools/*'],
+    projects: [
+      'packages/*',
+      'examples/*',
+      'apps/*',
+      'spec',
+      'bench',
+      'tools/*',
+    ],
     coverage: {
       provider: 'v8',
       include: [
         'packages/*/src/**/*.ts',
         'spec/tools/**/*.ts',
         'tools/*/src/**/*.ts',
+        'apps/site/csp/**/*.ts',
       ],
       reporter: ['text', 'lcov'],
       thresholds: {
