@@ -8,29 +8,33 @@ import type {
   pino,
 } from 'pino';
 import {
+  childMaskingContext,
+  type MaskingContext,
   maskedChildOptions,
   maskedLoggerOptions,
-  messageKeyOf,
+  rootMaskingContext,
 } from './masked-options.js';
-import { maskRecord } from './masking.js';
+import { maskRecordExcept } from './masking.js';
 
 function maskChildCreation<
   CustomLevels extends string,
   UseOnlyCustomLevels extends boolean,
 >(
   redactor: Redactor,
-  messageKey: string,
+  context: MaskingContext,
   logger: Logger<CustomLevels, UseOnlyCustomLevels>,
+  createChild: Logger<CustomLevels>['child'],
 ): Logger<CustomLevels, UseOnlyCustomLevels> {
-  const createChild = logger.child;
   const masked: Logger<CustomLevels, UseOnlyCustomLevels> =
     Object.create(logger);
   Object.defineProperty(masked, 'child', {
     value(this: unknown, bindings: Bindings, options?: ChildLoggerOptions) {
-      return Reflect.apply(createChild, this, [
-        maskRecord(redactor, bindings),
-        options && maskedChildOptions(redactor, messageKey, options),
+      const childContext = childMaskingContext(context, options);
+      const child = Reflect.apply(createChild, this, [
+        maskRecordExcept(redactor, bindings, childContext.serializedKeys),
+        options && maskedChildOptions(redactor, options, childContext),
       ]);
+      return maskChildCreation(redactor, childContext, child, createChild);
     },
   });
   return masked;
@@ -78,9 +82,10 @@ export function createMaskedLogger<
   options: LoggerOptions<CustomLevels, UseOnlyCustomLevels> = {},
   destination?: DestinationStream,
 ): Logger<CustomLevels, UseOnlyCustomLevels> {
+  const context = rootMaskingContext(options);
   const logger = createPino(
-    maskedLoggerOptions(redactor, options),
+    maskedLoggerOptions(redactor, options, context),
     destination,
   );
-  return maskChildCreation(redactor, messageKeyOf(options), logger);
+  return maskChildCreation(redactor, context, logger, logger.child);
 }
