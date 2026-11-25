@@ -1,5 +1,11 @@
 import AxeBuilder from '@axe-core/playwright';
-import { expect, type Page, type Request, test } from '@playwright/test';
+import {
+  expect,
+  type Page,
+  type Request,
+  type Response,
+  test,
+} from '@playwright/test';
 
 declare global {
   interface Window {
@@ -22,10 +28,11 @@ const INK_BACKGROUND = 'rgb(22, 19, 28)';
 
 interface Watched {
   readonly foreignRequests: string[];
+  readonly failedResponses: string[];
 }
 
 async function watch(page: Page): Promise<Watched> {
-  const watched: Watched = { foreignRequests: [] };
+  const watched: Watched = { foreignRequests: [], failedResponses: [] };
   await page.addInitScript(() => {
     window.policyViolations = [];
     document.addEventListener('securitypolicyviolation', (event) => {
@@ -35,6 +42,11 @@ async function watch(page: Page): Promise<Watched> {
     });
   });
   const siteOrigin = new URL(String(test.info().project.use.baseURL)).origin;
+  page.on('response', (response: Response) => {
+    if (!response.ok()) {
+      watched.failedResponses.push(`${response.status()} ${response.url()}`);
+    }
+  });
   page.on('request', (request: Request) => {
     const { origin, protocol } = new URL(request.url());
     if (protocol !== 'data:' && origin !== siteOrigin) {
@@ -97,6 +109,12 @@ for (const path of PAGES) {
       const watched = await visit(page, path);
 
       await expectPrivateAndSafe(page, watched);
+    });
+
+    test('loads every resource it references', async ({ page }) => {
+      const watched = await visit(page, path);
+
+      expect(watched.failedResponses).toEqual([]);
     });
 
     test('fits the viewport without horizontal scrolling', async ({ page }) => {
