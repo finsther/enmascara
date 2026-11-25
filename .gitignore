@@ -5,3 +5,4 @@ reports/
 .stryker-tmp/
 *.tsbuildinfo
 .DS_Store
+.astro/

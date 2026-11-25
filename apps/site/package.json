@@ -1,0 +1,16 @@
+{
+  "name": "enmascara-site",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "astro build",
+    "preview": "astro preview",
+    "typecheck": "astro check"
+  },
+  "devDependencies": {
+    "@astrojs/check": "0.9.12",
+    "@astrojs/starlight": "0.43.1",
+    "astro": "7.4.13",
+    "typescript": "5.9.3"
+  }
+}
