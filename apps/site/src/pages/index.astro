@@ -27,10 +27,12 @@ import SiteHeader from '../components/SiteHeader.astro';
           exports, y los oculta antes de que salgan de tu proceso.
         </p>
       </div>
-      <div class="hero-ring">
+    </main>
+    <section class="ring-band" aria-label="Prueba el ring">
+      <div class="ring-band-content">
         <Ring variant="compact" />
       </div>
-    </main>
+    </section>
   </body>
 </html>
 
@@ -75,10 +77,14 @@ import SiteHeader from '../components/SiteHeader.astro';
     text-transform: uppercase;
   }
 
-  .hero-ring {
+  .ring-band {
+    background: var(--color-paper-100);
+  }
+
+  .ring-band-content {
     max-width: var(--width-content);
     margin: 0 auto;
-    padding: 0 var(--space-20) var(--space-56);
+    padding: var(--space-56) var(--space-20);
   }
 
   .accent {
@@ -94,6 +100,10 @@ import SiteHeader from '../components/SiteHeader.astro';
   }
 
   @media (min-width: 48rem) {
+    .ring-band-content {
+      padding: var(--space-104) var(--space-32) var(--space-88);
+    }
+
     .hero-content {
       padding: var(--space-72) var(--space-32) var(--space-104);
       gap: var(--space-28);

@@ -11,7 +11,7 @@ import SiteHeader from '../components/SiteHeader.astro';
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
       name="description"
-      content="Pega un log, un JSON o un CSV y mira qué enmascara Enmascara. Todo pasa en tu navegador: nada se envía ni se guarda."
+      content="Prueba Enmascara con tus propios datos. Todo corre en tu navegador: nada de lo que pegues se envía a ningún servidor."
     />
     <title>El ring · Enmascara</title>
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
@@ -19,11 +19,38 @@ import SiteHeader from '../components/SiteHeader.astro';
   <body>
     <SiteHeader />
     <main class="ring-page">
-      <h1 class="title">El ring</h1>
-      <p class="lead">
-        Pega un log, un JSON o un CSV y mira qué enmascara Enmascara. Todo pasa
-        en tu navegador: nada se envía ni se guarda.
-      </p>
+      <div class="intro">
+        <div class="intro-text">
+          <h1 class="title">El ring</h1>
+          <p class="lead">
+            <span class="desktop-only">
+              Prueba Enmascara con tus propios datos. Todo corre en tu
+              navegador: nada de lo que pegues se envía a ningún servidor.
+            </span>
+            <span class="mobile-only">
+              Prueba Enmascara con tus propios datos. Nada de lo que pegues sale
+              de tu navegador.
+            </span>
+          </p>
+        </div>
+        <p class="badge">
+          <svg
+            class="badge-icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <rect x="4" y="11" width="16" height="10" rx="2"></rect>
+            <path d="M8 11V7a4 4 0 0 1 8 0v4"></path>
+          </svg>
+          <span class="desktop-only">Sin conexión a la red · sin almacenamiento</span>
+          <span class="mobile-only">Sin red · sin almacenamiento</span>
+        </p>
+      </div>
       <Ring variant="full" />
     </main>
   </body>
@@ -40,40 +67,105 @@ import SiteHeader from '../components/SiteHeader.astro';
 
 <style>
   .ring-page {
-    max-width: var(--width-content);
+    max-width: var(--width-page);
     margin: 0 auto;
-    padding: var(--space-40) var(--space-20) var(--space-56);
+    padding: var(--space-24) var(--space-16) var(--space-48);
     display: flex;
     flex-direction: column;
-    gap: var(--space-22);
+    gap: var(--space-18);
+  }
+
+  .intro {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-10);
+  }
+
+  .intro-text {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-10);
+    max-width: var(--width-ring-intro);
   }
 
   .title {
     margin: 0;
     font-family: var(--font-display);
     font-weight: var(--font-weight-regular);
-    font-size: var(--font-size-52);
-    line-height: var(--line-height-098);
+    font-size: var(--font-size-46);
+    line-height: var(--line-height-100);
     text-transform: uppercase;
   }
 
   .lead {
     margin: 0;
-    max-width: var(--width-lead);
-    font-size: var(--font-size-17);
+    font-size: var(--font-size-16);
     line-height: var(--line-height-155);
     color: var(--color-ink-150);
   }
 
+  .badge {
+    margin: 0;
+    align-self: flex-start;
+    display: flex;
+    align-items: center;
+    gap: var(--space-8);
+    padding: var(--space-8) var(--space-12);
+    border: 1px solid var(--color-ink-700);
+    border-radius: var(--radius-pill);
+    font-size: var(--font-size-13);
+    color: var(--color-ink-150);
+  }
+
+  .badge-icon {
+    width: var(--size-icon-14);
+    height: var(--size-icon-14);
+    color: var(--color-gold-500);
+  }
+
+  .desktop-only {
+    display: none;
+  }
+
   @media (min-width: 48rem) {
     .ring-page {
-      padding: var(--space-72) var(--space-32) var(--space-104);
+      padding: var(--space-40) var(--space-32) var(--space-72);
+      gap: var(--space-28);
+    }
+
+    .intro {
+      flex-direction: row;
+      flex-wrap: wrap;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: var(--space-20);
     }
 
     .title {
-      font-size: var(--font-size-88);
-      line-height: var(--line-height-095);
-      letter-spacing: var(--letter-spacing-narrow);
+      font-size: var(--font-size-64);
+    }
+
+    .lead {
+      font-size: var(--font-size-18);
+    }
+
+    .badge {
+      align-self: auto;
+      padding: var(--space-10) var(--space-14);
+      font-size: var(--font-size-14);
+    }
+
+    .badge-icon {
+      width: var(--size-icon-16);
+      height: var(--size-icon-16);
+    }
+
+    .desktop-only {
+      display: inline;
+    }
+
+    .mobile-only {
+      display: none;
     }
   }
 </style>

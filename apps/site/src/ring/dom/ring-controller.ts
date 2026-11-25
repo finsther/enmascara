@@ -3,22 +3,27 @@ import { codeSnippet } from '../code-snippet.ts';
 import { RING_EXAMPLES } from '../examples.ts';
 import { IDENTIFIER_TYPES, identifierLabel } from '../identifier-labels.ts';
 import {
+  inputSizeLabel,
+  maskedCountLabel,
+  maskedDataLabel,
+  RING_STRATEGIES,
+  settingsSummary,
+} from '../ring-copy.ts';
+import {
   DEFAULT_RING_OPTIONS,
   type RingOptions,
   type RingStrategy,
 } from '../ring-options.ts';
-import { type FindingRow, runRing } from '../run-ring.ts';
+import { type FindingRow, type RingResult, runRing } from '../run-ring.ts';
 
-const COPIED_MESSAGE = 'Código copiado';
-const COPY_FAILED_MESSAGE = 'No se pudo copiar el código';
+const COPIED_MESSAGE = 'Resultado copiado';
+const COPY_FAILED_MESSAGE = 'No se pudo copiar el resultado';
 const READY_ATTRIBUTE = 'data-ring-ready';
 const COLLAPSED_ATTRIBUTE = 'data-collapsed';
+const PRESSED_ATTRIBUTE = 'aria-pressed';
+const EXPANDED_ATTRIBUTE = 'aria-expanded';
+const COMPACT_VARIANT = 'compact';
 const ESCAPE_KEY = 'Escape';
-const RING_STRATEGIES: readonly RingStrategy[] = [
-  'fullMask',
-  'halfMask',
-  'incognito',
-];
 
 /** Thrown when the ring markup lacks an element the island needs. */
 export class RingMarkupError extends Error {
@@ -26,17 +31,22 @@ export class RingMarkupError extends Error {
 }
 
 interface RingElements {
+  readonly root: HTMLElement;
   readonly input: HTMLTextAreaElement;
   readonly output: HTMLOutputElement;
   readonly typeInputs: readonly HTMLInputElement[];
-  readonly strategyInputs: readonly HTMLInputElement[];
+  readonly strategyButtons: readonly HTMLButtonElement[];
   readonly exampleButtons: readonly HTMLButtonElement[];
-  readonly findings: HTMLTableSectionElement | undefined;
-  readonly code: HTMLElement | undefined;
+  readonly inputSizes: readonly HTMLElement[];
+  readonly summaries: readonly HTMLElement[];
+  readonly findingTables: readonly HTMLTableSectionElement[];
+  readonly findingCards: readonly HTMLUListElement[];
+  readonly codes: readonly HTMLElement[];
+  readonly demoKeyNotes: readonly HTMLElement[];
   readonly copy: HTMLButtonElement | undefined;
   readonly copyStatus: HTMLElement | undefined;
-  readonly demoKeyWarning: HTMLElement | undefined;
   readonly settingsToggle: HTMLButtonElement | undefined;
+  readonly settingsSummary: HTMLElement | undefined;
   readonly settings: HTMLElement | undefined;
 }
 
@@ -73,17 +83,22 @@ function allElements<Type extends Element>(
 
 function ringElements(root: HTMLElement): RingElements {
   return {
+    root,
     input: requiredElement(root, 'input', HTMLTextAreaElement),
     output: requiredElement(root, 'output', HTMLOutputElement),
     typeInputs: allElements(root, 'type', HTMLInputElement),
-    strategyInputs: allElements(root, 'strategy', HTMLInputElement),
+    strategyButtons: allElements(root, 'strategy', HTMLButtonElement),
     exampleButtons: allElements(root, 'example', HTMLButtonElement),
-    findings: optionalElement(root, 'findings', HTMLTableSectionElement),
-    code: optionalElement(root, 'code', HTMLElement),
+    inputSizes: allElements(root, 'input-size', HTMLElement),
+    summaries: allElements(root, 'summary', HTMLElement),
+    findingTables: allElements(root, 'findings', HTMLTableSectionElement),
+    findingCards: allElements(root, 'finding-cards', HTMLUListElement),
+    codes: allElements(root, 'code', HTMLElement),
+    demoKeyNotes: allElements(root, 'demo-key', HTMLElement),
     copy: optionalElement(root, 'copy', HTMLButtonElement),
     copyStatus: optionalElement(root, 'copy-status', HTMLElement),
-    demoKeyWarning: optionalElement(root, 'demo-key', HTMLElement),
     settingsToggle: optionalElement(root, 'settings-toggle', HTMLButtonElement),
+    settingsSummary: optionalElement(root, 'settings-summary', HTMLElement),
     settings: optionalElement(root, 'settings', HTMLElement),
   };
 }
@@ -105,7 +120,9 @@ function chosenTypes(elements: RingElements): RingOptions['detect'] {
 }
 
 function chosenStrategy(elements: RingElements): RingStrategy {
-  const value = elements.strategyInputs.find((input) => input.checked)?.value;
+  const value = elements.strategyButtons.find(
+    (button) => button.getAttribute(PRESSED_ATTRIBUTE) === 'true',
+  )?.dataset.ringStrategy;
   return value !== undefined && isRingStrategy(value)
     ? value
     : DEFAULT_RING_OPTIONS.strategy;
@@ -115,18 +132,44 @@ function chosenOptions(elements: RingElements): RingOptions {
   return { detect: chosenTypes(elements), strategy: chosenStrategy(elements) };
 }
 
-function findingRowElement(row: FindingRow): HTMLTableRowElement {
+function textElement(tag: string, text: string): HTMLElement {
+  const element = document.createElement(tag);
+  element.textContent = text;
+  return element;
+}
+
+function findingTableRow(row: FindingRow): HTMLTableRowElement {
   const tableRow = document.createElement('tr');
-  for (const text of [
-    identifierLabel(row.type),
-    String(row.line),
-    row.result,
-  ]) {
-    const cell = document.createElement('td');
-    cell.textContent = text;
-    tableRow.append(cell);
-  }
+  tableRow.append(
+    textElement('td', identifierLabel(row.type)),
+    textElement('td', String(row.line)),
+    textElement('td', row.result),
+  );
   return tableRow;
+}
+
+function findingCard(row: FindingRow): HTMLLIElement {
+  const item = document.createElement('li');
+  const place = document.createElement('span');
+  place.append(
+    textElement('span', identifierLabel(row.type)),
+    textElement('span', `Línea ${row.line}`),
+  );
+  item.append(place, textElement('span', row.result));
+  return item;
+}
+
+function summaryLabel(elements: RingElements, result: RingResult): string {
+  const count = result.rows.length;
+  return elements.root.dataset.ringVariant === COMPACT_VARIANT
+    ? maskedDataLabel(count)
+    : maskedCountLabel(count);
+}
+
+function setText(elements: readonly HTMLElement[], text: string): void {
+  for (const element of elements) {
+    element.textContent = text;
+  }
 }
 
 function keepOneTypeChecked(elements: RingElements): void {
@@ -140,20 +183,35 @@ function render(elements: RingElements): void {
   const options = chosenOptions(elements);
   const result = runRing(elements.input.value, options);
   elements.output.textContent = result.output;
-  elements.findings?.replaceChildren(...result.rows.map(findingRowElement));
-  if (elements.code !== undefined) {
-    elements.code.textContent = codeSnippet(options);
+  setText(elements.inputSizes, inputSizeLabel(elements.input.value.length));
+  setText(elements.summaries, summaryLabel(elements, result));
+  setText(elements.codes, codeSnippet(options));
+  for (const table of elements.findingTables) {
+    table.replaceChildren(...result.rows.map(findingTableRow));
   }
-  if (elements.demoKeyWarning !== undefined) {
-    elements.demoKeyWarning.hidden = options.strategy !== 'incognito';
+  for (const list of elements.findingCards) {
+    list.replaceChildren(...result.rows.map(findingCard));
+  }
+  for (const note of elements.demoKeyNotes) {
+    note.hidden = options.strategy !== 'incognito';
+  }
+  if (elements.settingsSummary !== undefined) {
+    elements.settingsSummary.textContent = settingsSummary(options);
   }
   keepOneTypeChecked(elements);
 }
 
-async function copyCode(elements: RingElements): Promise<void> {
+function pickStrategy(elements: RingElements, picked: HTMLButtonElement): void {
+  for (const button of elements.strategyButtons) {
+    button.setAttribute(PRESSED_ATTRIBUTE, String(button === picked));
+  }
+  render(elements);
+}
+
+async function copyResult(elements: RingElements): Promise<void> {
   const status = elements.copyStatus;
   try {
-    await navigator.clipboard.writeText(elements.code?.textContent ?? '');
+    await navigator.clipboard.writeText(elements.output.textContent ?? '');
     if (status !== undefined) {
       status.textContent = COPIED_MESSAGE;
     }
@@ -165,17 +223,17 @@ async function copyCode(elements: RingElements): Promise<void> {
 }
 
 function expandSettings(elements: RingElements): void {
-  elements.settingsToggle?.setAttribute('aria-expanded', 'true');
+  elements.settingsToggle?.setAttribute(EXPANDED_ATTRIBUTE, 'true');
   elements.settings?.removeAttribute(COLLAPSED_ATTRIBUTE);
 }
 
 function collapseSettings(elements: RingElements): void {
-  elements.settingsToggle?.setAttribute('aria-expanded', 'false');
+  elements.settingsToggle?.setAttribute(EXPANDED_ATTRIBUTE, 'false');
   elements.settings?.setAttribute(COLLAPSED_ATTRIBUTE, '');
 }
 
 function isSettingsExpanded(elements: RingElements): boolean {
-  return elements.settingsToggle?.getAttribute('aria-expanded') === 'true';
+  return elements.settingsToggle?.getAttribute(EXPANDED_ATTRIBUTE) === 'true';
 }
 
 function toggleSettings(elements: RingElements): void {
@@ -207,29 +265,32 @@ function loadExample(elements: RingElements, button: HTMLButtonElement): void {
   }
 }
 
-function listen(root: HTMLElement, elements: RingElements): void {
+function listen(elements: RingElements): void {
   const renderNow = () => render(elements);
   elements.input.addEventListener('input', renderNow);
-  for (const input of [...elements.typeInputs, ...elements.strategyInputs]) {
+  for (const input of elements.typeInputs) {
     input.addEventListener('change', renderNow);
+  }
+  for (const button of elements.strategyButtons) {
+    button.addEventListener('click', () => pickStrategy(elements, button));
   }
   for (const button of elements.exampleButtons) {
     button.addEventListener('click', () => loadExample(elements, button));
   }
   elements.copy?.addEventListener('click', () => {
-    void copyCode(elements);
+    void copyResult(elements);
   });
   elements.settingsToggle?.addEventListener('click', () =>
     toggleSettings(elements),
   );
-  root.addEventListener('keydown', (event) =>
+  elements.root.addEventListener('keydown', (event) =>
     collapseSettingsOnEscape(elements, event),
   );
 }
 
 /**
  * Brings one ring to life: masks the input as the visitor types, follows
- * the chosen types and strategy, loads examples and copies the code.
+ * the chosen types and strategy, loads examples and copies the result.
  *
  * @param root - Element rendered by `Ring.astro`.
  * @throws {@link RingMarkupError} If the input or the output is missing.
@@ -240,7 +301,7 @@ function listen(root: HTMLElement, elements: RingElements): void {
  */
 export function attachRing(root: HTMLElement): void {
   const elements = ringElements(root);
-  listen(root, elements);
+  listen(elements);
   render(elements);
   root.setAttribute(READY_ATTRIBUTE, 'true');
 }
