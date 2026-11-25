@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import AxeBuilder from '@axe-core/playwright';
-import { expect, type Locator, type Page, test } from '@playwright/test';
+import { expect, type Page, test } from '@playwright/test';
 import { parse } from 'yaml';
 
 declare global {
@@ -18,6 +18,7 @@ const CARD = '4242424242424242';
 const CURP = 'BNQF380215XSRHNDD6';
 const RFC = 'GODE561231GR8';
 const DEMO_KEY_WARNING = /llave de demostración/i;
+const CODE_PANEL = 'Lo mismo en tu código';
 const WCAG_TAGS = [
   'wcag2a',
   'wcag2aa',
@@ -47,23 +48,33 @@ function validFixtureValues(): readonly string[] {
   });
 }
 
+function isMobile(page: Page): boolean {
+  return page.viewportSize()?.width === MOBILE_WIDTH;
+}
+
 function ring(page: Page) {
   const region = page.getByRole('region', { name: 'El ring' });
   return {
     region,
-    input: region.getByRole('textbox', { name: 'Texto de entrada' }),
-    output: region.getByRole('status', { name: 'Texto enmascarado' }),
-    findings: region.getByRole('table', { name: 'Hallazgos' }),
-    code: region.getByRole('region', { name: 'Lo mismo en tu código' }),
-    copy: region.getByRole('button', { name: 'Copiar código' }),
-    settings: region.getByRole('button', { name: 'Ajustes' }),
+    input: region.getByRole('textbox', { name: 'Entrada' }),
+    inputSize: region.locator('[data-ring-input-size]'),
+    output: region.getByRole('status', { name: 'Resultado' }),
+    summary: region.locator('[data-ring-summary]'),
+    findingsTable: region.getByRole('table', { name: 'Hallazgos' }),
+    findingsList: region.getByRole('list', { name: 'Hallazgos' }),
+    code: region.locator('[data-ring-code]:visible'),
+    codeToggle: region.getByText(CODE_PANEL, { exact: true }),
+    copy: region.getByRole('button', { name: /^Copiar/ }),
+    settings: region.getByRole('button', { name: /^Ajustes/ }),
     type: (name: string) => region.getByRole('checkbox', { name }),
-    strategy: (name: string) => region.getByRole('radio', { name }),
+    strategy: (name: string) => region.getByRole('button', { name }),
     example: (name: string) => region.getByRole('button', { name }),
   };
 }
 
-async function openRing(page: Page) {
+type Ring = ReturnType<typeof ring>;
+
+async function openRing(page: Page): Promise<Ring> {
   await page.goto(RING_PATH);
   await page.waitForLoadState('networkidle');
   const opened = ring(page);
@@ -71,10 +82,22 @@ async function openRing(page: Page) {
   return opened;
 }
 
-async function openSettingsOnMobile(page: Page, settings: Locator) {
-  if (page.viewportSize()?.width === MOBILE_WIDTH) {
-    await settings.click();
+async function openSettingsOnMobile(page: Page, opened: Ring) {
+  if (isMobile(page)) {
+    await opened.settings.click();
   }
+}
+
+async function openCodeOnMobile(page: Page, opened: Ring) {
+  if (isMobile(page)) {
+    await opened.codeToggle.click();
+  }
+}
+
+async function findingRows(page: Page, opened: Ring) {
+  return isMobile(page)
+    ? opened.findingsList.getByRole('listitem')
+    : opened.findingsTable.locator('tbody').getByRole('row');
 }
 
 async function accessibilityViolations(page: Page): Promise<readonly string[]> {
@@ -97,17 +120,10 @@ async function storedState(page: Page): Promise<readonly string[]> {
   return [...stored, ...cookies.map(({ name }) => `cookie:${name}`)];
 }
 
-async function useEveryControl(page: Page) {
-  const opened = ring(page);
+async function useEveryControl(page: Page, opened: Ring) {
   await opened.input.fill(`SPEI a ${CLABE}`);
   await opened.input.press('End');
   await page.keyboard.insertText(`\ntarjeta ${CARD}`);
-  await openSettingsOnMobile(page, opened.settings);
-  await opened.type('CURP').uncheck();
-  await opened.type('CURP').check();
-  for (const strategy of ['Media máscara', 'Incógnito', 'Máscara completa']) {
-    await opened.strategy(strategy).check();
-  }
   for (const example of [
     'Log de transferencias',
     'Payload JSON',
@@ -115,6 +131,13 @@ async function useEveryControl(page: Page) {
   ]) {
     await opened.example(example).click();
   }
+  await openSettingsOnMobile(page, opened);
+  await opened.type('CURP').uncheck();
+  await opened.type('CURP').check();
+  for (const strategy of ['Máscara completa', 'Incógnito', 'Media máscara']) {
+    await opened.strategy(strategy).click();
+  }
+  await openCodeOnMobile(page, opened);
   await opened.copy.click();
 }
 
@@ -126,21 +149,39 @@ test.describe('the ring', () => {
 
     await opened.input.fill(`SPEI a ${CLABE}`);
 
-    await expect(opened.output).toHaveText('SPEI a [CLABE]');
+    await expect(opened.output).toHaveText('SPEI a **************6700');
+  });
+
+  test('starts with the transfer log and the half mask', async ({ page }) => {
+    const opened = await openRing(page);
+
+    await expect(opened.input).toHaveValue(/spei\.enviado/);
+    await expect(opened.output).toContainText('**************6700');
+    await expect(opened.strategy('Media máscara')).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
   });
 
   test('masks live with the chosen strategy', async ({ page }) => {
     const opened = await openRing(page);
     await opened.input.fill(`tarjeta ${CARD}`);
-    await openSettingsOnMobile(page, opened.settings);
+    await openSettingsOnMobile(page, opened);
 
-    await opened.strategy('Media máscara').check();
     await expect(opened.output).toHaveText('tarjeta ************4242');
 
-    await opened.strategy('Incógnito').check();
+    await opened.strategy('Incógnito').click();
     await expect(opened.output).toHaveText(/^tarjeta \[CARD:[0-9a-f]{6}\]$/);
+    await expect(opened.strategy('Incógnito')).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+    await expect(opened.strategy('Media máscara')).toHaveAttribute(
+      'aria-pressed',
+      'false',
+    );
 
-    await opened.strategy('Máscara completa').check();
+    await opened.strategy('Máscara completa').click();
     await expect(opened.output).toHaveText('tarjeta [CARD]');
   });
 
@@ -149,7 +190,8 @@ test.describe('the ring', () => {
   }) => {
     const opened = await openRing(page);
     await opened.input.fill(`${CLABE} ${CARD} ${CURP} ${RFC}`);
-    await openSettingsOnMobile(page, opened.settings);
+    await openSettingsOnMobile(page, opened);
+    await opened.strategy('Máscara completa').click();
 
     for (const name of ['Tarjeta', 'CURP', 'RFC']) {
       await opened.type(name).uncheck();
@@ -160,13 +202,21 @@ test.describe('the ring', () => {
     await expect(opened.type('CLABE')).toBeDisabled();
   });
 
+  test('counts the characters of the input', async ({ page }) => {
+    const opened = await openRing(page);
+
+    await opened.input.fill('abc');
+
+    await expect(opened.inputSize).toHaveText('3 caracteres');
+  });
+
   test('loads each example', async ({ page }) => {
     const opened = await openRing(page);
 
     await opened.example('Payload JSON').click();
 
     await expect(opened.input).toHaveValue(/"curp"/);
-    await expect(opened.output).toContainText('[CURP]');
+    await expect(opened.output).toContainText('****************D6');
     await expect(opened.output).not.toContainText(CURP);
   });
 
@@ -174,21 +224,27 @@ test.describe('the ring', () => {
     page,
   }) => {
     const opened = await openRing(page);
-    await openSettingsOnMobile(page, opened.settings);
-    await opened.strategy('Media máscara').check();
 
     await opened.input.fill(`inicio\nSPEI a ${CLABE}\n\ntarjeta ${CARD}`);
 
-    await expect(opened.findings.getByRole('columnheader')).toHaveText([
-      'Tipo',
-      'Línea',
-      'Resultado',
-    ]);
-    await expect(opened.findings.getByRole('row')).toHaveText([
-      'TipoLíneaResultado',
-      'CLABE2**************6700',
-      'Tarjeta4************4242',
-    ]);
+    const rows = await findingRows(page, opened);
+    if (isMobile(page)) {
+      await expect(rows).toHaveText([
+        'CLABELínea 2**************6700',
+        'TarjetaLínea 4************4242',
+      ]);
+    } else {
+      await expect(opened.findingsTable.getByRole('columnheader')).toHaveText([
+        'Tipo',
+        'Línea',
+        'Resultado',
+      ]);
+      await expect(rows).toHaveText([
+        'CLABE2**************6700',
+        'Tarjeta4************4242',
+      ]);
+    }
+    await expect(opened.summary).toHaveText('2 enmascarados');
   });
 
   test('never shows a detected value outside the input', async ({ page }) => {
@@ -196,9 +252,7 @@ test.describe('the ring', () => {
     const values = validFixtureValues();
 
     await opened.input.fill(values.join('\n'));
-    await expect(opened.findings.getByRole('row')).toHaveCount(
-      values.length + 1,
-    );
+    await expect(await findingRows(page, opened)).toHaveCount(values.length);
 
     const shown = await page.evaluate(() => {
       const copy = document.body.cloneNode(true) as HTMLElement;
@@ -218,39 +272,45 @@ test.describe('the ring', () => {
     page,
   }) => {
     const opened = await openRing(page);
-    await openSettingsOnMobile(page, opened.settings);
     await opened.input.fill(`SPEI a ${CLABE}`);
+    await openSettingsOnMobile(page, opened);
 
     await opened.type('RFC').uncheck();
-    await opened.strategy('Media máscara').check();
+    await opened.strategy('Máscara completa').click();
+    await openCodeOnMobile(page, opened);
 
     await expect(opened.code).toContainText(
       "detect: ['clabe', 'curp', 'card']",
     );
-    await expect(opened.code).toContainText("strategy: 'partial'");
+    await expect(opened.code).toContainText("strategy: 'redact'");
     await expect(opened.code).not.toContainText(CLABE);
   });
 
-  test('copies the code to the clipboard', async ({ page }) => {
+  test('copies the masked result to the clipboard', async ({ page }) => {
     const opened = await openRing(page);
+    await opened.input.fill(`SPEI a ${CLABE}`);
 
     await opened.copy.click();
 
     const copied = await page.evaluate(() => navigator.clipboard.readText());
-    expect(copied).toContain("import { createRedactor } from 'enmascara';");
-    await expect(opened.region.getByText('Código copiado')).toBeVisible();
+    expect(copied).toBe('SPEI a **************6700');
+    await expect(opened.region.getByText('Resultado copiado')).toBeAttached();
   });
 
   test('warns about the demo key only in incognito and asks for no key', async ({
     page,
   }) => {
     const opened = await openRing(page);
-    await openSettingsOnMobile(page, opened.settings);
+    await openSettingsOnMobile(page, opened);
+    await openCodeOnMobile(page, opened);
+    const warning = opened.region.getByText(DEMO_KEY_WARNING).filter({
+      visible: true,
+    });
 
-    await expect(opened.region.getByText(DEMO_KEY_WARNING)).toBeHidden();
-    await opened.strategy('Incógnito').check();
+    await expect(warning).toHaveCount(0);
+    await opened.strategy('Incógnito').click();
 
-    await expect(opened.region.getByText(DEMO_KEY_WARNING)).toBeVisible();
+    await expect(warning).toHaveCount(1);
     await expect(opened.region.getByRole('textbox')).toHaveCount(1);
     await expect(opened.region.locator('input[type="password"]')).toHaveCount(
       0,
@@ -261,14 +321,14 @@ test.describe('the ring', () => {
   test('sends nothing, stores nothing and keeps the URL while in use', async ({
     page,
   }) => {
-    await openRing(page);
+    const opened = await openRing(page);
     const loadedUrl = page.url();
     const requests: string[] = [];
     page.on('request', (request) => requests.push(request.url()));
 
-    await useEveryControl(page);
-    await ring(page).input.press('ControlOrMeta+A');
-    await ring(page).input.press('ControlOrMeta+V');
+    await useEveryControl(page, opened);
+    await opened.input.press('ControlOrMeta+A');
+    await opened.input.press('ControlOrMeta+V');
 
     expect(requests).toEqual([]);
     expect(await storedState(page)).toEqual([]);
@@ -281,7 +341,7 @@ test.describe('the ring', () => {
     await context.setOffline(true);
     await opened.input.fill(`RFC ${RFC}`);
 
-    await expect(opened.output).toHaveText('RFC [RFC]');
+    await expect(opened.output).toHaveText('RFC ***********R8');
   });
 
   test('writes known XSS payloads as text', async ({ page }) => {
@@ -292,12 +352,14 @@ test.describe('the ring', () => {
       await dialog.dismiss();
     });
     const renderedElements = opened.region.locator(
-      '[data-ring-output] *, [data-ring-findings] td *',
+      '[data-ring-output] *, [data-ring-findings] td *, [data-ring-finding-cards] li span *',
     );
 
     for (const payload of XSS_PAYLOADS) {
       await opened.input.fill(payload);
-      await expect(opened.output).toHaveText(payload.replace(CLABE, '[CLABE]'));
+      await expect(opened.output).toHaveText(
+        payload.replace(CLABE, '**************6700'),
+      );
       await expect(renderedElements).toHaveCount(0);
     }
 
@@ -309,9 +371,9 @@ test.describe('the ring', () => {
     const opened = await openRing(page);
     expect(await accessibilityViolations(page)).toEqual([]);
 
-    await openSettingsOnMobile(page, opened.settings);
-    await opened.example('Log de transferencias').click();
-    await opened.strategy('Incógnito').check();
+    await openSettingsOnMobile(page, opened);
+    await openCodeOnMobile(page, opened);
+    await opened.strategy('Incógnito').click();
     await opened.copy.click();
 
     expect(await accessibilityViolations(page)).toEqual([]);
@@ -321,12 +383,9 @@ test.describe('the ring', () => {
     page,
   }) => {
     const opened = await openRing(page);
-    await openSettingsOnMobile(page, opened.settings);
-    const controls = opened.region.locator(
-      'button:visible, input:visible, textarea:visible, [tabindex="0"]:visible',
-    );
+    await openSettingsOnMobile(page, opened);
     const tabStops = opened.region.locator(
-      'button:visible, input:visible:not([type="radio"]), input[type="radio"]:checked:visible, textarea:visible, [tabindex="0"]:visible',
+      'button:visible, input:visible, textarea:visible, summary:visible, [tabindex="0"]:visible',
     );
     const expectedStops = await tabStops.count();
     const unfocused: string[] = [];
@@ -361,7 +420,10 @@ test.describe('the ring', () => {
     expect(stops).toBe(expectedStops);
     expect(unfocused).toEqual([]);
 
-    for (const control of await controls.all()) {
+    const targets = opened.region.locator(
+      'button:visible, input:visible, textarea:visible, summary:visible',
+    );
+    for (const control of await targets.all()) {
       const target = await control.evaluate((element) => {
         const box = (
           element.closest('label') ?? element
@@ -375,20 +437,26 @@ test.describe('the ring', () => {
 
   test('folds the settings on mobile only', async ({ page }) => {
     const opened = await openRing(page);
-    const isMobile = page.viewportSize()?.width === MOBILE_WIDTH;
 
-    if (isMobile) {
+    if (isMobile(page)) {
       await expect(opened.settings).toHaveAttribute('aria-expanded', 'false');
+      await expect(opened.settings).toContainText(
+        'Media máscara · CLABE, CURP, RFC, Tarjeta',
+      );
       await expect(opened.strategy('Incógnito')).toBeHidden();
       await opened.settings.click();
       await expect(opened.settings).toHaveAttribute('aria-expanded', 'true');
-      await expect(opened.strategy('Incógnito')).toBeVisible();
+      await opened.type('RFC').uncheck();
+      await expect(opened.settings).toContainText(
+        'Media máscara · CLABE, CURP, Tarjeta',
+      );
       await page.keyboard.press('Escape');
       await expect(opened.settings).toHaveAttribute('aria-expanded', 'false');
       await expect(opened.settings).toBeFocused();
     } else {
       await expect(opened.settings).toBeHidden();
       await expect(opened.strategy('Incógnito')).toBeVisible();
+      await expect(opened.code).toBeVisible();
     }
   });
 });
@@ -407,12 +475,23 @@ test.describe('the compact ring on the home page', () => {
     await page.waitForLoadState('networkidle');
     const scriptsBeforeView = scripts.length;
 
-    const compact = ring(page);
-    await compact.region.scrollIntoViewIfNeeded();
-    await expect(compact.region).toHaveAttribute('data-ring-ready', 'true');
+    const compact = page.getByRole('region', { name: 'El ring' });
+    await compact.scrollIntoViewIfNeeded();
+    await expect(compact).toHaveAttribute('data-ring-ready', 'true');
 
     expect(scripts.length).toBeGreaterThan(scriptsBeforeView);
-    await compact.input.fill(`SPEI a ${CLABE}`);
-    await expect(compact.output).toHaveText('SPEI a [CLABE]');
+    await compact
+      .getByRole('textbox', { name: 'Tu log' })
+      .fill(`SPEI a ${CLABE}`);
+    const output = compact.getByRole('status', { name: 'Resultado' });
+    await expect(output).toHaveText('SPEI a **************6700');
+    await expect(compact.locator('[data-ring-summary]')).toHaveText(
+      '1 dato enmascarado',
+    );
+    await compact.getByRole('button', { name: 'Máscara completa' }).click();
+    await expect(output).toHaveText('SPEI a [CLABE]');
+    await expect(
+      compact.getByRole('button', { name: 'Incógnito' }),
+    ).toHaveCount(0);
   });
 });
