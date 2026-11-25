@@ -29,12 +29,31 @@ function maskValue(redactor: Redactor, value: unknown): unknown {
   }
 }
 
+export function maskRecordExcept(
+  redactor: Redactor,
+  record: object,
+  serializedKeys: ReadonlySet<string>,
+): LogRecord {
+  const entries = Object.entries(record);
+  const kept = entries.filter(([key]) => serializedKeys.has(key));
+  const masked = maskRecord(
+    redactor,
+    Object.fromEntries(entries.filter(([key]) => !serializedKeys.has(key))),
+  );
+  return { ...masked, ...Object.fromEntries(kept) };
+}
+
 export function maskingFormatter<Input extends object>(
   redactor: Redactor,
   applicationFormatter: ((input: Input) => object) | undefined,
+  serializedKeys: ReadonlySet<string>,
 ): (input: Input) => LogRecord {
   return (input) =>
-    maskRecord(redactor, applicationFormatter?.(input) ?? input);
+    maskRecordExcept(
+      redactor,
+      applicationFormatter?.(input) ?? input,
+      serializedKeys,
+    );
 }
 
 export function maskingSerializer(

@@ -6,6 +6,13 @@ const DEFAULT_MESSAGE_KEY = 'msg';
 
 type Serializers = NonNullable<LoggerOptions['serializers']>;
 type ChildFormatters = NonNullable<ChildLoggerOptions['formatters']>;
+type LogFormatter = NonNullable<ChildFormatters['log']>;
+
+export interface MaskingContext {
+  readonly messageKey: string;
+  readonly serializedKeys: ReadonlySet<string>;
+  readonly applicationLogFormatter: LogFormatter | undefined;
+}
 
 export function messageKeyOf(options: {
   readonly messageKey?: string;
@@ -13,14 +20,47 @@ export function messageKeyOf(options: {
   return options.messageKey ?? DEFAULT_MESSAGE_KEY;
 }
 
-function withMaskedMessage(
+function maskedSerializers(
+  redactor: Redactor,
+  serializers: Serializers,
+): Serializers {
+  const masked = Object.entries(serializers).map(([key, serializer]) => [
+    key,
+    maskingSerializer(redactor, serializer),
+  ]);
+  return { ...serializers, ...Object.fromEntries(masked) };
+}
+
+function maskedRootSerializers(
   redactor: Redactor,
   messageKey: string,
   serializers: Serializers,
 ): Serializers {
   return {
-    ...serializers,
+    ...maskedSerializers(redactor, serializers),
     [messageKey]: maskingSerializer(redactor, serializers[messageKey]),
+  };
+}
+
+function serializedKeysOf(serializers: Serializers): ReadonlySet<string> {
+  return new Set(Object.keys(serializers));
+}
+
+function objectFormatterOf(
+  formatter: ((object: Record<string, unknown>) => object) | undefined,
+): LogFormatter | undefined {
+  return formatter && ((object: object) => formatter({ ...object }));
+}
+
+export function rootMaskingContext<
+  CustomLevels extends string,
+  UseOnlyCustomLevels extends boolean,
+>(options: LoggerOptions<CustomLevels, UseOnlyCustomLevels>): MaskingContext {
+  const messageKey = messageKeyOf(options);
+  return {
+    messageKey,
+    serializedKeys: serializedKeysOf(options.serializers ?? {}),
+    applicationLogFormatter: objectFormatterOf(options.formatters?.log),
   };
 }
 
@@ -30,57 +70,75 @@ export function maskedLoggerOptions<
 >(
   redactor: Redactor,
   options: LoggerOptions<CustomLevels, UseOnlyCustomLevels>,
+  context: MaskingContext,
 ): LoggerOptions<CustomLevels, UseOnlyCustomLevels> {
   return {
     ...options,
     formatters: {
       ...options.formatters,
-      log: maskingFormatter(redactor, options.formatters?.log),
-      bindings: maskingFormatter(redactor, options.formatters?.bindings),
+      log: (object: Record<string, unknown>) =>
+        maskingFormatter(
+          redactor,
+          context.applicationLogFormatter,
+          context.serializedKeys,
+        )(object),
+      bindings: maskingFormatter(
+        redactor,
+        options.formatters?.bindings,
+        context.serializedKeys,
+      ),
     },
-    serializers: withMaskedMessage(
+    serializers: maskedRootSerializers(
       redactor,
-      messageKeyOf(options),
+      context.messageKey,
       options.serializers ?? {},
     ),
+  };
+}
+
+export function childMaskingContext(
+  parent: MaskingContext,
+  options: ChildLoggerOptions | undefined,
+): MaskingContext {
+  const childSerializedKeys = serializedKeysOf(options?.serializers ?? {});
+  return {
+    messageKey: parent.messageKey,
+    serializedKeys: new Set([...parent.serializedKeys, ...childSerializedKeys]),
+    applicationLogFormatter:
+      options?.formatters?.log ?? parent.applicationLogFormatter,
   };
 }
 
 function maskedChildFormatters(
   redactor: Redactor,
   formatters: ChildFormatters,
+  context: MaskingContext,
 ): ChildFormatters {
-  const { log, bindings } = formatters;
+  const { bindings } = formatters;
   return {
     ...formatters,
-    ...(log && { log: maskingFormatter(redactor, log) }),
-    ...(bindings && { bindings: maskingFormatter(redactor, bindings) }),
+    log: maskingFormatter(
+      redactor,
+      context.applicationLogFormatter,
+      context.serializedKeys,
+    ),
+    ...(bindings && {
+      bindings: maskingFormatter(redactor, bindings, context.serializedKeys),
+    }),
   };
-}
-
-function maskedChildSerializers(
-  redactor: Redactor,
-  messageKey: string,
-  serializers: Serializers,
-): Serializers {
-  return Object.hasOwn(serializers, messageKey)
-    ? withMaskedMessage(redactor, messageKey, serializers)
-    : serializers;
 }
 
 export function maskedChildOptions<Options extends ChildLoggerOptions>(
   redactor: Redactor,
-  messageKey: string,
   options: Options,
+  child: MaskingContext,
 ): Options {
   const { formatters, serializers } = options;
   return {
     ...options,
-    ...(formatters && {
-      formatters: maskedChildFormatters(redactor, formatters),
-    }),
+    formatters: maskedChildFormatters(redactor, formatters ?? {}, child),
     ...(serializers && {
-      serializers: maskedChildSerializers(redactor, messageKey, serializers),
+      serializers: maskedSerializers(redactor, serializers),
     }),
   };
 }
