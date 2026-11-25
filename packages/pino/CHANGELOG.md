@@ -1,5 +1,11 @@
 # enmascara-pino
 
+## 0.1.1
+
+### Patch Changes
+
+- bb9e199: Run the logger's serializers, including those a child adds, before masking. A serializer now receives the original value (for example an `IncomingMessage`) instead of a masked copy, and its output is masked afterwards. The redactor never copies values that have a serializer.
+
 ## 0.1.0
 
 ### Minor Changes
