@@ -64,9 +64,10 @@ Antes de este ADR se construyó un sitio desechable con Astro 7.4.13, Starlight 
    - **Desborde:** sin scroll horizontal a 390 px.
 7. **Lighthouse CI.** Corre `lhci autorun` contra el build estático, con mínimo de 0.95 en rendimiento, accesibilidad y buenas prácticas, en perfil móvil y de escritorio. Los resultados quedan como artefacto del job y no se suben a ningún servidor: `upload.target` es `filesystem`.
 8. **CI.** Un job `site` hace lo siguiente:
-   - Instala, construye, corre Vitest del sitio, instala Chromium con `playwright install --with-deps chromium`, corre Playwright y luego Lighthouse.
+   - Instala, construye el sitio, instala Chromium con `playwright install --with-deps chromium`, corre Playwright y luego Lighthouse.
+   - Los tests de Vitest del sitio (tokens, fuentes, CSP y referencias del build) corren en el job de tests, porque `pnpm build` ya construye el sitio.
    - Las acciones nuevas se fijan por SHA, como las existentes.
-   - Biome cubre `apps/site`, y `astro check` corre dentro de `pnpm typecheck` con `strict` y `noUncheckedIndexedAccess`.
+   - Biome cubre `apps/site`, y `astro check` corre dentro de `pnpm typecheck` con `strict` y `noUncheckedIndexedAccess`. Biome analiza también las plantillas `.astro` (`html.experimentalFullSupportEnabled`); sin eso, marcaba como no usados los componentes que solo aparecen en la plantilla.
    - Dependabot ya vigila el workspace desde `/` con el lockfile de pnpm. Se agrega un grupo `astro` para que Astro, Starlight y sus integraciones suban juntos, porque la lista de hashes cambia con ellos.
 9. **Marcadores del diseño.** Se abre un issue con `$[monto]` de los tres niveles, `[correo de contacto]`, la respuesta sobre CFDI, `[versión mínima de Node.js]` (con la nota de que `packages/core` declara `>=22`) y los enlaces a GitHub Sponsors y Open Collective. Ninguno se inventa en el sitio.
 
@@ -76,6 +77,15 @@ Antes de este ADR se construyó un sitio desechable con Astro 7.4.13, Starlight 
 - `'unsafe-hashes'` aparece en la política, pero solo en `style-src-attr` y con hashes exactos. No permite manejadores de eventos (eso sería `script-src-attr`) ni atributos `style` arbitrarios.
 - El CI agrega Chromium y Lighthouse, unos minutos por PR.
 - La CSP del `<meta>` no protege contra clickjacking ni rige a los workers. La cabecera de la historia 11 completa ambas cosas.
+
+### Lo que se midió al construirlo
+
+- **El botón de búsqueda de Starlight fallaba WCAG 2.5.3** (`label-content-name-mismatch` de axe): su nombre es "Buscar", pero contiene el atajo visible `Ctrl K`, y axe cuenta ese texto aunque tenga `aria-hidden`. El diseño no muestra el atajo, así que `starlight.css` lo oculta. El atajo sigue funcionando y se anuncia con `aria-keyshortcuts`. Se descartó parchear Starlight con `pnpm patch`.
+- **Los archivos por subconjunto de Fontsource no traen `unicode-range`.** Importar `latin-400.css` y `latin-ext-400.css` hacía que el navegador descargara las ocho fuentes en cada página, y el titular se reacomodaba al llegar (CLS de 0.3 y rendimiento de 85 en escritorio). `fonts.css` declara ahora cada `@font-face` con el `unicode-range` de Fontsource, y un test lo exige. La página de inicio descarga cuatro fuentes y su CLS es cero.
+- **Starlight enlaza `/favicon.svg` y el archivo no existía.** Lighthouse lo vio como error de consola. Un test recorre los `href` y `src` del build y falla si alguno apunta a un archivo que no existe.
+- **`astro preview` se va a segundo plano cuando detecta un agente.** Playwright lo arranca con `--ignore-lock`, que lo mantiene en primer plano en cualquier entorno.
+- **Resultados en local:** 32 tests de Playwright en verde (390 y 1440 px); Lighthouse con 100 en rendimiento, accesibilidad y buenas prácticas en móvil y escritorio para `/` y `/docs/`; mutación de `apps/site/csp` al 100 %.
+- **Advertencias que quedan en el build:** Starlight avisa que no hay colección `i18n`, que no hay página 404 propia y que el sitemap necesita `site`. Las dos primeras son su comportamiento sin traducciones; la tercera se resuelve con el dominio (T3).
 
 ## Seguridad
 
