@@ -4,6 +4,7 @@
       "staticDistDir": "./dist",
       "url": [
         "http://localhost/index.html",
+        "http://localhost/ring/index.html",
         "http://localhost/docs/index.html"
       ],
       "numberOfRuns": 3,
