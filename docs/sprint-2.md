@@ -253,7 +253,7 @@ Totales: Sprint 3, 12 puntos; Sprint 4, 11; Sprint 5, 10; Sprint 6, 6. El Sprint
 
 Necesitan cuentas, pagos o 2FA, así que no las hace Claude Code.
 
-- [ ] **T1:** reservar `enmascara-pino`, `enmascara-express` y `enmascara-sentry` en npm con 0.0.0 y configurar trusted publishing en cada uno. Reservar `enmascara` en PyPI y RubyGems. **Bloquea la historia 4 desde la semana 2.** La parte de npm se hizo el 24 de noviembre; PyPI y RubyGems siguen sin reservar.
+- [x] **T1:** reservar `enmascara-pino`, `enmascara-express` y `enmascara-sentry` en npm con 0.0.0 y configurar trusted publishing en cada uno. Reservar `enmascara` en PyPI y RubyGems. **Bloquea la historia 4 desde la semana 2.** La parte de npm se hizo el 24 de noviembre; PyPI y RubyGems quedaron reservados con 0.0.0 el 25 de noviembre.
 - [ ] **T2:** crear GitHub Sponsors y Open Collective y definir los montos de los niveles.
 - [ ] **T3:** registrar el dominio y elegir el hosting (D5) antes del Sprint 4.
 - [ ] **T4:** definir el correo de contacto y de reportes de seguridad, y la respuesta sobre CFDI.
@@ -326,7 +326,6 @@ Construir las integraciones sacó a la luz cuatro defectos, tres del núcleo y d
 | Pendiente | Origen | Efecto |
 | --- | --- | --- |
 | Arreglo de `enmascara-pino`: aplicar los serializers antes de enmascarar | ADR 0008, decisión 6 | Sin él, un `IncomingMessage` en un log de pino se copia completo antes de enmascararse |
-| Reservar `enmascara` en PyPI y RubyGems | T1 | Ambos responden 404 al 25 de noviembre; alguien más puede ocupar el nombre |
 | Marcadores del diseño | Issue #28 | Dependen de T2 y T4; bloquean Patrocina (historia 10) |
 | D2 y D3 | Decisiones pendientes | D2 antes del ring (historia 6); D3 antes de la landing (historia 9) |
 | D5 y dominio | T3 | Antes del Sprint 4; también quita el aviso del sitemap en el build |
