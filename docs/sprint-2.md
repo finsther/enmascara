@@ -137,7 +137,7 @@ El handoff del lienzo "Enmascara — Landing" es la referencia visual, pero su c
 
 | Dónde | El diseño dice | El paquete hace | Resolución |
 | --- | --- | --- | --- |
-| Ring y landing | Filas "Ignorado: no pasó la validación" y "números ignorados" en el resumen | `findings()` solo devuelve hallazgos validados; los candidatos rechazados no salen de la API | Decisión pendiente D2 |
+| Ring y landing | Filas "Ignorado: no pasó la validación" y "números ignorados" en el resumen | `findings()` solo devuelve hallazgos validados; los candidatos rechazados no salen de la API | Se quitan las filas y el conteo de ignorados (D2) |
 | Hero, ring | Etiqueta `[TARJETA]` | `[CARD]` | Se muestra la salida real |
 | Hero | Media máscara de tarjeta con espacios: `**** **** **** 1111` | `************1111`, sobre el valor canónico (ADR 0005) | Se muestra la salida real |
 | Hero, docs | `[CURP:7b21e0]` | El sufijo depende de la llave | El sitio usa una llave de demostración pública y muestra el resultado que da |
@@ -244,7 +244,7 @@ Totales: Sprint 3, 12 puntos; Sprint 4, 11; Sprint 5, 10; Sprint 6, 6. El Sprint
 | # | Decisión | Opciones | Recomendación |
 | --- | --- | --- | --- |
 | D1 | Orden después del Sprint 2 | Sitio en los sprints 3 y 4 y gema en los sprints 4 a 6; o gema en los sprints 3 y 4 y sitio en los sprints 4 a 6 | **Decidido el 2026-11-13: sitio primero** |
-| D2 | Candidatos que no pasan la validación en el ring | Quitar las filas "Ignorado" y el conteo de ignorados del diseño; o agregar a la API pública un reporte de candidatos rechazados, empezando por la spec, en los tres lenguajes (+3 puntos) | Quitarlas por ahora y proponer la API como historia aparte con su propio contrato en la spec |
+| D2 | Candidatos que no pasan la validación en el ring | Quitar las filas "Ignorado" y el conteo de ignorados del diseño; o agregar a la API pública un reporte de candidatos rechazados, empezando por la spec, en los tres lenguajes (+3 puntos) | **Decidido el 2026-11-25: quitarlas.** Una API de candidatos rechazados se propondría como historia aparte, con su contrato en la spec |
 | D3 | Lista de espera del escáner | Mostrar la sección sin formulario, con un enlace para seguir el proyecto en GitHub; o conectar un servicio, que requiere aprobación explícita | Sin formulario hasta aprobar un servicio |
 | D4 | Búsqueda de la documentación | Permitir `'wasm-unsafe-eval'` en `script-src` para Pagefind (local, sin red); o lanzar sin búsqueda | **Decidido el 2026-11-24: permitirlo** (ADR 0010) |
 | D5 | Hosting del sitio | Cualquiera que permita cabeceras propias; GitHub Pages no las permite, así que `frame-ancestors` no funcionaría | Se decide antes del Sprint 4, junto con el dominio |
@@ -257,7 +257,7 @@ Necesitan cuentas, pagos o 2FA, así que no las hace Claude Code.
 - [ ] **T2:** crear GitHub Sponsors y Open Collective y definir los montos de los niveles.
 - [ ] **T3:** registrar el dominio y elegir el hosting (D5) antes del Sprint 4.
 - [ ] **T4:** definir el correo de contacto y de reportes de seguridad, y la respuesta sobre CFDI.
-- [ ] **T5:** actualizar `docs/sprint-1.md` con su cierre: fecha real del 13 de noviembre, historia 7 pendiente y casillas de la sección Nombre e identidad.
+- [x] **T5:** actualizar `docs/sprint-1.md` con su cierre: fecha real del 13 de noviembre, historia 7 pendiente y casillas de la sección Nombre e identidad.
 
 ## Handoff a Claude Code
 
@@ -299,7 +299,7 @@ Comprometido: 12 puntos. Entregado: 12 puntos.
 | Un ejemplo ejecutable por integración en CI | Cumplido | `examples/pino`, `examples/express` y `examples/sentry`; el job `packed-examples` los corre además contra los tarballs que se publican |
 | Cobertura de 95 % y mutación en verde en cada paquete nuevo | Cumplido | 99,9 % de líneas en el último PR; job de Stryker en verde. `tools/release` y `apps/site/csp` con mutación al 100 % |
 | `apps/site` construye en CI con axe sin violaciones, Lighthouse de 95 o más y cero peticiones a otros orígenes | Cumplido | Job `site` en verde en `main`; Lighthouse da 100 en rendimiento, accesibilidad y buenas prácticas, en móvil y escritorio (PR #29) |
-| El cierre del Sprint 1 registrado en `docs/sprint-1.md` | **No cumplido** | Está al inicio de este documento, pero `docs/sprint-1.md` no se actualizó (T5) |
+| El cierre del Sprint 1 registrado en `docs/sprint-1.md` | Cumplido | Sección Cierre del Sprint 1 de `docs/sprint-1.md`, con la fecha real y la historia 7 movida (T5, PR #37) |
 
 ### Trabajo no planeado
 
