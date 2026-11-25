@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  DEFAULT_RING_OPTIONS,
   DEMO_HMAC_KEY,
   type RingOptions,
   redactorOptions,
@@ -17,6 +18,15 @@ describe('DEMO_HMAC_KEY', () => {
   it('says that it is a public demo key', () => {
     expect(DEMO_HMAC_KEY).toContain('demo');
     expect(DEMO_HMAC_KEY).toContain('public');
+  });
+});
+
+describe('DEFAULT_RING_OPTIONS', () => {
+  it('detects every type with the full mask', () => {
+    expect(DEFAULT_RING_OPTIONS).toEqual({
+      detect: ['clabe', 'curp', 'rfc', 'card'],
+      strategy: 'fullMask',
+    });
   });
 });
 
