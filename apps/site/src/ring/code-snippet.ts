@@ -1,15 +1,15 @@
 import type { IdentifierType } from 'enmascara';
+import { IDENTIFIER_TYPES } from './identifier-labels.ts';
 import { type RingOptions, redactorOptions } from './ring-options.ts';
 
 const HMAC_KEY_LINE = '  hmacKey: process.env.ENMASCARA_HMAC_KEY,';
-const ALL_TYPES_COUNT = 4;
 
 function quoted(value: string): string {
   return `'${value}'`;
 }
 
 function detectLines(detect: readonly IdentifierType[]): readonly string[] {
-  if (new Set(detect).size === ALL_TYPES_COUNT) {
+  if (new Set(detect).size === IDENTIFIER_TYPES.length) {
     return [];
   }
   return [`  detect: [${detect.map(quoted).join(', ')}],`];

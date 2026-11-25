@@ -1,4 +1,5 @@
 import type { IdentifierType, RedactorOptions, StrategyName } from 'enmascara';
+import { IDENTIFIER_TYPES } from './identifier-labels.ts';
 
 /**
  * Masking strategy as the ring names it: Máscara completa, Media máscara or
@@ -13,6 +14,19 @@ export interface RingOptions {
   /** How the detected values are masked. */
   readonly strategy: RingStrategy;
 }
+
+/**
+ * What the ring starts with: every type and the full mask.
+ *
+ * @example
+ * ```ts
+ * runRing('SPEI a 002180032240946700', DEFAULT_RING_OPTIONS);
+ * ```
+ */
+export const DEFAULT_RING_OPTIONS: RingOptions = {
+  detect: IDENTIFIER_TYPES,
+  strategy: 'fullMask',
+};
 
 /**
  * Public key that the ring uses for the Incógnito strategy. It is published
