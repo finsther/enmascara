@@ -41,6 +41,27 @@ El plan pide que este ADR registre cómo se hidrata la isla, el tamaño de su bu
 11. **Ejemplos con valores de los fixtures.** Log de transferencias, payload JSON y export CSV se escriben con valores de `spec/fixtures/*.yaml`. Un test falla si un identificador de un ejemplo no está en la lista `valid` de su fixture.
 12. **Sin red, sin persistencia y sin URL.** La isla no usa `fetch`, `XMLHttpRequest`, `WebSocket`, `sendBeacon`, almacenamiento, cookies ni `history`. El estado vive en la memoria de la página: recargar la deja vacía. El botón de copiar usa `navigator.clipboard.writeText`, que no sale del navegador.
 
+### Frente al diseño
+
+Los tableros "El ring" y "El ring · móvil" y la sección del ring de "Landing · escritorio" y "Landing · móvil" son la referencia visual. Se siguen con estas diferencias:
+
+| Dónde | El diseño | El sitio | Por qué |
+| --- | --- | --- | --- |
+| Hallazgos | "Ignorado: no pasó la validación" y "N ignorados" en el resumen | Solo filas enmascaradas; el resumen dice "N enmascarados" | D2 |
+| Columna Resultado | "Enmascarado" con un punto | El punto y el valor ya enmascarado (`**************6700`) | El plan pide el resultado enmascarado; sin filas "Ignorado", "Enmascarado" sería igual en todas |
+| Etiquetas y formatos | `[TARJETA]`, máscara con espacios, sufijo inventado | `[CARD]`, `************5556`, sufijo real con la llave de demostración | Se muestra la salida del paquete |
+| Botón Copiar resultado en escritorio | 36 px de alto | 44 px | Objetivo táctil mínimo de `CLAUDE.md` |
+| Código equivalente | Comillas dobles, `strategy: { default: … }` y `detect` siempre | Estilo del repositorio; `detect` solo si falta algún tipo | Un test lo ejecuta contra el paquete |
+| Ejemplos | Valores del prototipo, algunos inválidos | Valores de `spec/fixtures`; en el log, un folio parecido a una CLABE que no pasa el dígito verificador | Regla de los fixtures |
+
+Otras decisiones:
+
+- **Estrategias.** Son botones con `aria-pressed`, como en el diseño, y la Media máscara es la estrategia por omisión.
+- **Estado inicial.** La entrada arranca con el log de transferencias y su resultado ya calculado en el build. Así la isla no mueve nada al hidratarse.
+- **Dos presentaciones en el mismo HTML.** Para hallazgos y código hay una versión de escritorio (tabla y `<aside>`) y una móvil (tarjetas y `<details>`). El CSS muestra solo una, y la isla actualiza las dos.
+- **La versión compacta** sigue la sección del ring de la landing: fondo claro, "Tu log", solo Media máscara y Máscara completa, y el resumen "N datos enmascarados". El título y el texto de esa sección son de la historia 9.
+- **Tokens.** El diseño agrega a `tokens.css` el título móvil de 46 px, el espacio de 52 px y las medidas del ring (anchos de paneles, alturas mínimas e íconos).
+
 ## Consecuencias
 
 - El bundle de la isla incluye el núcleo con sus catálogos. Su tamaño se mide en el PR y se registra abajo; Lighthouse en `/ring` vigila que el rendimiento no baje de 95.
@@ -53,14 +74,15 @@ El plan pide que este ADR registre cómo se hidrata la isla, el tamaño de su bu
   | Archivo | Sin comprimir | gzip |
   | --- | --- | --- |
   | Cargador (`ring-island.ts`) | 431 B | 361 B |
-  | Controlador con el núcleo y sus catálogos | 18,7 KB | 7,9 KB |
+  | Controlador con el núcleo y sus catálogos | 20,1 KB | 8,3 KB |
 
   En la versión compacta, el controlador se pide solo cuando el ring entra a la vista; Playwright lo comprueba.
 - **Lighthouse:** 100 en rendimiento, accesibilidad y buenas prácticas para `/` y `/ring`, en móvil y escritorio (mediana de tres corridas).
 - **CLS por hidratación.** La primera versión servía los ajustes abiertos y la isla los plegaba en móvil al arrancar. Eso daba CLS de 0,163 y rendimiento de 93 en móvil. Ahora `Ring.astro` los sirve plegados (`aria-expanded="false"` y `data-collapsed`), y el CSS los muestra siempre desde 48 rem.
 - **Biome pide `<fieldset>` en lugar de `role="group"`** para los botones de ejemplos (`useSemanticElements`).
 - **Cobertura y mutación.** Los módulos puros de `src/ring` tienen 100 % de líneas y ramas, y la mutación no deja sobrevivientes. Los `Timeout` de Stryker son mutantes de constantes a nivel módulo, como el texto de un ejemplo o una etiqueta vacía, que los tests matan. Stryker necesitó `apps/site/src/ring/*.ts` en el `tsconfig.json` raíz para su checker de tipos. El adaptador del DOM (`src/ring/dom/`) queda fuera de cobertura y mutación; lo prueba Playwright.
-- **Tests de Playwright:** 72 en verde a 390 y 1440 px, 32 de ellos del ring.
+- **Hueco en móvil.** El `flex-basis` de los paneles, pensado como ancho en escritorio, se volvía altura en la columna móvil y dejaba 343 px vacíos. Un test de Playwright mide ahora la separación entre las partes.
+- **Tests de Playwright:** 78 en verde a 390 y 1440 px, 38 de ellos del ring.
 
 ## Seguridad
 
