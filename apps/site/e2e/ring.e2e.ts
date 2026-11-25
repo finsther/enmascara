@@ -13,6 +13,7 @@ const RING_PATH = '/ring';
 const MOBILE_WIDTH = 390;
 const MINIMUM_TARGET_SIZE = 44;
 const SHORT_VIEWPORT_HEIGHT = 300;
+const MAXIMUM_STACK_GAP = 80;
 const CLABE = '002180032240946700';
 const CARD = '4242424242424242';
 const CURP = 'BNQF380215XSRHNDD6';
@@ -435,6 +436,27 @@ test.describe('the ring', () => {
       });
       expect(target.width).toBeGreaterThanOrEqual(MINIMUM_TARGET_SIZE);
       expect(target.height).toBeGreaterThanOrEqual(MINIMUM_TARGET_SIZE);
+    }
+  });
+
+  test('stacks its parts without empty space on mobile', async ({ page }) => {
+    const opened = await openRing(page);
+    const parts = [
+      opened.input,
+      opened.output,
+      opened.region.getByRole('heading', { name: 'Hallazgos' }),
+    ];
+    const boxes = await Promise.all(parts.map((part) => part.boundingBox()));
+
+    for (const [index, box] of boxes.slice(1).entries()) {
+      const previous = boxes[index];
+      expect(box).not.toBeNull();
+      expect(previous).not.toBeNull();
+      if (box !== null && previous !== null && isMobile(page)) {
+        expect(box.y - (previous.y + previous.height)).toBeLessThan(
+          MAXIMUM_STACK_GAP,
+        );
+      }
     }
   });
 
