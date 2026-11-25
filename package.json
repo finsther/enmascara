@@ -20,7 +20,7 @@
     "examples:packed": "pnpm build && node tools/release/scripts/test-packed-examples.ts"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.6.6",
+    "@biomejs/biome": "2.6.8",
     "@changesets/cli": "3.0.3",
     "@stryker-mutator/core": "10.0.0",
     "@stryker-mutator/typescript-checker": "10.0.0",
