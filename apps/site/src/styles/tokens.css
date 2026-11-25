@@ -82,6 +82,7 @@
   --font-size-40: 2.5rem;
   --font-size-42: 2.625rem;
   --font-size-44: 2.75rem;
+  --font-size-46: 2.875rem;
   --font-size-52: 3.25rem;
   --font-size-56: 3.5rem;
   --font-size-64: 4rem;
@@ -120,6 +121,7 @@
   --space-40: 2.5rem;
   --space-44: 2.75rem;
   --space-48: 3rem;
+  --space-52: 3.25rem;
   --space-56: 3.5rem;
   --space-72: 4.5rem;
   --space-80: 5rem;
@@ -140,6 +142,21 @@
   --width-page: 90rem;
   --width-content: 75rem;
   --width-lead: 33.75rem;
+  --width-ring-intro: 47.5rem;
+  --width-ring-panel: 32.5rem;
+  --width-ring-findings: 35rem;
+  --width-ring-code: 23.75rem;
+  --width-ring-compact-panel: 28.75rem;
+
+  --height-ring-panel: 23.75rem;
+  --height-ring-panel-mobile: 13.75rem;
+  --height-ring-compact: 12.5rem;
+  --height-ring-compact-mobile: 10.625rem;
+  --size-icon-14: 0.875rem;
+  --size-icon-16: 1rem;
+  --size-icon-18: 1.125rem;
+  --size-icon-20: 1.25rem;
+  --size-dot: 0.5rem;
 
   --sl-font: var(--font-body);
   --sl-font-mono: var(--font-code);

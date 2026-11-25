@@ -13,7 +13,7 @@ declare global {
   }
 }
 
-const PAGES = ['/', '/docs/', '/404.html'];
+const PAGES = ['/', '/ring', '/docs/', '/404.html'];
 const THEMES = ['light', 'dark'];
 const WCAG_TAGS = [
   'wcag2a',

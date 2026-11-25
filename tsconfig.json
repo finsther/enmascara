@@ -21,6 +21,7 @@
     "tools/release/src",
     "tools/release/test",
     "apps/site/csp",
+    "apps/site/src/ring/*.ts",
     "apps/site/test"
   ]
 }

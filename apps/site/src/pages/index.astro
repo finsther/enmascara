@@ -1,6 +1,8 @@
 ---
 import '../styles/fonts.css';
 import '../styles/tokens.css';
+import DisplayFontPreload from '../components/DisplayFontPreload.astro';
+import Ring from '../components/ring/Ring.astro';
 import SiteHeader from '../components/SiteHeader.astro';
 ---
 
@@ -14,6 +16,7 @@ import SiteHeader from '../components/SiteHeader.astro';
     />
     <title>Enmascara</title>
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <DisplayFontPreload />
   </head>
   <body>
     <SiteHeader />
@@ -27,6 +30,11 @@ import SiteHeader from '../components/SiteHeader.astro';
         </p>
       </div>
     </main>
+    <section class="ring-band" aria-label="Prueba el ring">
+      <div class="ring-band-content">
+        <Ring variant="compact" />
+      </div>
+    </section>
   </body>
 </html>
 
@@ -71,6 +79,16 @@ import SiteHeader from '../components/SiteHeader.astro';
     text-transform: uppercase;
   }
 
+  .ring-band {
+    background: var(--color-paper-100);
+  }
+
+  .ring-band-content {
+    max-width: var(--width-content);
+    margin: 0 auto;
+    padding: var(--space-56) var(--space-20);
+  }
+
   .accent {
     color: var(--color-pink-500);
   }
@@ -84,6 +102,10 @@ import SiteHeader from '../components/SiteHeader.astro';
   }
 
   @media (min-width: 48rem) {
+    .ring-band-content {
+      padding: var(--space-104) var(--space-32) var(--space-88);
+    }
+
     .hero-content {
       padding: var(--space-72) var(--space-32) var(--space-104);
       gap: var(--space-28);

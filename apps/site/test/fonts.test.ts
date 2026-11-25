@@ -17,6 +17,10 @@ const CSS_URL = /url\(\s*['"]?([^'")]+)['"]?\s*\)/g;
 const CSS_IMPORT = /@import\s+(?:url\()?\s*['"]?([^'")\s;]+)/g;
 const ALLOWED_SUBSET = /-(?:latin|latin-ext)-\d{3}-normal\./;
 const SAME_ORIGIN = /^(?:\/(?!\/)|\.\.?\/|data:)/;
+const FONT_PRELOAD = /<link\b[^>]*\brel="preload"[^>]*>/g;
+const HREF = /\bhref="([^"]+)"/;
+const ANTON_LATIN = /anton-latin-400-normal\.[\w-]+\.woff2$/;
+const PAGES_WITH_DISPLAY_TITLES = ['index.html', 'ring/index.html'];
 
 const EXPECTED_FACES = [
   'Anton 400',
@@ -40,6 +44,13 @@ function fontFaces(): readonly FontFace[] {
       sources: [...body.matchAll(SOURCE_URL)].map(([, url = '']) => url),
     })),
   );
+}
+
+function preloadedFonts(page: string): readonly string[] {
+  return [...readBuilt(page).matchAll(FONT_PRELOAD)]
+    .map(([link]) => link)
+    .filter((link) => link.includes('as="font"'))
+    .map((link) => HREF.exec(link)?.[1] ?? '');
 }
 
 describe('built fonts', () => {
@@ -69,6 +80,19 @@ describe('built fonts', () => {
 
     expect(facesWithoutRange).toEqual([]);
   });
+
+  it.each(PAGES_WITH_DISPLAY_TITLES)(
+    'preloads the latin Anton face that %s titles use, so they do not shift',
+    (page) => {
+      const antonSources = fontFaces()
+        .filter(({ family }) => family === 'Anton')
+        .flatMap(({ sources }) => sources)
+        .filter((source) => ANTON_LATIN.test(source));
+
+      expect(antonSources).toHaveLength(1);
+      expect(preloadedFonts(page)).toEqual(antonSources);
+    },
+  );
 
   it('loads every font, image and stylesheet from the same origin', () => {
     const references = builtCss().flatMap((css) => [

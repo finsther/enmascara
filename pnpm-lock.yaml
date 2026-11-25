@@ -68,9 +68,15 @@ importers:
       astro:
         specifier: 7.4.13
         version: 7.4.13(@types/node@24.19.2)(esbuild@0.28.2)(yaml@2.9.1)
+      enmascara:
+        specifier: workspace:*
+        version: link:../../packages/core
       typescript:
         specifier: 5.9.3
         version: 5.9.3
+      yaml:
+        specifier: 2.9.1
+        version: 2.9.1
 
   bench:
     devDependencies:
