@@ -22,10 +22,10 @@ describe('DEMO_HMAC_KEY', () => {
 });
 
 describe('DEFAULT_RING_OPTIONS', () => {
-  it('detects every type with the full mask', () => {
+  it('detects every type with the half mask, as the design starts', () => {
     expect(DEFAULT_RING_OPTIONS).toEqual({
       detect: ['clabe', 'curp', 'rfc', 'card'],
-      strategy: 'fullMask',
+      strategy: 'halfMask',
     });
   });
 });
