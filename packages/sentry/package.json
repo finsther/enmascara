@@ -59,7 +59,7 @@
     "enmascara": "^0.1.1"
   },
   "devDependencies": {
-    "@sentry/node": "11.12.0",
+    "@sentry/node": "11.16.0",
     "enmascara": "workspace:*",
     "sentry-node-10": "npm:@sentry/node@10.78.0"
   }
