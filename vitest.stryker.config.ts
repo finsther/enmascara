@@ -11,6 +11,7 @@ export default defineConfig({
       'tools/release/test/**/*.test.ts',
       'apps/site/test/inline-sources.test.ts',
       'apps/site/test/content-security-policy.test.ts',
+      'apps/site/test/ring/**/*.test.ts',
     ],
     exclude: [
       '**/node_modules/**',

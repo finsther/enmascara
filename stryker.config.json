@@ -19,7 +19,9 @@
     "packages/sentry/src/**/*.ts",
     "spec/tools/**/*.ts",
     "tools/release/src/**/*.ts",
-    "apps/site/csp/**/*.ts"
+    "apps/site/csp/**/*.ts",
+    "apps/site/src/ring/**/*.ts",
+    "!apps/site/src/ring/dom/**"
   ],
   "incremental": true,
   "incrementalFile": "reports/stryker-incremental.json",
