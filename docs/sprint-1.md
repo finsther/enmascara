@@ -42,10 +42,10 @@ La API se queda en inglés para que cualquier equipo la adopte; la lucha libre v
 
 Pendientes antes del primer commit:
 
-- [ ] Reservar `enmascara` y los paquetes de integración en npm, y `enmascara` en PyPI y RubyGems con una versión 0.0.0
-- [ ] Crear la organización en GitHub y el repo
-- [ ] Registrar dominio para el sitio de documentación
-- [ ] Diseñar la mascota y el logo
+- [ ] Reservar `enmascara` y los paquetes de integración en npm, y `enmascara` en PyPI y RubyGems con una versión 0.0.0. npm quedó hecho: `enmascara` el 13 de noviembre y las integraciones el 24 de noviembre. PyPI y RubyGems siguen sin reservar al 25 de noviembre
+- [x] Crear la organización en GitHub y el repo (`finsther/enmascara`)
+- [ ] Registrar dominio para el sitio de documentación. Pasa a T3 del Sprint 2, antes del Sprint 4
+- [ ] Diseñar la mascota y el logo. El logo de la máscara viene en el diseño del sitio; la mascota sigue sin diseño
 
 Disponibilidad verificada el 22 de octubre de 2026 contra las APIs de npm, PyPI y crates.io; RubyGems por búsqueda web.
 
@@ -351,7 +351,12 @@ Total: 22 puntos. Si el sprint se aprieta, la historia 7 se recorta a pino y Sen
 
 **Extensión del 2026-11-05:** el sprint se extiende 3 días, hasta el 2026-11-07, para terminar las historias 6, 8 y 9 y publicar la 0.1.0.
 
+**Cierre real: 2026-11-13.** La 0.1.0 se publicó ese día, cuatro días hábiles después de la extensión. La historia 7 quedó pendiente y se completó en el Sprint 2.
+
 ### Después del Sprint 1
+
+El orden de abajo es el plan original. El 13 de noviembre se cambió (D1 de `docs/sprint-2.md`): el Sprint 2 cerró las integraciones y montó la base del sitio, los sprints 3 y 4 terminan el sitio y la gema de Ruby llega en los sprints 4 a 6.
+
 
 - **Sprint 2:** gema de Ruby con integración Rails y Lograge; playground en el sitio de docs.
 - **Sprint 3:** paquete de Python; NSS, INE y teléfonos con puntaje de contexto.
@@ -416,3 +421,25 @@ Empieza con la historia 1 (monorepo y CI base). Antes de escribir código, mués
 estructura de carpetas y los archivos de configuración que vas a crear. Cuando la apruebe,
 impleméntala, corre lint y tests, y prepara el PR. No avances a la historia 2 sin mi visto bueno.
 ```
+
+## Cierre del Sprint 1
+
+13 de noviembre de 2026
+
+El Sprint 1 terminó el 13 de noviembre con `enmascara@0.1.0` publicado en npm con provenance. Duró 16 días hábiles, del 23 de octubre al 13 de noviembre, y entregó 19 puntos.
+
+| # | Historia | Puntos | Estado |
+| --- | --- | --- | --- |
+| 1 | Monorepo y CI base | 2 | Completa (PR #1) |
+| 2 | Spec y fixtures | 3 | Completa (PR #2) |
+| 3 | Validadores CLABE y tarjeta | 2 | Completa (PR #3) |
+| 4 | Validadores CURP y RFC | 3 | Completa (PR #4) |
+| 5 | Motor de detección | 3 | Completa (PR #5) |
+| 6 | Estrategias de enmascarado | 2 | Completa (PR #6) |
+| 7 | Integraciones pino, Express y Sentry | 3 | Pendiente; se completó en el Sprint 2 (PR #19, #21, #23 y #24) |
+| 8 | Seguridad en CI | 2 | Completa (PR #7) |
+| 9 | Benchmarks, README y publicación 0.1.0 | 2 | Completa (PR #12 a #16) |
+
+La definición de terminado se cumplió en tres de sus cuatro puntos: faltó un ejemplo funcional por integración, porque las integraciones se movieron. Ese punto se cumplió en el Sprint 2.
+
+El detalle de la evidencia, los pendientes y las lecciones para estimar está en la sección "Cierre del Sprint 1" de `docs/sprint-2.md`.
