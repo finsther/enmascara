@@ -277,7 +277,7 @@ impleméntala, corre lint, tests y mutación, y prepara el PR. No avances a la h
 
 25 de noviembre de 2026
 
-Las cinco historias quedaron hechas en 8 días hábiles, del 16 al 25 de noviembre, dos días antes del fin del sprint. La historia 1 empezó el 13, antes del arranque formal. `enmascara@0.1.1` y las tres integraciones en 0.1.0 están publicados con provenance desde el 25 de noviembre (UTC). La historia 5 queda en el PR #29, con el CI en verde, en espera de revisión.
+Las cinco historias quedaron hechas en 8 días hábiles, del 16 al 25 de noviembre, dos días antes del fin del sprint. La historia 1 empezó el 13, antes del arranque formal. `enmascara@0.1.1` y las tres integraciones en 0.1.0 están publicados con provenance desde el 25 de noviembre (UTC). La base del sitio entró a `main` el 25 de noviembre con el PR #29.
 
 ### Historias
 
@@ -287,9 +287,9 @@ Las cinco historias quedaron hechas en 8 días hábiles, del 16 al 25 de noviemb
 | 2 | `enmascara-sentry` con ejemplo | 2 | Completa | `maskedSentryOptions` para `@sentry/node` 10 y 11, con spans, logs, métricas y encabezados enmascarados; ADR 0007 (PR #21 y #23) |
 | 3 | `enmascara-express` con ejemplo | 3 | Completa | Opciones para pino-http y morgan sin tocar `req`, Express 4 y 5; ADR 0008 (PR #24) |
 | 4 | Publicación de las integraciones con provenance | 2 | Completa | Plan de release probado en `tools/release`, ejemplos contra los tarballs; ADR 0009 (PR #26). Versiones en el PR #27 |
-| 5 | Base del sitio en `apps/site` | 3 | En revisión | Tokens, tipografías autoalojadas, CSP solo con hashes, Playwright a 390 y 1440 px, axe y Lighthouse; ADR 0010 (PR #29) |
+| 5 | Base del sitio en `apps/site` | 3 | Completa | Tokens, tipografías autoalojadas, CSP solo con hashes, Playwright a 390 y 1440 px, axe y Lighthouse; ADR 0010 (PR #29) |
 
-Comprometido: 12 puntos. Entregado: 9 puntos mezclados y 3 en revisión.
+Comprometido: 12 puntos. Entregado: 12 puntos.
 
 ### Definición de terminado
 
@@ -298,7 +298,7 @@ Comprometido: 12 puntos. Entregado: 9 puntos mezclados y 3 en revisión.
 | Los tres paquetes de integración publicados con provenance | Cumplido | `npm view <paquete>@0.1.0 dist.attestations.provenance.predicateType` reporta `https://slsa.dev/provenance/v1` en los tres; etiquetas `enmascara-pino@0.1.0`, `enmascara-express@0.1.0` y `enmascara-sentry@0.1.0` |
 | Un ejemplo ejecutable por integración en CI | Cumplido | `examples/pino`, `examples/express` y `examples/sentry`; el job `packed-examples` los corre además contra los tarballs que se publican |
 | Cobertura de 95 % y mutación en verde en cada paquete nuevo | Cumplido | 99,9 % de líneas en el último PR; job de Stryker en verde. `tools/release` y `apps/site/csp` con mutación al 100 % |
-| `apps/site` construye en CI con axe sin violaciones, Lighthouse de 95 o más y cero peticiones a otros orígenes | Cumplido en el PR #29 | Job `site` en verde; Lighthouse da 100 en rendimiento, accesibilidad y buenas prácticas, en móvil y escritorio. Cuenta cuando el PR entre a `main` |
+| `apps/site` construye en CI con axe sin violaciones, Lighthouse de 95 o más y cero peticiones a otros orígenes | Cumplido | Job `site` en verde en `main`; Lighthouse da 100 en rendimiento, accesibilidad y buenas prácticas, en móvil y escritorio (PR #29) |
 | El cierre del Sprint 1 registrado en `docs/sprint-1.md` | **No cumplido** | Está al inicio de este documento, pero `docs/sprint-1.md` no se actualizó (T5) |
 
 ### Trabajo no planeado
@@ -325,7 +325,6 @@ Construir las integraciones sacó a la luz cuatro defectos, tres del núcleo y d
 
 | Pendiente | Origen | Efecto |
 | --- | --- | --- |
-| Mezclar el PR #29 | Historia 5 | Cierra la definición de terminado del sitio |
 | Arreglo de `enmascara-pino`: aplicar los serializers antes de enmascarar | ADR 0008, decisión 6 | Sin él, un `IncomingMessage` en un log de pino se copia completo antes de enmascararse |
 | Reservar `enmascara` en PyPI y RubyGems | T1 | Ambos responden 404 al 25 de noviembre; alguien más puede ocupar el nombre |
 | Marcadores del diseño | Issue #28 | Dependen de T2 y T4; bloquean Patrocina (historia 10) |
