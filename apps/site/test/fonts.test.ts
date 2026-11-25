@@ -4,12 +4,14 @@ import { builtFiles, readBuilt } from './support/build-output.ts';
 interface FontFace {
   readonly family: string;
   readonly weight: string;
+  readonly unicodeRange: string;
   readonly sources: readonly string[];
 }
 
 const FONT_FACE = /@font-face\s*\{([^}]*)\}/g;
 const FONT_FAMILY = /font-family:\s*['"]?([^;'"]+)['"]?/;
 const FONT_WEIGHT = /font-weight:\s*(\d+)/;
+const UNICODE_RANGE = /unicode-range:\s*([^;]+)/;
 const SOURCE_URL = /url\(\s*['"]?([^'")]+)['"]?\s*\)/g;
 const CSS_URL = /url\(\s*['"]?([^'")]+)['"]?\s*\)/g;
 const CSS_IMPORT = /@import\s+(?:url\()?\s*['"]?([^'")\s;]+)/g;
@@ -34,6 +36,7 @@ function fontFaces(): readonly FontFace[] {
     [...css.matchAll(FONT_FACE)].map(([, body = '']) => ({
       family: FONT_FAMILY.exec(body)?.[1]?.trim() ?? '',
       weight: FONT_WEIGHT.exec(body)?.[1] ?? '',
+      unicodeRange: UNICODE_RANGE.exec(body)?.[1]?.trim() ?? '',
       sources: [...body.matchAll(SOURCE_URL)].map(([, url = '']) => url),
     })),
   );
@@ -55,6 +58,16 @@ describe('built fonts', () => {
     expect(sources.filter((source) => !ALLOWED_SUBSET.test(source))).toEqual(
       [],
     );
+  });
+
+  it('limits every face to its unicode range so browsers download only what a page uses', () => {
+    const facesWithoutRange = fontFaces()
+      .filter(({ unicodeRange }) => unicodeRange === '')
+      .map(
+        ({ family, weight, sources }) => `${family} ${weight} ${sources[0]}`,
+      );
+
+    expect(facesWithoutRange).toEqual([]);
   });
 
   it('loads every font, image and stylesheet from the same origin', () => {
