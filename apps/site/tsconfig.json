@@ -3,7 +3,10 @@
   "compilerOptions": {
     "noUncheckedIndexedAccess": true,
     "allowImportingTsExtensions": true,
-    "types": ["node"]
+    "types": ["node"],
+    "paths": {
+      "enmascara": ["../../packages/core/src/index.ts"]
+    }
   },
   "include": [".astro/types.d.ts", "**/*"],
   "exclude": ["dist"]
