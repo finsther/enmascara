@@ -448,14 +448,17 @@ test.describe('the ring', () => {
     ];
     const boxes = await Promise.all(parts.map((part) => part.boundingBox()));
 
-    for (const [index, box] of boxes.slice(1).entries()) {
+    const gaps = boxes.slice(1).map((box, index) => {
       const previous = boxes[index];
-      expect(box).not.toBeNull();
-      expect(previous).not.toBeNull();
-      if (box !== null && previous !== null && isMobile(page)) {
-        expect(box.y - (previous.y + previous.height)).toBeLessThan(
-          MAXIMUM_STACK_GAP,
-        );
+      if (box === null || previous === null || previous === undefined) {
+        throw new Error('a part of the ring is not rendered');
+      }
+      return box.y - (previous.y + previous.height);
+    });
+
+    if (isMobile(page)) {
+      for (const gap of gaps) {
+        expect(gap).toBeLessThan(MAXIMUM_STACK_GAP);
       }
     }
   });
