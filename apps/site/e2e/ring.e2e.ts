@@ -53,7 +53,7 @@ function isMobile(page: Page): boolean {
 }
 
 function ring(page: Page) {
-  const region = page.getByRole('region', { name: 'El ring' });
+  const region = page.getByRole('region', { name: 'El ring', exact: true });
   return {
     region,
     input: region.getByRole('textbox', { name: 'Entrada' }),
@@ -63,12 +63,14 @@ function ring(page: Page) {
     findingsTable: region.getByRole('table', { name: 'Hallazgos' }),
     findingsList: region.getByRole('list', { name: 'Hallazgos' }),
     code: region.locator('[data-ring-code]:visible'),
-    codeToggle: region.getByText(CODE_PANEL, { exact: true }),
+    codeToggle: region.locator('summary', { hasText: CODE_PANEL }),
     copy: region.getByRole('button', { name: /^Copiar/ }),
     settings: region.getByRole('button', { name: /^Ajustes/ }),
     type: (name: string) => region.getByRole('checkbox', { name }),
-    strategy: (name: string) => region.getByRole('button', { name }),
-    example: (name: string) => region.getByRole('button', { name }),
+    strategy: (name: string) =>
+      region.getByRole('button', { name, exact: true }),
+    example: (name: string) =>
+      region.getByRole('button', { name, exact: true }),
   };
 }
 
@@ -157,6 +159,7 @@ test.describe('the ring', () => {
 
     await expect(opened.input).toHaveValue(/spei\.enviado/);
     await expect(opened.output).toContainText('**************6700');
+    await openSettingsOnMobile(page, opened);
     await expect(opened.strategy('Media máscara')).toHaveAttribute(
       'aria-pressed',
       'true',
@@ -352,7 +355,7 @@ test.describe('the ring', () => {
       await dialog.dismiss();
     });
     const renderedElements = opened.region.locator(
-      '[data-ring-output] *, [data-ring-findings] td *, [data-ring-finding-cards] li span *',
+      '[data-ring-output] *, [data-ring-findings] td *, [data-ring-finding-cards] li > span:last-child *, [data-ring-finding-cards] li > span:first-child > span *',
     );
 
     for (const payload of XSS_PAYLOADS) {
@@ -475,7 +478,7 @@ test.describe('the compact ring on the home page', () => {
     await page.waitForLoadState('networkidle');
     const scriptsBeforeView = scripts.length;
 
-    const compact = page.getByRole('region', { name: 'El ring' });
+    const compact = page.getByRole('region', { name: 'El ring', exact: true });
     await compact.scrollIntoViewIfNeeded();
     await expect(compact).toHaveAttribute('data-ring-ready', 'true');
 
